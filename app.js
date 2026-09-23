@@ -1,7 +1,11 @@
 /* ─── Toolkit tabs ─── */
-const stacks={field:['Hardware diagnostics','Laptop repair','Lenovo systems','Network troubleshooting','Structured cabling','Technical documentation','B2B support','VirtualBox'],dev:['Java','Python','C#','PHP','HTML & CSS','MySQL','Git & GitHub','VS Code','SDLC']};
+const stacks={field:['Hardware diagnostics','Laptop repair','Lenovo systems','Network troubleshooting','Structured cabling','CCTV / NVR','Technical documentation','B2B support','VirtualBox','Packet Tracer','IP networking'],dev:['Java','Python','C#','PHP','HTML & CSS','MySQL','Git & GitHub','VS Code','SDLC','Next.js','JavaScript']};
 const skills=document.querySelector('#skills');
-function showStack(key){skills.replaceChildren(...stacks[key].map(label=>{const el=document.createElement('span');el.textContent=label;return el}));document.querySelectorAll('[data-stack]').forEach(btn=>{const active=btn.dataset.stack===key;btn.classList.toggle('selected',active);btn.setAttribute('aria-pressed',active)})}showStack('field');
+const fieldCards=document.getElementById('toolkit-cards-field');
+const devCards=document.getElementById('toolkit-cards-dev');
+const fieldBottom=document.getElementById('toolkit-bottom-field');
+const toolkitSub=document.querySelector('.toolkit-sub');
+function showStack(key){skills.replaceChildren(...stacks[key].map(label=>{const el=document.createElement('span');el.textContent=label;return el}));document.querySelectorAll('[data-stack]').forEach(btn=>{const active=btn.dataset.stack===key;btn.classList.toggle('selected',active);btn.setAttribute('aria-pressed',active)});const isField=key==='field';if(fieldCards)fieldCards.style.display=isField?'':'none';if(devCards)devCards.style.display=isField?'none':'';if(fieldBottom)fieldBottom.style.display=isField?'':'none';if(toolkitSub)toolkitSub.textContent=isField?'Tools, systems, and technologies I work with to solve real-world IT and field engineering problems.':'Languages, frameworks, and tools I use for software development, from building interfaces to deploying real-world applications.'}showStack('field');
 document.querySelectorAll('[data-stack]').forEach(btn=>btn.addEventListener('click',()=>showStack(btn.dataset.stack)));
 
 /* ─── Mobile menu ─── */
