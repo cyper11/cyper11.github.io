@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Speed — cyper1van</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #111310;
+            --panel: #191c17;
+            --line: #2c3028;
+            --text: #f0f1e9;
+            --muted: #a0a598;
+            --lime: #d5fb78;
+            --lime-dark: #1c2510;
+            --red: #ff6b6b;
+            --mono: 'IBM Plex Mono', monospace;
+            --body: 'DM Sans', sans-serif;
+            --heading: 'Space Grotesk', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        ::selection {
+            background-color: var(--lime);
+            color: var(--lime-dark);
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--body);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Topbar */
+        .topbar {
+            border-bottom: 1px solid var(--line);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topbar a {
+            color: var(--muted);
+            text-decoration: none;
+            font-family: var(--mono);
+            font-size: 12px;
+            transition: color 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .topbar a:hover {
+            color: var(--lime);
+        }
+
+        .topbar .title {
+            font-family: var(--mono);
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text);
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 4rem 1.5rem;
+            width: 100%;
+            flex: 1;
+        }
+
+        /* Typography */
+        .eyebrow {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--lime);
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        h1 {
+            font-family: var(--heading);
+            font-size: 3rem;
+            font-weight: 500;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 1.125rem;
+            margin-bottom: 3rem;
+        }
+
+        /* Panel Base */
+        .panel {
+            background-color: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 5px;
+            padding: 2rem;
+        }
+
+        /* Stats Bar */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-box {
+            background-color: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 5px;
+            padding: 1rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .stat-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-family: var(--heading);
+            font-size: 1.5rem;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        /* Mode Selection */
+        .mode-selection {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .mode-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .mode-group-label {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--muted);
+            margin-right: 0.5rem;
+        }
+
+        .pill-btn {
+            background: transparent;
+            border: 1px solid var(--line);
+            color: var(--muted);
+            font-family: var(--mono);
+            font-size: 12px;
+            padding: 0.25rem 1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .pill-btn:hover {
+            border-color: var(--muted);
+            color: var(--text);
+        }
+
+        .pill-btn.active {
+            background: var(--lime);
+            border-color: var(--lime);
+            color: var(--lime-dark);
+        }
+
+        /* Game Area */
+        .game-area {
+            position: relative;
+            margin-bottom: 4rem;
+        }
+
+        #hidden-input {
+            position: absolute;
+            opacity: 0;
+            top: 0;
+            left: 0;
+            width: 1px;
+            height: 1px;
+            z-index: -1;
+        }
+
+        .typing-display {
+            font-family: var(--mono);
+            font-size: 1.25rem;
+            line-height: 1.8;
+            color: var(--muted);
+            min-height: 200px;
+            cursor: text;
+            position: relative;
+        }
+
+        .char {
+            position: relative;
+            transition: color 0.1s;
+        }
+
+        .char.correct {
+            color: var(--lime);
+        }
+
+        .char.incorrect {
+            color: var(--bg);
+            background-color: var(--red);
+            border-radius: 2px;
+            animation: shake 0.2s ease-in-out;
+        }
+
+        .char.active {
+            color: var(--text);
+        }
+
+        .char.active::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--lime);
+            animation: blink 1s step-end infinite;
+        }
+
+        .hint {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2rem;
+            text-align: center;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Result Screen */
+        .result-screen {
+            display: none;
+            animation: fadeUp 0.5s ease forwards;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .result-main {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        .result-main h2 {
+            font-family: var(--heading);
+            font-size: 5rem;
+            color: var(--lime);
+            line-height: 1;
+            margin: 1rem 0;
+        }
+
+        .result-main .accuracy {
+            font-size: 1.5rem;
+            color: var(--text);
+            margin-bottom: 2rem;
+        }
+
+        .result-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .result-stats .stat-box {
+            padding: 0.75rem;
+        }
+
+        .result-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            font-family: var(--body);
+            font-weight: 500;
+            font-size: 1rem;
+            padding: 0.75rem 2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: var(--lime);
+            color: var(--lime-dark);
+            border: 1px solid var(--lime);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(213, 251, 120, 0.15);
+        }
+
+        .btn-ghost {
+            background-color: transparent;
+            color: var(--text);
+            border: 1px solid var(--line);
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--muted);
+            transform: translateY(-2px);
+        }
+
+        .pb-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .pb-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--lime);
+        }
+
+        .pb-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .pb-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px dashed var(--line);
+        }
+
+        .pb-item-label {
+            color: var(--muted);
+        }
+
+        .pb-item-val {
+            font-family: var(--mono);
+            color: var(--text);
+        }
+
+        /* About Section */
+        .about-section {
+            margin-top: 4rem;
+            padding-top: 4rem;
+            border-top: 1px solid var(--line);
+        }
+
+        .about-section h2 {
+            font-family: var(--heading);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .about-section p {
+            color: var(--muted);
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+
+        .tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--muted);
+            border: 1px solid var(--line);
+            border-radius: 30px;
+            padding: 0.25rem 0.75rem;
+        }
+
+        /* Animations */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 850px) {
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 2.5rem; }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .result-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .topbar {
+                padding: 1rem;
+            }
+            .container {
+                padding: 2rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="topbar">
+        <a href="index.html"><span>←</span> Back to Portfolio</a>
+        <div class="title">Typing Speed Game</div>
+    </header>
+
+    <main class="container">
+        <header>
+            <span class="eyebrow">Interactive Project</span>
+            <h1>Typing Speed</h1>
+            <p class="subtitle">Test your speed. Improve your accuracy.</p>
+        </header>
+
+        <section class="stats-grid" id="stats-bar">
+            <div class="stat-box">
+                <span class="stat-label">WPM</span>
+                <span class="stat-value" id="val-wpm">0</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Accuracy</span>
+                <span class="stat-value" id="val-acc">100%</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Time</span>
+                <span class="stat-value" id="val-time">30s</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Characters</span>
+                <span class="stat-value" id="val-chars">0</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Errors</span>
+                <span class="stat-value" id="val-errors">0</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Streak</span>
+                <span class="stat-value" id="val-streak">0</span>
+            </div>
+        </section>
+
+        <section class="mode-selection" id="mode-selection">
+            <div class="mode-group">
+                <span class="mode-group-label">Time:</span>
+                <button class="pill-btn time-btn" data-time="15">15s</button>
+                <button class="pill-btn time-btn active" data-time="30">30s</button>
+                <button class="pill-btn time-btn" data-time="60">60s</button>
+            </div>
+            <div class="mode-group">
+                <span class="mode-group-label">Difficulty:</span>
+                <button class="pill-btn diff-btn" data-diff="easy">Easy</button>
+                <button class="pill-btn diff-btn active" data-diff="normal">Normal</button>
+                <button class="pill-btn diff-btn" data-diff="hard">Hard</button>
+            </div>
+        </section>
+
+        <section class="game-area" id="game-area">
+            <div class="panel typing-display" id="typing-display">
+                <!-- Text goes here -->
+            </div>
+            <div class="hint" id="typing-hint">Start typing to begin...</div>
+            <input type="text" id="hidden-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        </section>
+
+        <section class="result-screen" id="result-screen">
+            <div class="result-grid">
+                <div class="panel result-main">
+                    <span class="eyebrow">Test Complete</span>
+                    <h2 id="res-wpm">0</h2>
+                    <div class="accuracy" id="res-acc">0% Accuracy</div>
+                    
+                    <div class="result-stats">
+                        <div class="stat-box">
+                            <span class="stat-label">Correct</span>
+                            <span class="stat-value" id="res-correct">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Incorrect</span>
+                            <span class="stat-value" id="res-incorrect">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Errors</span>
+                            <span class="stat-value" id="res-errors">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Total Chars</span>
+                            <span class="stat-value" id="res-total">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Best Streak</span>
+                            <span class="stat-value" id="res-streak">0</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Time taken</span>
+                            <span class="stat-value" id="res-time">0s</span>
+                        </div>
+                    </div>
+
+                    <div class="result-actions">
+                        <button class="btn btn-primary" id="btn-retry">Try Again</button>
+                        <button class="btn btn-ghost" id="btn-change-mode">Change Mode</button>
+                    </div>
+                </div>
+
+                <div class="panel pb-card">
+                    <div class="pb-header">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15l-2 5-9-5 9-5 2 5z"></path><path d="M12 15l2 5 9-5-9-5-2 5z"></path></svg>
+                        <span class="eyebrow" style="margin:0;">Personal Best</span>
+                    </div>
+                    <ul class="pb-list">
+                        <li class="pb-item">
+                            <span class="pb-item-label">Best WPM</span>
+                            <span class="pb-item-val" id="pb-wpm">0</span>
+                        </li>
+                        <li class="pb-item">
+                            <span class="pb-item-label">Best Accuracy</span>
+                            <span class="pb-item-val" id="pb-acc">0%</span>
+                        </li>
+                        <li class="pb-item">
+                            <span class="pb-item-label">Highest Streak</span>
+                            <span class="pb-item-val" id="pb-streak">0</span>
+                        </li>
+                        <li class="pb-item">
+                            <span class="pb-item-label">Tests Completed</span>
+                            <span class="pb-item-val" id="pb-tests">0</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="about-section">
+            <span class="eyebrow">About this project</span>
+            <h2>Built with intention.</h2>
+            <p>An interactive typing speed application built to demonstrate frontend development, real-time input handling, game logic, performance tracking, and responsive UI design.</p>
+            <div class="tags">
+                <span class="tag">HTML</span>
+                <span class="tag">CSS</span>
+                <span class="tag">JavaScript</span>
+                <span class="tag">localStorage</span>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const passages = {
+            easy: [
+                "The cat sat on the mat. It was a very lazy day.",
+                "A quick brown fox jumps over the lazy dog.",
+                "I like to play games and read books all day long.",
+                "Water is very important for all living things.",
+                "He walked down the street looking for a place to eat.",
+                "The sun is shining brightly in the clear blue sky.",
+                "We went to the park and had a nice little picnic.",
+                "She sells seashells by the seashore every morning."
+            ],
+            normal: [
+                "Every good developer knows that practice makes perfect.",
+                "The ability to focus for long periods is a superpower in the modern age.",
+                "Learning to type fast and accurately will save you hundreds of hours over your lifetime.",
+                "Success usually comes to those who are too busy to be looking for it.",
+                "Don't be afraid to give up the good to go for the great.",
+                "Innovation distinguishes between a leader and a follower.",
+                "Sometimes life is going to hit you in the head with a brick. Don't lose faith."
+            ],
+            hard: [
+                "function calculateSum(a, b) { return a + b; } // Always write clean and readable code.",
+                "const fetchData = async (url) => { try { const res = await fetch(url); return await res.json(); } catch(e) { console.error(e); } };",
+                "SELECT u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id WHERE o.status = 'completed';",
+                "import React, { useState, useEffect } from 'react'; export default function App() { return <div>Hello World</div>; }",
+                "body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #111310; }",
+                "const re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$/;"
+            ]
+        };
+
+        // DOM Elements
+        const typingDisplay = document.getElementById('typing-display');
+        const hiddenInput = document.getElementById('hidden-input');
+        const hint = document.getElementById('typing-hint');
+        const gameArea = document.getElementById('game-area');
+        const resultScreen = document.getElementById('result-screen');
+        const statsBar = document.getElementById('stats-bar');
+        const modeSelection = document.getElementById('mode-selection');
+
+        // Stat Elements
+        const valWpm = document.getElementById('val-wpm');
+        const valAcc = document.getElementById('val-acc');
+        const valTime = document.getElementById('val-time');
+        const valChars = document.getElementById('val-chars');
+        const valErrors = document.getElementById('val-errors');
+        const valStreak = document.getElementById('val-streak');
+
+        // State
+        let selectedTime = 30;
+        let selectedDiff = 'normal';
+        let timeRemaining = 30;
+        let initialTime = 30;
+        let timer = null;
+        let isPlaying = false;
+        let textToType = "";
+        
+        let charIndex = 0;
+        let correctChars = 0;
+        let incorrectChars = 0;
+        let totalTyped = 0;
+        let errors = 0;
+        let streak = 0;
+        let bestStreak = 0;
+
+        let charElements = [];
+
+        // Setup
+        function init() {
+            setupListeners();
+            loadPersonalBest();
+            resetGame();
+        }
+
+        function setupListeners() {
+            // Mode buttons
+            document.querySelectorAll('.time-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    selectedTime = parseInt(e.target.dataset.time);
+                    resetGame();
+                });
+            });
+
+            document.querySelectorAll('.diff-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    selectedDiff = e.target.dataset.diff;
+                    resetGame();
+                });
+            });
+
+            // Input handling
+            hiddenInput.addEventListener('input', handleInput);
+            
+            // Prevent paste
+            hiddenInput.addEventListener('paste', e => e.preventDefault());
+
+            // Focus management
+            typingDisplay.addEventListener('click', () => hiddenInput.focus());
+            document.addEventListener('keydown', () => hiddenInput.focus());
+
+            // Result buttons
+            document.getElementById('btn-retry').addEventListener('click', resetGame);
+            document.getElementById('btn-change-mode').addEventListener('click', () => {
+                resultScreen.style.display = 'none';
+                gameArea.style.display = 'block';
+                statsBar.style.display = 'grid';
+                modeSelection.style.display = 'flex';
+                resetGame();
+            });
+        }
+
+        function resetGame() {
+            clearInterval(timer);
+            isPlaying = false;
+            timeRemaining = selectedTime;
+            initialTime = selectedTime;
+            
+            charIndex = 0;
+            correctChars = 0;
+            incorrectChars = 0;
+            totalTyped = 0;
+            errors = 0;
+            streak = 0;
+            bestStreak = 0;
+
+            valWpm.innerText = '0';
+            valAcc.innerText = '100%';
+            valTime.innerText = timeRemaining + 's';
+            valChars.innerText = '0';
+            valErrors.innerText = '0';
+            valStreak.innerText = '0';
+
+            hint.style.opacity = '1';
+            hiddenInput.value = '';
+            
+            resultScreen.style.display = 'none';
+            gameArea.style.display = 'block';
+            statsBar.style.display = 'grid';
+            modeSelection.style.display = 'flex';
+
+            loadText();
+            hiddenInput.focus();
+        }
+
+        function loadText() {
+            const arr = passages[selectedDiff];
+            // Randomly select a passage, if needed we can concat multiple to make it long enough
+            let str = arr[Math.floor(Math.random() * arr.length)];
+            
+            // For longer time, add more text
+            while(str.length < initialTime * 5) {
+               str += " " + arr[Math.floor(Math.random() * arr.length)];
+            }
+            
+            textToType = str;
+            typingDisplay.innerHTML = '';
+            charElements = [];
+
+            for (let i = 0; i < textToType.length; i++) {
+                const span = document.createElement('span');
+                span.innerText = textToType[i];
+                span.classList.add('char');
+                typingDisplay.appendChild(span);
+                charElements.push(span);
+            }
+            
+            charElements[0].classList.add('active');
+        }
+
+        function handleInput(e) {
+            if (!isPlaying && charIndex === 0) {
+                startGame();
+            }
+
+            const val = hiddenInput.value;
+            const typedChar = val[val.length - 1];
+
+            // Handle Backspace (input event doesn't tell us it was backspace directly, but val length decreases)
+            if (val.length < charIndex) {
+                charIndex--;
+                const prevChar = charElements[charIndex];
+                
+                if (prevChar.classList.contains('correct')) {
+                    correctChars--;
+                }
+                if (prevChar.classList.contains('incorrect')) {
+                    incorrectChars--;
+                }
+                
+                prevChar.classList.remove('correct', 'incorrect');
+                
+                charElements.forEach(el => el.classList.remove('active'));
+                charElements[charIndex].classList.add('active');
+                
+                updateStats();
+                return;
+            }
+
+            // Normal typing
+            if (charIndex < textToType.length) {
+                const expectedChar = textToType[charIndex];
+                const charEl = charElements[charIndex];
+                
+                totalTyped++;
+
+                if (typedChar === expectedChar) {
+                    charEl.classList.add('correct');
+                    correctChars++;
+                    streak++;
+                    if(streak > bestStreak) bestStreak = streak;
+                } else {
+                    charEl.classList.add('incorrect');
+                    incorrectChars++;
+                    errors++;
+                    streak = 0;
+                }
+
+                charEl.classList.remove('active');
+                charIndex++;
+
+                if (charIndex < textToType.length) {
+                    charElements[charIndex].classList.add('active');
+                } else {
+                    endGame(); // Finished the text
+                }
+
+                updateStats();
+            }
+            
+            // Keep input in sync
+            hiddenInput.value = val;
+        }
+
+        function startGame() {
+            isPlaying = true;
+            hint.style.opacity = '0';
+            timer = setInterval(updateTime, 1000);
+            
+            // Also update WPM slightly more often for smoothness
+            setInterval(() => {
+                if(isPlaying) updateStats();
+            }, 500);
+        }
+
+        function updateTime() {
+            timeRemaining--;
+            valTime.innerText = timeRemaining + 's';
+            if (timeRemaining <= 0) {
+                endGame();
+            }
+            updateStats();
+        }
+
+        function updateStats() {
+            let timeElapsed = initialTime - timeRemaining;
+            let timeElapsedMin = timeElapsed / 60;
+            
+            if (timeElapsedMin > 0) {
+                let wpm = Math.round((correctChars / 5) / timeElapsedMin);
+                valWpm.innerText = Math.max(0, wpm);
+            }
+
+            let accuracy = totalTyped > 0 ? Math.round((correctChars / totalTyped) * 100) : 100;
+            valAcc.innerText = accuracy + '%';
+            
+            valChars.innerText = correctChars;
+            valErrors.innerText = errors;
+            valStreak.innerText = streak;
+        }
+
+        function endGame() {
+            clearInterval(timer);
+            isPlaying = false;
+            
+            let timeElapsed = initialTime - timeRemaining;
+            if(timeElapsed === 0) timeElapsed = 1;
+            
+            let wpm = Math.round((correctChars / 5) / (timeElapsed / 60));
+            let accuracy = totalTyped > 0 ? Math.round((correctChars / totalTyped) * 100) : 100;
+
+            // Update Result Screen
+            document.getElementById('res-wpm').innerText = Math.max(0, wpm);
+            document.getElementById('res-acc').innerText = accuracy + '% Accuracy';
+            document.getElementById('res-correct').innerText = correctChars;
+            document.getElementById('res-incorrect').innerText = incorrectChars;
+            document.getElementById('res-errors').innerText = errors;
+            document.getElementById('res-total').innerText = totalTyped;
+            document.getElementById('res-streak').innerText = bestStreak;
+            document.getElementById('res-time').innerText = timeElapsed + 's';
+
+            savePersonalBest(wpm, accuracy, bestStreak);
+
+            // Transition
+            gameArea.style.display = 'none';
+            statsBar.style.display = 'none';
+            modeSelection.style.display = 'none';
+            resultScreen.style.display = 'block';
+        }
+
+        function loadPersonalBest() {
+            const pb = JSON.parse(localStorage.getItem('typingSpeedBest')) || {
+                bestWPM: 0, bestAccuracy: 0, highestStreak: 0, testsCompleted: 0
+            };
+            
+            document.getElementById('pb-wpm').innerText = pb.bestWPM;
+            document.getElementById('pb-acc').innerText = pb.bestAccuracy + '%';
+            document.getElementById('pb-streak').innerText = pb.highestStreak;
+            document.getElementById('pb-tests').innerText = pb.testsCompleted;
+        }
+
+        function savePersonalBest(wpm, acc, strk) {
+            const pb = JSON.parse(localStorage.getItem('typingSpeedBest')) || {
+                bestWPM: 0, bestAccuracy: 0, highestStreak: 0, testsCompleted: 0
+            };
+
+            if (wpm > pb.bestWPM) pb.bestWPM = wpm;
+            if (acc > pb.bestAccuracy) pb.bestAccuracy = acc;
+            if (strk > pb.highestStreak) pb.highestStreak = strk;
+            pb.testsCompleted++;
+
+            localStorage.setItem('typingSpeedBest', JSON.stringify(pb));
+            loadPersonalBest();
+        }
+
+        // Run
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

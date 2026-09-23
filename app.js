@@ -15,7 +15,7 @@ const navObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(
 document.querySelectorAll('[data-case]').forEach(btn=>{
   btn.addEventListener('click',e=>{
     e.preventDefault();
-    const map={mec:'case-dialog',triphil:'triphil-dialog',ganap:'ganap-dialog',codex:'codex-dialog'};
+    const map={mec:'case-dialog',triphil:'triphil-dialog',ganap:'ganap-dialog',codex:'codex-dialog',typing:'typing-dialog'};
     const id=map[btn.dataset.case]||'case-dialog';
     document.getElementById(id).showModal();
   });
