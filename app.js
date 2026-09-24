@@ -144,184 +144,54 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
 })();
 
 /* ═══════════════════════════════════════════════
-   GITHUB LIVE ACTIVITY
+   GITHUB LIVE ACTIVITY (cached)
    ═══════════════════════════════════════════════ */
 (function(){
   const GH_USER='cyper11';
+  const CACHE_TTL=3600000;
   const LANG_COLORS={JavaScript:'#f1e05a',HTML:'#e34c26',CSS:'#563d7c',Java:'#b07219',Python:'#3572A5',PHP:'#4F5D95','C#':'#178600',TypeScript:'#3178c6',Shell:'#89e051',Kotlin:'#A97BFF',SCSS:'#c6538c',Vue:'#41b883'};
   const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-  /* ── Tooltip ── */
-  let tip=document.createElement('div');
-  tip.className='gh-tip';
-  document.body.appendChild(tip);
-
-  /* ── Contribution Heatmap ── */
-  async function loadHeatmap(){
-    const el=document.getElementById('gh-heatmap');
-    const monthsEl=document.getElementById('gh-months');
-    const totalEl=document.getElementById('gh-total');
+  function cacheGet(k){try{const d=JSON.parse(localStorage.getItem('gh_'+k));if(d&&Date.now()-d.ts<CACHE_TTL)return d.data}catch(e){}return null}
+  function cacheSet(k,v){try{localStorage.setItem('gh_'+k,JSON.stringify({ts:Date.now(),data:v}))}catch(e){}}
+  async function cFetch(url,k){const c=cacheGet(k);if(c)return c;const r=await fetch(url);if(!r.ok)throw new Error('err');const d=await r.json();cacheSet(k,d);return d}
+  let tip=document.createElement('div');tip.className='gh-tip';document.body.appendChild(tip);
+  function timeAgo(date){const s=Math.floor((Date.now()-date)/1000);if(s<60)return'just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';if(s<604800)return Math.floor(s/86400)+'d ago';return date.toLocaleDateString('en-US',{month:'short',day:'numeric'})}
+  async function init(){
+    const hEl=document.getElementById('gh-heatmap'),mEl=document.getElementById('gh-months'),tEl=document.getElementById('gh-total');
     try{
-      const res=await fetch(`https://github-contributions-api.jogruber.de/v4/${GH_USER}?y=last`);
-      if(!res.ok)throw new Error('API error');
-      const data=await res.json();
-      const contributions=data.contributions;
-      const total=data.total?data.total.lastYear||Object.values(data.total).reduce((a,b)=>a+b,0):0;
-      totalEl.innerHTML=`<span class="gh-total-num">${total.toLocaleString()}</span> contributions in the last year`;
-
-      /* Group by week */
-      const weeks=[];let currentWeek=[];
-      contributions.forEach((c,i)=>{
-        const d=new Date(c.date);
-        if(i===0){/* pad first week */
-          for(let p=0;p<d.getDay();p++)currentWeek.push(null);
-        }
-        currentWeek.push(c);
-        if(d.getDay()===6||i===contributions.length-1){weeks.push(currentWeek);currentWeek=[];}
-      });
-
-      /* Month labels */
-      let lastMonth=-1;const monthLabels=[];
-      weeks.forEach((week,wi)=>{
-        const firstDay=week.find(d=>d);
-        if(firstDay){
-          const m=new Date(firstDay.date).getMonth();
-          if(m!==lastMonth){monthLabels.push({week:wi,label:MONTHS[m]});lastMonth=m;}
-        }
-      });
-      const weekWidth=15; /* 12px + 3px gap */
-      monthsEl.innerHTML=monthLabels.map((m,i)=>{
-        const next=monthLabels[i+1];
-        const span=next?(next.week-m.week)*weekWidth:(weeks.length-m.week)*weekWidth;
-        return `<span style="width:${span}px">${m.label}</span>`;
-      }).join('');
-
-      /* Render grid */
-      el.innerHTML=weeks.map(week=>{
-        const cells=[];
-        for(let d=0;d<7;d++){
-          const c=week[d];
-          if(!c)cells.push('<div class="gh-day" data-level="0" style="visibility:hidden"></div>');
-          else cells.push(`<div class="gh-day" data-level="${c.level}" data-date="${c.date}" data-count="${c.count}"></div>`);
-        }
-        return `<div class="gh-week">${cells.join('')}</div>`;
-      }).join('');
-
-      /* Tooltip events */
-      el.addEventListener('mouseover',e=>{
-        const day=e.target.closest('.gh-day');
-        if(!day||!day.dataset.date)return;
-        const count=day.dataset.count;
-        const date=new Date(day.dataset.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-        tip.innerHTML=`<strong>${count}</strong> contribution${count!=='1'?'s':''} on ${date}`;
-        tip.classList.add('show');
-      });
-      el.addEventListener('mousemove',e=>{tip.style.left=e.clientX+12+'px';tip.style.top=e.clientY-36+'px'});
-      el.addEventListener('mouseout',e=>{if(e.target.closest('.gh-day'))tip.classList.remove('show')});
-
-    }catch(err){
-      el.innerHTML='<div class="gh-error">Could not load contribution data</div>';
-    }
-  }
-
-  /* ── Repositories ── */
-  async function loadRepos(){
-    const el=document.getElementById('gh-repos');
+      const data=await cFetch(`https://github-contributions-api.jogruber.de/v4/${GH_USER}?y=last`,'heatmap');
+      const contributions=data.contributions;const total=data.total?data.total.lastYear||Object.values(data.total).reduce((a,b)=>a+b,0):0;
+      tEl.innerHTML=`<span class="gh-total-num">${total.toLocaleString()}</span> contributions in the last year`;
+      const weeks=[];let cw=[];
+      contributions.forEach((c,i)=>{const d=new Date(c.date);if(i===0){for(let p=0;p<d.getDay();p++)cw.push(null)}cw.push(c);if(d.getDay()===6||i===contributions.length-1){weeks.push(cw);cw=[]}});
+      let lm=-1;const ml=[];weeks.forEach((w,wi)=>{const f=w.find(d=>d);if(f){const m=new Date(f.date).getMonth();if(m!==lm){ml.push({week:wi,label:MONTHS[m]});lm=m}}});
+      mEl.innerHTML=ml.map((m,i)=>{const n=ml[i+1];const s=n?(n.week-m.week)*15:(weeks.length-m.week)*15;return`<span style="width:${s}px">${m.label}</span>`}).join('');
+      hEl.innerHTML=weeks.map(w=>{const c=[];for(let d=0;d<7;d++){const e=w[d];if(!e)c.push('<div class="gh-day" data-level="0" style="visibility:hidden"></div>');else c.push(`<div class="gh-day" data-level="${e.level}" data-date="${e.date}" data-count="${e.count}"></div>`)}return`<div class="gh-week">${c.join('')}</div>`}).join('');
+      hEl.addEventListener('mouseover',e=>{const day=e.target.closest('.gh-day');if(!day||!day.dataset.date)return;tip.innerHTML=`<strong>${day.dataset.count}</strong> contribution${day.dataset.count!=='1'?'s':''} on ${new Date(day.dataset.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;tip.classList.add('show')});
+      hEl.addEventListener('mousemove',e=>{tip.style.left=e.clientX+12+'px';tip.style.top=e.clientY-36+'px'});
+      hEl.addEventListener('mouseout',e=>{if(e.target.closest('.gh-day'))tip.classList.remove('show')});
+    }catch(e){hEl.innerHTML='<div class="gh-error">Could not load contributions</div>'}
     try{
-      const res=await fetch(`https://api.github.com/users/${GH_USER}/repos?sort=pushed&per_page=100`);
-      if(!res.ok)throw new Error('API error');
-      const repos=(await res.json()).filter(r=>!r.fork).sort((a,b)=>new Date(b.pushed_at)-new Date(a.pushed_at)).slice(0,5);
-      if(!repos.length){el.innerHTML='<div class="gh-placeholder">No public repositories</div>';return repos;}
-      el.innerHTML=repos.map(r=>{
-        const lang=r.language||'';
-        const color=LANG_COLORS[lang]||'var(--muted)';
-        const desc=r.description?`<span class="gh-repo-desc">${r.description}</span>`:'';
-        const updated=new Date(r.pushed_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});
-        return `<a href="${r.html_url}" target="_blank" rel="noreferrer" class="gh-repo"><div class="gh-repo-info"><span class="gh-repo-name">${r.name}</span>${desc}</div><div class="gh-repo-meta">${lang?`<span class="gh-repo-lang" style="--lang-color:${color}">${lang}</span>`:''}<span>${updated}</span><span class="gh-repo-arrow">↗</span></div></a>`;
-      }).join('');
-      /* Language dot color */
-      el.querySelectorAll('.gh-repo-lang').forEach(el=>{el.style.setProperty('--lang-color',el.style.getPropertyValue('--lang-color'));});
-      return repos;
-    }catch(err){
-      el.innerHTML='<div class="gh-error">Could not load repositories</div>';
-      return[];
-    }
-  }
-
-  /* ── Languages ── */
-  async function loadLanguages(repos){
-    const el=document.getElementById('gh-langs');
+      const allRepos=await cFetch(`https://api.github.com/users/${GH_USER}/repos?sort=pushed&per_page=100`,'repos');
+      const rEl=document.getElementById('gh-repos');
+      const repos=allRepos.filter(r=>!r.fork).sort((a,b)=>new Date(b.pushed_at)-new Date(a.pushed_at)).slice(0,5);
+      if(!repos.length){rEl.innerHTML='<div class="gh-placeholder">No public repositories</div>'}
+      else{rEl.innerHTML=repos.map(r=>{const l=r.language||'';const cl=LANG_COLORS[l]||'var(--muted)';const desc=r.description?`<span class="gh-repo-desc">${r.description}</span>`:'';const u=new Date(r.pushed_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});return`<a href="${r.html_url}" target="_blank" rel="noreferrer" class="gh-repo"><div class="gh-repo-info"><span class="gh-repo-name">${r.name}</span>${desc}</div><div class="gh-repo-meta">${l?`<span class="gh-repo-lang" style="--lang-color:${cl}">${l}</span>`:''}<span>${u}</span><span class="gh-repo-arrow">↗</span></div></a>`}).join('')}
+      try{
+        let lb=cacheGet('langs');
+        if(!lb){const lp=repos.slice(0,5).map(r=>fetch(r.languages_url).then(r=>r.json()).catch(()=>({})));const ld=await Promise.all(lp);lb={};ld.forEach(d=>{Object.entries(d).forEach(([l,b])=>{lb[l]=(lb[l]||0)+b})});cacheSet('langs',lb)}
+        const lEl=document.getElementById('gh-langs');const sorted=Object.entries(lb).sort((a,b)=>b[1]-a[1]);const tb=sorted.reduce((s,l)=>s+l[1],0);
+        if(sorted.length){const bar=sorted.map(([l,b])=>{const p=(b/tb*100).toFixed(1);return`<div class="gh-lang-seg" style="width:${p}%;background:${LANG_COLORS[l]||'#555'}" title="${l} ${p}%"></div>`}).join('');const leg=sorted.slice(0,6).map(([l,b])=>`<span class="gh-lang-item" style="--lang-color:${LANG_COLORS[l]||'#555'}">${l} <span style="opacity:.5">${(b/tb*100).toFixed(1)}%</span></span>`).join('');lEl.innerHTML=`<div class="gh-lang-bar">${bar}</div><div class="gh-lang-list">${leg}</div>`}
+      }catch(e){document.getElementById('gh-langs').innerHTML='<div class="gh-error">—</div>'}
+    }catch(e){document.getElementById('gh-repos').innerHTML='<div class="gh-error">Could not load repositories — <a href="https://github.com/cyper11" target="_blank" style="color:var(--lime)">view on GitHub ↗</a></div>';document.getElementById('gh-langs').innerHTML='<div class="gh-error">—</div>'}
     try{
-      if(!repos||!repos.length){el.innerHTML='<div class="gh-placeholder">No data</div>';return;}
-      /* Aggregate languages from repos */
-      const langCount={};
-      repos.forEach(r=>{if(r.language){langCount[r.language]=(langCount[r.language]||0)+r.size}});
-      /* Also fetch language breakdown for top repos */
-      const langPromises=repos.slice(0,5).map(r=>fetch(r.languages_url).then(res=>res.json()).catch(()=>({})));
-      const langData=await Promise.all(langPromises);
-      const langBytes={};
-      langData.forEach(d=>{Object.entries(d).forEach(([lang,bytes])=>{langBytes[lang]=(langBytes[lang]||0)+bytes})});
-      const sorted=Object.entries(langBytes).sort((a,b)=>b[1]-a[1]);
-      const totalBytes=sorted.reduce((sum,l)=>sum+l[1],0);
-      if(!sorted.length){el.innerHTML='<div class="gh-placeholder">No language data</div>';return;}
-
-      /* Color bar */
-      const bar=sorted.map(([lang,bytes])=>{
-        const pct=(bytes/totalBytes*100).toFixed(1);
-        const color=LANG_COLORS[lang]||'#555';
-        return `<div class="gh-lang-seg" style="width:${pct}%;background:${color}" title="${lang} ${pct}%"></div>`;
-      }).join('');
-
-      /* Legend */
-      const legend=sorted.slice(0,6).map(([lang,bytes])=>{
-        const pct=(bytes/totalBytes*100).toFixed(1);
-        const color=LANG_COLORS[lang]||'#555';
-        return `<span class="gh-lang-item" style="--lang-color:${color}">${lang} <span style="opacity:.5">${pct}%</span></span>`;
-      }).join('');
-
-      el.innerHTML=`<div class="gh-lang-bar">${bar}</div><div class="gh-lang-list">${legend}</div>`;
-      /* Set dot colors */
-      el.querySelectorAll('.gh-lang-item').forEach(item=>{item.style.setProperty('--dot-color',getComputedStyle(item).getPropertyValue('--lang-color'))});
-    }catch(err){
-      el.innerHTML='<div class="gh-error">Could not load languages</div>';
-    }
+      const evts=await cFetch(`https://api.github.com/users/${GH_USER}/events/public?per_page=30`,'events');
+      const eEl=document.getElementById('gh-events');const pe=evts.filter(e=>e.type==='PushEvent').slice(0,5);
+      if(!pe.length){eEl.innerHTML='<div class="gh-placeholder">No recent activity</div>'}
+      else{eEl.innerHTML=pe.map(e=>{const repo=e.repo.name.replace(GH_USER+'/','');const msg=e.payload.commits&&e.payload.commits.length?e.payload.commits[e.payload.commits.length-1].message.split('\n')[0]:'';return`<div class="gh-event"><span class="gh-event-time">${timeAgo(new Date(e.created_at))}</span><span class="gh-event-repo">${repo}</span><span class="gh-event-msg">${msg}</span></div>`}).join('')}
+    }catch(e){document.getElementById('gh-events').innerHTML='<div class="gh-error">Could not load activity</div>'}
   }
-
-  /* ── Recent Activity ── */
-  async function loadEvents(){
-    const el=document.getElementById('gh-events');
-    try{
-      const res=await fetch(`https://api.github.com/users/${GH_USER}/events/public?per_page=30`);
-      if(!res.ok)throw new Error('API error');
-      const events=(await res.json()).filter(e=>e.type==='PushEvent').slice(0,5);
-      if(!events.length){el.innerHTML='<div class="gh-placeholder">No recent activity</div>';return;}
-      el.innerHTML=events.map(e=>{
-        const repo=e.repo.name.replace(GH_USER+'/','');
-        const msg=e.payload.commits&&e.payload.commits.length?e.payload.commits[e.payload.commits.length-1].message.split('\n')[0]:'';
-        const ago=timeAgo(new Date(e.created_at));
-        return `<div class="gh-event"><span class="gh-event-time">${ago}</span><span class="gh-event-repo">${repo}</span><span class="gh-event-msg">${msg}</span></div>`;
-      }).join('');
-    }catch(err){
-      el.innerHTML='<div class="gh-error">Could not load activity</div>';
-    }
-  }
-
-  function timeAgo(date){
-    const s=Math.floor((Date.now()-date)/1000);
-    if(s<60)return 'just now';
-    if(s<3600)return Math.floor(s/60)+'m ago';
-    if(s<86400)return Math.floor(s/3600)+'h ago';
-    if(s<604800)return Math.floor(s/86400)+'d ago';
-    return date.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-  }
-
-  /* ── CSS for language dots ── */
-  const style=document.createElement('style');
-  style.textContent='.gh-repo-lang::before{background:var(--lang-color,var(--muted))}.gh-lang-item::before{background:var(--lang-color,var(--muted))}';
-  document.head.appendChild(style);
-
-  /* ── Init ── */
-  loadHeatmap();
-  loadRepos().then(repos=>loadLanguages(repos||[]));
-  loadEvents();
+  const st=document.createElement('style');st.textContent='.gh-repo-lang::before{background:var(--lang-color,var(--muted))}.gh-lang-item::before{background:var(--lang-color,var(--muted))}';document.head.appendChild(st);
+  init();
 })();
+
