@@ -248,3 +248,552 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
   init();
 })();
 
+/* ═══════════════════════════════════════════════
+   CURSOR GLOW (desktop only, subtle)
+   ═══════════════════════════════════════════════ */
+(function(){
+  if(window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  if(window.matchMedia('(max-width:850px)').matches)return;
+
+  const targets=document.querySelectorAll('.hero, .lab-card, .contact-panel');
+  targets.forEach(el=>{
+    el.classList.add('cursor-glow-target');
+    const glow=document.createElement('div');
+    glow.className='cursor-glow';
+    el.appendChild(glow);
+  });
+
+  let glowTicking=false;
+  document.addEventListener('mousemove',e=>{
+    if(glowTicking)return;
+    glowTicking=true;
+    requestAnimationFrame(()=>{
+      targets.forEach(el=>{
+        const rect=el.getBoundingClientRect();
+        const x=e.clientX-rect.left;
+        const y=e.clientY-rect.top;
+        el.style.setProperty('--glow-x',x+'px');
+        el.style.setProperty('--glow-y',y+'px');
+      });
+      glowTicking=false;
+    });
+  },{passive:true});
+})();
+
+/* ─── Marquee: respect reduced motion ─── */
+if(window.matchMedia('(prefers-reduced-motion:reduce)').matches){
+  const track=document.querySelector('.specialties-track');
+  if(track)track.style.animationPlayState='paused';
+}
+
+/* ═══════════════════════════════════════════════
+   "CLICK THIS" EASTER EGG (ephemeral, browser-side)
+   ═══════════════════════════════════════════════ */
+(function(){
+  const triggerBtn=document.getElementById('click-this-btn');
+  const overlay=document.getElementById('ee-overlay');
+  if(!triggerBtn||!overlay)return;
+
+  const logEl=document.getElementById('ee-log');
+  const bodyEl=document.getElementById('ee-body');
+  const terminalEl=document.getElementById('ee-terminal');
+  const promptActions=document.getElementById('ee-prompt-actions');
+  const finalEl=document.getElementById('ee-final');
+  const continueBtn=document.getElementById('ee-continue-btn');
+  const cancelBtn=document.getElementById('ee-cancel-btn');
+  const closeTopBtn=document.getElementById('ee-close-top');
+  const replayBtn=document.getElementById('ee-replay-btn');
+  const closeBtn=document.getElementById('ee-close-btn');
+
+  let runId=0;
+  let activeCursor=null;
+  let abortCtrl=null;
+
+  function isReducedMotion(){
+    return window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  }
+
+  function wait(ms,id){
+    const d=isReducedMotion()?Math.min(ms,80):ms;
+    return new Promise(resolve=>{
+      setTimeout(()=>resolve(id===runId),d);
+    });
+  }
+
+  function triggerFlicker(){
+    if(isReducedMotion())return;
+    overlay.classList.remove('ee-flicker');
+    void overlay.offsetWidth;
+    overlay.classList.add('ee-flicker');
+    setTimeout(()=>overlay.classList.remove('ee-flicker'),240);
+  }
+
+  function attachCursor(el){
+    if(activeCursor&&activeCursor.parentNode){
+      activeCursor.parentNode.removeChild(activeCursor);
+    }
+    const c=document.createElement('span');
+    c.className='ee-cursor';
+    c.setAttribute('aria-hidden','true');
+    el.appendChild(c);
+    activeCursor=c;
+  }
+
+  function scrollToBottom(){
+    if(bodyEl)bodyEl.scrollTop=bodyEl.scrollHeight;
+  }
+
+  async function typeLine(text,id,cls='',charSpeed=22){
+    if(id!==runId)return false;
+    const p=document.createElement('p');
+    p.className='ee-line'+(cls?' '+cls:'');
+    const span=document.createElement('span');
+    p.appendChild(span);
+    logEl.appendChild(p);
+    attachCursor(p);
+    scrollToBottom();
+
+    if(isReducedMotion()||charSpeed<=0){
+      span.textContent=text;
+      scrollToBottom();
+      return true;
+    }
+
+    for(let i=1;i<=text.length;i++){
+      if(id!==runId)return false;
+      span.textContent=text.slice(0,i);
+      scrollToBottom();
+      await new Promise(r=>setTimeout(r,charSpeed));
+    }
+    return id===runId;
+  }
+
+  async function typeKeyValue(key,val,id){
+    if(id!==runId)return false;
+    const p=document.createElement('p');
+    p.className='ee-line ee-bright';
+    const kSpan=document.createElement('span');
+    kSpan.className='ee-key';
+    const vSpan=document.createElement('span');
+    vSpan.className='ee-val';
+    p.appendChild(kSpan);
+    p.appendChild(vSpan);
+    logEl.appendChild(p);
+    attachCursor(p);
+    scrollToBottom();
+
+    const prefix='> '+key+': ';
+    if(isReducedMotion()){
+      kSpan.textContent=prefix;
+      vSpan.textContent=val;
+      scrollToBottom();
+      return true;
+    }
+    for(let i=1;i<=prefix.length;i++){
+      if(id!==runId)return false;
+      kSpan.textContent=prefix.slice(0,i);
+      await new Promise(r=>setTimeout(r,14));
+    }
+    for(let i=1;i<=val.length;i++){
+      if(id!==runId)return false;
+      vSpan.textContent=val.slice(0,i);
+      scrollToBottom();
+      await new Promise(r=>setTimeout(r,18));
+    }
+    return id===runId;
+  }
+
+  function addSpacer(){
+    const div=document.createElement('div');
+    div.className='ee-line ee-spacer';
+    logEl.appendChild(div);
+  }
+
+  function detectBrowserEnv(){
+    const ua=navigator.userAgent||'';
+    let os='UNKNOWN OS';
+    if(/Windows/i.test(ua))os='WINDOWS';
+    else if(/Android/i.test(ua))os='ANDROID';
+    else if(/iPhone|iPad|iPod/i.test(ua))os='IOS';
+    else if(/Mac OS X|Macintosh/i.test(ua))os='MACOS';
+    else if(/Linux/i.test(ua))os='LINUX';
+
+    let browser='BROWSER';
+    if(/Edg\//i.test(ua))browser='EDGE';
+    else if(/OPR\/|Opera/i.test(ua))browser='OPERA';
+    else if(/Chrome\//i.test(ua)&&!/Edg\//i.test(ua))browser='CHROME';
+    else if(/Firefox\//i.test(ua))browser='FIREFOX';
+    else if(/Safari\//i.test(ua)&&!/Chrome\//i.test(ua))browser='SAFARI';
+
+    const lang=(navigator.language||'EN-US').toUpperCase();
+    const threads=navigator.hardwareConcurrency?String(navigator.hardwareConcurrency):null;
+    const memory=navigator.deviceMemory?String(navigator.deviceMemory)+' GB':null;
+    const display=(window.screen&&window.screen.width&&window.screen.height)?`${window.screen.width} × ${window.screen.height}`:`${window.innerWidth} × ${window.innerHeight}`;
+    let tz='UTC';
+    try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone.toUpperCase()}catch(e){}
+    const conn=(navigator.connection&&navigator.connection.effectiveType)?String(navigator.connection.effectiveType).toUpperCase():null;
+    const status=navigator.onLine?'ONLINE':'OFFLINE';
+
+    return{os,browser,lang,threads,memory,display,tz,conn,status};
+  }
+
+  async function fetchEphemeralNetInfo(signal){
+    try{
+      const r=await fetch('https://ipwho.is/',{signal,cache:'no-store'});
+      if(r.ok){
+        const d=await r.json();
+        if(d&&d.success!==false&&d.ip){
+          return{
+            ip:d.ip,
+            isp:(d.connection&&(d.connection.isp||d.connection.org))||d.isp||null,
+            lat:typeof d.latitude==='number'?d.latitude:null,
+            lon:typeof d.longitude==='number'?d.longitude:null,
+            region:[d.city,d.region].filter(Boolean).slice(0,2).join(', ')||null,
+            country:d.country||null
+          };
+        }
+      }
+    }catch(e){}
+    try{
+      const r2=await fetch('https://ipapi.co/json/',{signal,cache:'no-store'});
+      if(r2.ok){
+        const d2=await r2.json();
+        if(d2&&d2.ip){
+          return{
+            ip:d2.ip,
+            isp:d2.org||null,
+            lat:typeof d2.latitude==='number'?d2.latitude:null,
+            lon:typeof d2.longitude==='number'?d2.longitude:null,
+            region:[d2.city,d2.region].filter(Boolean).slice(0,2).join(', ')||null,
+            country:d2.country_name||d2.country||null
+          };
+        }
+      }
+    }catch(e){}
+    try{
+      const r3=await fetch('https://api.ipify.org?format=json',{signal,cache:'no-store'});
+      if(r3.ok){
+        const d3=await r3.json();
+        if(d3&&d3.ip)return{ip:d3.ip,isp:null,lat:null,lon:null,region:null,country:null};
+      }
+    }catch(e){}
+    return null;
+  }
+
+  const statusLabel=overlay.querySelector('.ee-status span');
+
+  async function typeStatusLine(prefix,badge,id,badgeCls='ee-accent'){
+    if(id!==runId)return null;
+    const p=document.createElement('p');
+    p.className='ee-line ee-bright';
+    const preSpan=document.createElement('span');
+    preSpan.className='ee-key';
+    const bSpan=document.createElement('span');
+    bSpan.className='ee-val '+badgeCls;
+    p.appendChild(preSpan);
+    p.appendChild(bSpan);
+    logEl.appendChild(p);
+    attachCursor(p);
+    scrollToBottom();
+
+    if(isReducedMotion()){
+      preSpan.textContent=prefix;
+      bSpan.textContent=badge;
+      scrollToBottom();
+      return bSpan;
+    }
+    for(let i=1;i<=prefix.length;i++){
+      if(id!==runId)return null;
+      preSpan.textContent=prefix.slice(0,i);
+      await new Promise(r=>setTimeout(r,15));
+    }
+    if(!(await wait(140,id)))return null;
+    bSpan.textContent=badge;
+    scrollToBottom();
+    return bSpan;
+  }
+
+  async function typeScanProgress(id){
+    if(id!==runId)return false;
+    const p=document.createElement('p');
+    p.className='ee-line ee-bright';
+    const preSpan=document.createElement('span');
+    preSpan.className='ee-key';
+    const barSpan=document.createElement('span');
+    barSpan.className='ee-val';
+    p.appendChild(preSpan);
+    p.appendChild(barSpan);
+    logEl.appendChild(p);
+    attachCursor(p);
+    scrollToBottom();
+
+    const prefix='> scanning browser environment... ';
+    if(isReducedMotion()){
+      preSpan.textContent=prefix;
+      barSpan.textContent='[██████████████░░] 87%';
+      await wait(80,id);
+      barSpan.textContent='[████████████████] 100%';
+      return id===runId;
+    }
+    for(let i=1;i<=prefix.length;i++){
+      if(id!==runId)return false;
+      preSpan.textContent=prefix.slice(0,i);
+      await new Promise(r=>setTimeout(r,14));
+    }
+    const steps=[
+      ['[███░░░░░░░░░░░░░] 19%',90],
+      ['[███████░░░░░░░░░] 44%',95],
+      ['[███████████░░░░░] 68%',100],
+      ['[██████████████░░] 87%',240],
+      ['[████████████████] 100%',140]
+    ];
+    for(const [txt,delay] of steps){
+      if(id!==runId)return false;
+      barSpan.textContent=txt;
+      scrollToBottom();
+      await new Promise(r=>setTimeout(r,delay));
+    }
+    return id===runId;
+  }
+
+  function corruptFewChars(container,degBadge){
+    if(isReducedMotion())return()=>{};
+    const saved=[];
+    if(degBadge){
+      saved.push({el:degBadge,txt:degBadge.textContent});
+      degBadge.textContent='DΞGRΔD░D';
+    }
+    const keys=container.querySelectorAll('.ee-key');
+    if(keys.length>=2){
+      const t=keys[keys.length-2];
+      saved.push({el:t,txt:t.textContent});
+      t.textContent=t.textContent.replace('local data','l0c░l d∆ta');
+    }
+    return()=>{
+      saved.forEach(item=>{item.el.textContent=item.txt});
+    };
+  }
+
+  async function startPromptStage(){
+    const id=++runId;
+    if(abortCtrl){try{abortCtrl.abort()}catch(e){}abortCtrl=null}
+    overlay.classList.remove('ee-anomaly');
+    if(statusLabel)statusLabel.textContent='SYS.DIAGNOSTIC // CLIENT TELEMETRY';
+    logEl.innerHTML='';
+    promptActions.hidden=true;
+    finalEl.hidden=true;
+    terminalEl.hidden=false;
+
+    if(!(await wait(180,id)))return;
+    if(!(await typeLine('> ???',id,'ee-bright',32)))return;
+    if(!(await wait(420,id)))return;
+    if(!(await typeLine('> are you sure?',id,'ee-accent',28)))return;
+    if(!(await wait(220,id)))return;
+
+    promptActions.hidden=false;
+    continueBtn.focus();
+  }
+
+  async function runSequence(){
+    const id=++runId;
+    if(abortCtrl){try{abortCtrl.abort()}catch(e){}}
+    abortCtrl=new AbortController();
+    const timeoutId=setTimeout(()=>{try{abortCtrl.abort()}catch(e){}},4000);
+
+    /* Ephemeral in-memory lookup — never saved anywhere */
+    let netPromise=fetchEphemeralNetInfo(abortCtrl.signal).finally(()=>clearTimeout(timeoutId));
+
+    overlay.classList.remove('ee-anomaly');
+    if(statusLabel)statusLabel.textContent='SYS.DIAGNOSTIC // CLIENT TELEMETRY';
+    promptActions.hidden=true;
+    finalEl.hidden=true;
+    terminalEl.hidden=false;
+    logEl.innerHTML='';
+
+    if(!(await typeLine('> click registered.',id,'ee-bright',18)))return;
+    if(!(await wait(240,id)))return;
+    if(!(await typeLine('> initializing session...',id,'',18)))return;
+    if(!(await wait(240,id)))return;
+    if(!(await typeLine('> reading browser environment...',id,'',18)))return;
+    if(!(await wait(260,id)))return;
+
+    if(!(await typeScanProgress(id)))return;
+    if(!(await wait(220,id)))return;
+    if(!(await typeStatusLine('> checking session integrity... ','[OK]',id,'ee-accent')))return;
+    if(!(await wait(220,id)))return;
+    if(!(await typeStatusLine('> checking local data... ','[NONE]',id,'ee-accent')))return;
+    if(!(await wait(420,id)))return;
+
+    /* Subtle system anomaly (680ms) */
+    addSpacer();
+    if(!(await typeLine('> unusual response detected.',id,'ee-warn',20)))return;
+    if(!(await wait(180,id)))return;
+    const degBadge=await typeStatusLine('> session integrity: ','DEGRADED',id,'ee-warn');
+    if(!degBadge)return;
+
+    overlay.classList.add('ee-anomaly');
+    if(statusLabel)statusLabel.textContent='SYS.DIAGNOSTIC // INTEGRITY DEGRADED';
+    const restoreCorrupted=corruptFewChars(logEl,degBadge);
+    if(!(await wait(680,id))){
+      restoreCorrupted();
+      overlay.classList.remove('ee-anomaly');
+      return;
+    }
+
+    /* Recovery */
+    if(!(await typeLine('> attempting recovery...',id,'',18)))return;
+    if(!(await wait(380,id))){
+      restoreCorrupted();
+      overlay.classList.remove('ee-anomaly');
+      return;
+    }
+    restoreCorrupted();
+    overlay.classList.remove('ee-anomaly');
+    if(statusLabel)statusLabel.textContent='SYS.DIAGNOSTIC // CLIENT TELEMETRY';
+    triggerFlicker();
+    if(!(await typeLine('> recovery complete.',id,'ee-accent',18)))return;
+    if(!(await wait(240,id)))return;
+    if(!(await typeLine('> restoring interface...',id,'',18)))return;
+    if(!(await wait(550,id)))return;
+
+    triggerFlicker();
+    logEl.innerHTML='';
+
+    if(!(await typeLine("> here's what your browser revealed",id,'ee-bright',22)))return;
+    if(!(await typeLine('> the moment you opened this site.',id,'ee-bright',20)))return;
+    if(!(await wait(600,id)))return;
+
+    addSpacer();
+    const env=detectBrowserEnv();
+    if(!(await typeKeyValue('operating system',env.os,id)))return;
+    if(!(await wait(140,id)))return;
+    if(!(await typeKeyValue('browser',env.browser,id)))return;
+    if(!(await wait(140,id)))return;
+    if(!(await typeKeyValue('language',env.lang,id)))return;
+    if(!(await wait(140,id)))return;
+    if(env.threads){
+      if(!(await typeKeyValue('processor threads',env.threads,id)))return;
+      if(!(await wait(140,id)))return;
+    }
+    if(env.memory){
+      if(!(await typeKeyValue('memory estimate',env.memory,id)))return;
+      if(!(await wait(140,id)))return;
+    }
+    if(!(await typeKeyValue('display',env.display,id)))return;
+    if(!(await wait(140,id)))return;
+    if(!(await typeKeyValue('timezone',env.tz,id)))return;
+    if(!(await wait(140,id)))return;
+    if(env.conn){
+      if(!(await typeKeyValue('connection',env.conn,id)))return;
+      if(!(await wait(140,id)))return;
+    }
+    if(!(await typeKeyValue('status',env.status,id)))return;
+    if(!(await wait(520,id)))return;
+
+    let net=await netPromise;
+    if(id!==runId){net=null;return}
+
+    if(net&&net.ip){
+      addSpacer();
+      if(!(await typeLine('> your public ip address is',id,'',18)))return;
+      if(!(await typeLine('> '+net.ip,id,'ee-accent',22)))return;
+      if(!(await wait(480,id)))return;
+
+      if(net.isp){
+        if(!(await typeLine('> you are connected through',id,'',18)))return;
+        if(!(await typeLine('> '+String(net.isp).toUpperCase(),id,'ee-bright',18)))return;
+        if(!(await wait(460,id)))return;
+      }
+
+      if(net.lat!==null&&net.lon!==null){
+        if(!(await typeLine('> your approximate coordinates are around',id,'',18)))return;
+        if(!(await typeLine(`> ${Number(net.lat).toFixed(4)}, ${Number(net.lon).toFixed(4)}`,id,'ee-accent',20)))return;
+        if(!(await wait(460,id)))return;
+      }
+
+      if(net.region||net.country){
+        const locStr=[net.region,net.country].filter(Boolean).join(', ').toUpperCase();
+        if(!(await typeLine('> your approximate region is',id,'',18)))return;
+        if(!(await typeLine('> '+locStr,id,'ee-bright',20)))return;
+        if(!(await typeLine('> location is approximate and network-derived.',id,'ee-note',12)))return;
+        if(!(await wait(480,id)))return;
+      }
+    }
+
+    addSpacer();
+    if(!(await typeLine('> your timezone is',id,'',18)))return;
+    if(!(await typeLine('> '+env.tz,id,'ee-bright',18)))return;
+    const localTimeStr=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    if(!(await typeLine('> local time is',id,'',18)))return;
+    if(!(await typeLine('> '+localTimeStr,id,'ee-bright',18)))return;
+
+    /* Wipe ephemeral network info from memory immediately after display */
+    net=null;
+
+    if(!(await wait(850,id)))return;
+    triggerFlicker();
+    addSpacer();
+
+    if(!(await typeLine('> wait.',id,'ee-bright',30)))return;
+    if(!(await wait(800,id)))return;
+    if(!(await typeLine('> you clicked it.',id,'ee-bright',28)))return;
+    if(!(await wait(800,id)))return;
+    if(!(await typeLine("> that's exactly the point.",id,'ee-accent',26)))return;
+    if(!(await wait(1050,id)))return;
+
+    triggerFlicker();
+    terminalEl.hidden=true;
+    logEl.innerHTML='';
+    finalEl.hidden=false;
+    if(bodyEl)bodyEl.scrollTop=0;
+    replayBtn.focus();
+  }
+
+  function openOverlay(){
+    if(nav&&nav.classList.contains('open')){
+      nav.classList.remove('open');
+      if(menu){menu.setAttribute('aria-expanded','false');menu.textContent='Menu +'}
+    }
+    overlay.hidden=false;
+    document.body.style.overflow='hidden';
+    requestAnimationFrame(()=>{
+      overlay.classList.add('open');
+      startPromptStage();
+    });
+  }
+
+  function closeOverlay(){
+    runId++;
+    if(abortCtrl){try{abortCtrl.abort()}catch(e){}abortCtrl=null}
+    overlay.classList.remove('open','ee-anomaly','ee-flicker');
+    if(statusLabel)statusLabel.textContent='SYS.DIAGNOSTIC // CLIENT TELEMETRY';
+    document.body.style.overflow='';
+    setTimeout(()=>{
+      overlay.hidden=true;
+      logEl.innerHTML='';
+      promptActions.hidden=true;
+      finalEl.hidden=true;
+      triggerBtn.focus();
+    },300);
+  }
+
+  triggerBtn.addEventListener('click',openOverlay);
+  continueBtn.addEventListener('click',runSequence);
+  replayBtn.addEventListener('click',runSequence);
+  cancelBtn.addEventListener('click',closeOverlay);
+  closeBtn.addEventListener('click',closeOverlay);
+  closeTopBtn.addEventListener('click',closeOverlay);
+
+  overlay.addEventListener('click',e=>{
+    if(e.target===overlay)closeOverlay();
+  });
+
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&!overlay.hidden){
+      e.preventDefault();
+      closeOverlay();
+    }
+  });
+})();
+
+

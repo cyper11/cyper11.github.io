@@ -161,6 +161,7 @@
         }
         .tracker-score {
             color: var(--text);
+            display: inline-block;
         }
 
         /* Progress Bar */
@@ -339,7 +340,7 @@
             border-radius: 6px;
             padding: 2.5rem 2rem;
             text-align: center;
-            animation: fadeIn 0.35s ease;
+            animation: resultFadeIn 0.4s cubic-bezier(.22,1,.36,1) both;
         }
         .result-score-big {
             font-family: var(--heading);
@@ -412,8 +413,23 @@
             color: var(--lime);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
+        .quiz-fade-out { animation: fadeOut 0.2s ease forwards; }
+        .quiz-fade-in { animation: fadeIn 0.3s cubic-bezier(.22,1,.36,1) forwards; }
+        @keyframes fadeOut { to { opacity:0; transform:translateX(-12px) } }
+        @keyframes fadeIn { from { opacity:0; transform:translateX(12px) } to { opacity:1; transform:translateX(0) } }
+
+        .code-entrance { animation: codeReveal 0.4s cubic-bezier(.22,1,.36,1) both; }
+        @keyframes codeReveal { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
+
+        .score-bump { animation: scoreBump 0.3s cubic-bezier(.22,1,.36,1); }
+        @keyframes scoreBump {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); color: var(--lime); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes resultFadeIn {
+            from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -423,6 +439,8 @@
             .result-stats-grid { grid-template-columns: 1fr; }
             .tracker-bar { flex-direction: column; align-items: flex-start; gap: 6px; }
         }
+
+        @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
     </style>
 </head>
 <body>
@@ -644,11 +662,13 @@
         let currentIndex = 0;
         let score = 0;
         let answered = false;
+        let isTransitioning = false;
 
         const trackerStep = document.getElementById('tracker-step');
         const trackerCategory = document.getElementById('tracker-category');
         const trackerScore = document.getElementById('tracker-score');
         const progressFill = document.getElementById('progress-fill');
+        const quizCard = document.querySelector('.quiz-card');
         const quizQ = document.getElementById('quiz-q');
         const quizCode = document.getElementById('quiz-code');
         const optionsGrid = document.getElementById('options-grid');
@@ -682,8 +702,12 @@
             if (q.code) {
                 quizCode.style.display = 'block';
                 quizCode.textContent = q.code;
+                quizCode.classList.remove('code-entrance');
+                void quizCode.offsetWidth;
+                quizCode.classList.add('code-entrance');
             } else {
                 quizCode.style.display = 'none';
+                quizCode.classList.remove('code-entrance');
             }
 
             optionsGrid.innerHTML = '';
@@ -702,7 +726,12 @@
 
             const q = questions[currentIndex];
             const isCorrect = selectedIdx === q.correctIndex;
-            if (isCorrect) score++;
+            if (isCorrect) {
+                score++;
+                trackerScore.classList.remove('score-bump');
+                void trackerScore.offsetWidth;
+                trackerScore.classList.add('score-bump');
+            }
 
             trackerScore.textContent = `Score: ${score} / ${currentIndex + 1}`;
 
@@ -734,9 +763,18 @@
         }
 
         nextBtn.addEventListener('click', () => {
+            if (isTransitioning) return;
             if (currentIndex < questions.length - 1) {
-                currentIndex++;
-                loadQuestion(currentIndex);
+                isTransitioning = true;
+                quizCard.classList.remove('quiz-fade-in');
+                quizCard.classList.add('quiz-fade-out');
+                setTimeout(() => {
+                    currentIndex++;
+                    loadQuestion(currentIndex);
+                    quizCard.classList.remove('quiz-fade-out');
+                    quizCard.classList.add('quiz-fade-in');
+                    isTransitioning = false;
+                }, 200);
             } else {
                 showResults();
             }
@@ -768,8 +806,11 @@
         restartBtn.addEventListener('click', () => {
             score = 0;
             currentIndex = 0;
+            isTransitioning = false;
             resultScreen.style.display = 'none';
             quizArea.style.display = 'block';
+            quizCard.classList.remove('quiz-fade-out');
+            quizCard.classList.remove('quiz-fade-in');
             loadQuestion(0);
         });
 

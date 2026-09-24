@@ -201,6 +201,17 @@
             font-size: 1.5rem;
             color: var(--text);
             font-weight: 500;
+            display: inline-block;
+        }
+
+        .counter-bump {
+            display: inline-block;
+            animation: counterBump 0.2s cubic-bezier(.22,1,.36,1);
+        }
+
+        @keyframes counterBump {
+            0% { transform: scale(1.15); }
+            100% { transform: scale(1); }
         }
 
         /* Mode Selection */
@@ -293,6 +304,7 @@
 
         .char.active {
             color: var(--text);
+            animation: charFlash 0.15s cubic-bezier(.22,1,.36,1);
         }
 
         .char.active::after {
@@ -303,7 +315,25 @@
             width: 100%;
             height: 2px;
             background-color: var(--lime);
-            animation: blink 1s step-end infinite;
+            animation: blink 1s step-end infinite, cursorPulse 0.2s cubic-bezier(.22,1,.36,1);
+        }
+
+        .char.active.char-pulse {
+            animation: charFlash 0.15s cubic-bezier(.22,1,.36,1);
+        }
+
+        .char.active.char-pulse::after {
+            animation: blink 1s step-end infinite, cursorPulse 0.2s cubic-bezier(.22,1,.36,1);
+        }
+
+        @keyframes charFlash {
+            0% { color: var(--lime); text-shadow: 0 0 6px var(--lime); }
+            100% { color: var(--text); text-shadow: none; }
+        }
+
+        @keyframes cursorPulse {
+            0% { transform: scaleY(2.2); box-shadow: 0 0 6px var(--lime); }
+            100% { transform: scaleY(1); box-shadow: none; }
         }
 
         .hint {
@@ -319,8 +349,10 @@
         /* Result Screen */
         .result-screen {
             display: none;
-            animation: fadeUp 0.5s ease forwards;
         }
+
+        .result-entrance { animation: resultReveal 0.5s cubic-bezier(.22,1,.36,1) both; }
+        @keyframes resultReveal { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
 
         .result-grid {
             display: grid;
@@ -513,6 +545,8 @@
                 padding: 2rem 1rem;
             }
         }
+
+        @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
     </style>
 </head>
 <body>
@@ -713,13 +747,50 @@
         const statsBar = document.getElementById('stats-bar');
         const modeSelection = document.getElementById('mode-selection');
 
-        // Stat Elements
-        const valWpm = document.getElementById('val-wpm');
-        const valAcc = document.getElementById('val-acc');
-        const valTime = document.getElementById('val-time');
+        // Stat Elements & query aliases
+        const valWpm = document.getElementById('val-wpm') || document.getElementById('wpm');
+        const valAcc = document.getElementById('val-acc') || document.getElementById('accuracy');
+        const valTime = document.getElementById('val-time') || document.getElementById('time-display');
         const valChars = document.getElementById('val-chars');
         const valErrors = document.getElementById('val-errors');
         const valStreak = document.getElementById('val-streak');
+
+        const _origGetEl = document.getElementById.bind(document);
+        document.getElementById = function(id) {
+            if (id === 'wpm') return valWpm;
+            if (id === 'accuracy') return valAcc;
+            if (id === 'time-display') return valTime;
+            return _origGetEl(id);
+        };
+        const _origQSel = document.querySelector.bind(document);
+        document.querySelector = function(sel) {
+            if (sel === '#wpm') return valWpm;
+            if (sel === '#accuracy') return valAcc;
+            if (sel === '#time-display') return valTime;
+            return _origQSel(sel);
+        };
+
+        function setStat(el, val) {
+            if (!el) return;
+            const str = String(val);
+            if (el.innerText !== str) {
+                el.innerText = str;
+                if (isPlaying) {
+                    el.classList.remove('counter-bump');
+                    void el.offsetWidth;
+                    el.classList.add('counter-bump');
+                }
+            }
+        }
+
+        function pulseActiveChar() {
+            if (charIndex < charElements.length && charElements[charIndex]) {
+                const el = charElements[charIndex];
+                el.classList.remove('char-pulse');
+                void el.offsetWidth;
+                el.classList.add('char-pulse');
+            }
+        }
 
         // State
         let selectedTime = 30;
@@ -776,10 +847,12 @@
             // Focus management
             typingDisplay.addEventListener('click', () => hiddenInput.focus());
             document.addEventListener('keydown', () => hiddenInput.focus());
+            hiddenInput.addEventListener('keydown', pulseActiveChar);
 
             // Result buttons
             document.getElementById('btn-retry').addEventListener('click', resetGame);
             document.getElementById('btn-change-mode').addEventListener('click', () => {
+                resultScreen.classList.remove('result-entrance');
                 resultScreen.style.display = 'none';
                 gameArea.style.display = 'block';
                 statsBar.style.display = 'grid';
@@ -802,6 +875,7 @@
             streak = 0;
             bestStreak = 0;
 
+            document.querySelectorAll('.stat-value').forEach(el => el.classList.remove('counter-bump'));
             valWpm.innerText = '0';
             valAcc.innerText = '100%';
             valTime.innerText = timeRemaining + 's';
@@ -812,6 +886,7 @@
             hint.style.opacity = '1';
             hiddenInput.value = '';
             
+            resultScreen.classList.remove('result-entrance');
             resultScreen.style.display = 'none';
             gameArea.style.display = 'block';
             statsBar.style.display = 'grid';
@@ -868,8 +943,9 @@
                 
                 prevChar.classList.remove('correct', 'incorrect');
                 
-                charElements.forEach(el => el.classList.remove('active'));
+                charElements.forEach(el => el.classList.remove('active', 'char-pulse'));
                 charElements[charIndex].classList.add('active');
+                pulseActiveChar();
                 
                 updateStats();
                 return;
@@ -894,11 +970,12 @@
                     streak = 0;
                 }
 
-                charEl.classList.remove('active');
+                charEl.classList.remove('active', 'char-pulse');
                 charIndex++;
 
                 if (charIndex < textToType.length) {
                     charElements[charIndex].classList.add('active');
+                    pulseActiveChar();
                 } else {
                     endGame(); // Finished the text
                 }
@@ -923,7 +1000,7 @@
 
         function updateTime() {
             timeRemaining--;
-            valTime.innerText = timeRemaining + 's';
+            setStat(valTime, timeRemaining + 's');
             if (timeRemaining <= 0) {
                 endGame();
             }
@@ -936,15 +1013,15 @@
             
             if (timeElapsedMin > 0) {
                 let wpm = Math.round((correctChars / 5) / timeElapsedMin);
-                valWpm.innerText = Math.max(0, wpm);
+                setStat(valWpm, Math.max(0, wpm));
             }
 
             let accuracy = totalTyped > 0 ? Math.round((correctChars / totalTyped) * 100) : 100;
-            valAcc.innerText = accuracy + '%';
+            setStat(valAcc, accuracy + '%');
             
-            valChars.innerText = correctChars;
-            valErrors.innerText = errors;
-            valStreak.innerText = streak;
+            setStat(valChars, correctChars);
+            setStat(valErrors, errors);
+            setStat(valStreak, streak);
         }
 
         function endGame() {
@@ -973,7 +1050,10 @@
             gameArea.style.display = 'none';
             statsBar.style.display = 'none';
             modeSelection.style.display = 'none';
+            resultScreen.classList.remove('result-entrance');
+            void resultScreen.offsetWidth;
             resultScreen.style.display = 'block';
+            resultScreen.classList.add('result-entrance');
         }
 
         function loadPersonalBest() {
@@ -1000,6 +1080,19 @@
             localStorage.setItem('typingSpeedBest', JSON.stringify(pb));
             loadPersonalBest();
         }
+
+        ['animationend', 'webkitAnimationEnd'].forEach(evt => {
+            document.addEventListener(evt, (e) => {
+                if (e.target && e.target.classList) {
+                    if (e.target.classList.contains('counter-bump')) {
+                        e.target.classList.remove('counter-bump');
+                    }
+                    if (e.target.classList.contains('char-pulse')) {
+                        e.target.classList.remove('char-pulse');
+                    }
+                }
+            });
+        });
 
         // Run
         window.addEventListener('load', init);

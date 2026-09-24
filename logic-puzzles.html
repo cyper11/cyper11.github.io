@@ -339,7 +339,7 @@
             border-radius: 6px;
             padding: 2.5rem 2rem;
             text-align: center;
-            animation: fadeIn 0.35s ease;
+            animation: fadeUp 0.4s cubic-bezier(.22,1,.36,1) forwards;
         }
         .result-score-big {
             font-family: var(--heading);
@@ -412,8 +412,16 @@
             color: var(--lime);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
+        .quiz-fade-out { animation: fadeOut 0.2s ease forwards; }
+        .quiz-fade-in { animation: fadeIn 0.3s cubic-bezier(.22,1,.36,1) forwards; }
+        @keyframes fadeOut { to { opacity:0; transform:translateX(-12px) } }
+        @keyframes fadeIn { from { opacity:0; transform:translateX(12px) } to { opacity:1; transform:translateX(0) } }
+
+        .answer-pulse { animation: answerPulse 0.3s cubic-bezier(.22,1,.36,1); }
+        @keyframes answerPulse { 50% { transform: scale(1.03) } }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -423,6 +431,8 @@
             .result-stats-grid { grid-template-columns: 1fr; }
             .tracker-bar { flex-direction: column; align-items: flex-start; gap: 6px; }
         }
+
+        @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
     </style>
 </head>
 <body>
@@ -453,7 +463,7 @@
                 <div class="progress-fill" id="progress-fill"></div>
             </div>
 
-            <article class="puzzle-card">
+            <article class="puzzle-card" id="puzzle-card">
                 <p class="puzzle-q" id="puzzle-q"></p>
                 <div class="code-box" id="puzzle-code" style="display:none"></div>
                 <div class="options-grid" id="options-grid"></div>
@@ -614,11 +624,13 @@
         let currentIndex = 0;
         let score = 0;
         let answered = false;
+        let isTransitioning = false;
 
         const trackerStep = document.getElementById('tracker-step');
         const trackerCategory = document.getElementById('tracker-category');
         const trackerScore = document.getElementById('tracker-score');
         const progressFill = document.getElementById('progress-fill');
+        const puzzleCard = document.getElementById('puzzle-card');
         const puzzleQ = document.getElementById('puzzle-q');
         const puzzleCode = document.getElementById('puzzle-code');
         const optionsGrid = document.getElementById('options-grid');
@@ -677,6 +689,9 @@
             const buttons = optionsGrid.querySelectorAll('.option-btn');
             buttons.forEach((btn, idx) => {
                 btn.disabled = true;
+                if (idx === selectedIdx) {
+                    btn.classList.add('answer-pulse');
+                }
                 if (idx === p.correctIndex) {
                     btn.classList.add('correct');
                 } else if (idx === selectedIdx) {
@@ -702,9 +717,18 @@
         }
 
         nextBtn.addEventListener('click', () => {
+            if (isTransitioning) return;
             if (currentIndex < puzzles.length - 1) {
-                currentIndex++;
-                loadPuzzle(currentIndex);
+                isTransitioning = true;
+                puzzleCard.classList.remove('quiz-fade-in');
+                puzzleCard.classList.add('quiz-fade-out');
+                setTimeout(() => {
+                    currentIndex++;
+                    loadPuzzle(currentIndex);
+                    puzzleCard.classList.remove('quiz-fade-out');
+                    puzzleCard.classList.add('quiz-fade-in');
+                    isTransitioning = false;
+                }, 200);
             } else {
                 showResults();
             }
@@ -736,8 +760,11 @@
         restartBtn.addEventListener('click', () => {
             score = 0;
             currentIndex = 0;
+            isTransitioning = false;
             resultScreen.style.display = 'none';
             quizArea.style.display = 'block';
+            puzzleCard.classList.remove('quiz-fade-out');
+            puzzleCard.classList.remove('quiz-fade-in');
             loadPuzzle(0);
         });
 

@@ -171,14 +171,15 @@
             font-family: var(--mono);
             font-size: 15px;
             outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: border-color .25s, box-shadow .25s;
         }
         [data-theme="light"] .calc-input {
             background: rgba(0, 0, 0, 0.03);
         }
-        .calc-input:focus {
+        input:focus, select:focus {
             border-color: var(--lime);
-            box-shadow: 0 0 0 2px rgba(213, 251, 120, 0.15);
+            box-shadow: 0 0 0 3px rgba(213,251,120,.1);
+            transition: border-color .25s, box-shadow .25s;
         }
 
         /* CIDR Slider */
@@ -250,6 +251,22 @@
             gap: 14px;
             margin-bottom: 1.75rem;
         }
+        .result-reveal {
+            animation: resultReveal 0.4s cubic-bezier(.22,1,.36,1) both;
+        }
+        @keyframes resultReveal {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .result-reveal:nth-child(1) { animation-delay: 0ms; }
+        .result-reveal:nth-child(2) { animation-delay: 60ms; }
+        .result-reveal:nth-child(3) { animation-delay: 120ms; }
+        .result-reveal:nth-child(4) { animation-delay: 180ms; }
+        .result-reveal:nth-child(5) { animation-delay: 240ms; }
+        .result-reveal:nth-child(6) { animation-delay: 300ms; }
+        .result-reveal:nth-child(7) { animation-delay: 360ms; }
+        .result-reveal:nth-child(8) { animation-delay: 420ms; }
+        .result-reveal:nth-child(9) { animation-delay: 480ms; }
         .result-card {
             background: var(--panel);
             border: 1px solid var(--line);
@@ -378,6 +395,8 @@
             .container { padding: 2rem 1rem; }
             .calc-panel { padding: 1.25rem; }
         }
+
+        @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
     </style>
 </head>
 <body>
@@ -430,39 +449,39 @@
         </section>
 
         <section class="results-grid">
-            <div class="result-card">
+            <div class="result-card result-reveal">
                 <span class="res-label">IP Address</span>
                 <span class="res-value" id="res-ip">192.168.1.10</span>
             </div>
-            <div class="result-card">
+            <div class="result-card result-reveal">
                 <span class="res-label">Subnet Mask</span>
                 <span class="res-value" id="res-mask">255.255.255.0</span>
             </div>
-            <div class="result-card">
+            <div class="result-card result-reveal">
                 <span class="res-label">Network Address</span>
                 <span class="res-value accent" id="res-net">192.168.1.0</span>
             </div>
-            <div class="result-card">
+            <div class="result-card result-reveal">
                 <span class="res-label">Broadcast Address</span>
                 <span class="res-value accent" id="res-bcast">192.168.1.255</span>
             </div>
-            <div class="result-card full-width">
+            <div class="result-card full-width result-reveal">
                 <span class="res-label">Usable Host Range</span>
                 <span class="res-value" id="res-range">192.168.1.1 — 192.168.1.254</span>
             </div>
-            <div class="result-card">
+            <div class="result-card result-reveal">
                 <span class="res-label">Usable Hosts</span>
                 <span class="res-value accent" id="res-hosts">254</span>
             </div>
-            <div class="result-card">
+            <div class="result-card result-reveal">
                 <span class="res-label">Total Addresses</span>
                 <span class="res-value" id="res-total">256</span>
             </div>
-            <div class="result-card">
+            <div class="result-card result-reveal">
                 <span class="res-label">Wildcard Mask</span>
                 <span class="res-value" id="res-wildcard">0.0.0.255</span>
             </div>
-            <div class="result-card">
+            <div class="result-card result-reveal">
                 <span class="res-label">IP Class & Scope</span>
                 <span class="res-value" id="res-class">Class C · Private (RFC 1918)</span>
             </div>
@@ -622,6 +641,10 @@
             resWildcard.textContent = longToIp(wildcardLong);
             resClass.textContent = getIpClassAndScope(ipLong);
 
+            document.querySelectorAll('.result-card').forEach(card => {
+                card.classList.add('result-reveal');
+            });
+
             // Render binary bits
             const ipBin = (ipLong.toString(2).padStart(32, '0'));
             let binaryHtml = "";
@@ -635,8 +658,20 @@
             binaryStream.innerHTML = binaryHtml;
         }
 
+        function triggerResultReveal() {
+            document.querySelectorAll('.result-card').forEach(card => {
+                card.classList.remove('result-reveal');
+                void card.offsetWidth;
+                card.classList.add('result-reveal');
+            });
+        }
+
         // Event listeners
         ipInput.addEventListener('input', calculate);
+        ipInput.addEventListener('change', () => {
+            triggerResultReveal();
+            calculate();
+        });
         cidrSlider.addEventListener('input', () => {
             cidrSelect.value = '/' + cidrSlider.value;
             sliderVal.textContent = '/' + cidrSlider.value;
@@ -651,12 +686,17 @@
                 calculate();
             }
         });
+        cidrSelect.addEventListener('change', () => {
+            triggerResultReveal();
+            calculate();
+        });
 
         // Preset buttons
         document.querySelectorAll('.preset-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 ipInput.value = btn.dataset.ip;
                 cidrSlider.value = btn.dataset.cidr;
+                triggerResultReveal();
                 calculate();
             });
         });
