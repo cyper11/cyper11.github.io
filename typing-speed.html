@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Typing Speed — cyper1van</title>
+    <title>Typing Speed Test — cyper1van</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>const t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t;</script>
     <style>
         :root {
             --bg: #111310;
@@ -21,6 +22,51 @@
             --mono: 'IBM Plex Mono', monospace;
             --body: 'DM Sans', sans-serif;
             --heading: 'Space Grotesk', sans-serif;
+        }
+
+        [data-theme="light"] {
+            --bg: #f5f4f0;
+            --panel: #ffffff;
+            --line: #ddd8d0;
+            --text: #1a1d17;
+            --muted: #5f6258;
+            --lime: #4a8a14;
+            --lime-dark: #ffffff;
+            --red: #d32f2f;
+        }
+
+        [data-theme="light"] .panel,
+        [data-theme="light"] .stat-box {
+            box-shadow: 0 4px 16px rgba(0,0,0,.04);
+        }
+
+        [data-theme="light"] .pill-btn.active {
+            background-color: var(--lime);
+            color: #ffffff;
+        }
+
+        [data-theme="light"] .primary-btn {
+            background-color: var(--lime);
+            color: #ffffff;
+        }
+
+        .theme-toggle-btn {
+            background: none;
+            border: 1px solid var(--line);
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            color: var(--muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            transition: border-color .2s, color .2s;
+        }
+        .theme-toggle-btn:hover {
+            border-color: var(--lime);
+            color: var(--lime);
         }
 
         * {
@@ -472,14 +518,17 @@
 <body>
 
     <header class="topbar">
-        <a href="index.html"><span>←</span> Back to Portfolio</a>
-        <div class="title">Typing Speed Game</div>
+        <a href="index.html#lab"><span>←</span> Back to Portfolio</a>
+        <div style="display:flex;align-items:center;gap:12px">
+            <div class="title">Typing Speed Test</div>
+            <button class="theme-toggle-btn" id="theme-btn" aria-label="Toggle theme">☀</button>
+        </div>
     </header>
 
     <main class="container">
         <header>
-            <span class="eyebrow">Interactive Project</span>
-            <h1>Typing Speed</h1>
+            <span class="eyebrow">01 / LAB EXPERIMENT</span>
+            <h1>Typing Speed Test</h1>
             <p class="subtitle">Test your speed. Improve your accuracy.</p>
         </header>
 
@@ -614,6 +663,17 @@
     </main>
 
     <script>
+        const themeBtn = document.getElementById('theme-btn');
+        if (themeBtn) {
+            const curTheme = document.documentElement.dataset.theme || 'dark';
+            themeBtn.textContent = curTheme === 'light' ? '☾' : '☀';
+            themeBtn.addEventListener('click', () => {
+                const next = (document.documentElement.dataset.theme || 'dark') === 'light' ? 'dark' : 'light';
+                document.documentElement.dataset.theme = next;
+                localStorage.setItem('theme', next);
+                themeBtn.textContent = next === 'light' ? '☾' : '☀';
+            });
+        }
         const passages = {
             easy: [
                 "The cat sat on the mat. It was a very lazy day.",

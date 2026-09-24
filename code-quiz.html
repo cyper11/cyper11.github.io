@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Quiz — cyper1van</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>const t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t;</script>
+    <style>
+        :root {
+            --bg: #111310;
+            --panel: #191c17;
+            --line: #2c3028;
+            --text: #f0f1e9;
+            --muted: #a0a598;
+            --lime: #d5fb78;
+            --lime-dark: #1c2510;
+            --red: #ff6b6b;
+            --red-bg: rgba(255, 107, 107, 0.12);
+            --green-bg: rgba(213, 251, 120, 0.12);
+            --mono: 'IBM Plex Mono', monospace;
+            --body: 'DM Sans', sans-serif;
+            --heading: 'Space Grotesk', sans-serif;
+        }
+
+        [data-theme="light"] {
+            --bg: #f5f4f0;
+            --panel: #ffffff;
+            --line: #ddd8d0;
+            --text: #1a1d17;
+            --muted: #5f6258;
+            --lime: #4a8a14;
+            --lime-dark: #ffffff;
+            --red: #d32f2f;
+            --red-bg: rgba(211, 47, 47, 0.08);
+            --green-bg: rgba(74, 138, 20, 0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        ::selection { background-color: var(--lime); color: var(--lime-dark); }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--body);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            border-bottom: 1px solid var(--line);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .topbar a {
+            color: var(--muted);
+            text-decoration: none;
+            font-family: var(--mono);
+            font-size: 12px;
+            transition: color 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .topbar a:hover { color: var(--lime); }
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .topbar-title {
+            font-family: var(--mono);
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text);
+        }
+        .theme-toggle-btn {
+            background: none;
+            border: 1px solid var(--line);
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            color: var(--muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            transition: border-color .2s, color .2s;
+        }
+        .theme-toggle-btn:hover { border-color: var(--lime); color: var(--lime); }
+
+        .container {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem 5rem;
+            width: 100%;
+            flex: 1;
+        }
+
+        .eyebrow {
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--lime);
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        h1 {
+            font-family: var(--heading);
+            font-size: clamp(2rem, 5vw, 2.75rem);
+            font-weight: 600;
+            line-height: 1.15;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Tracker bar */
+        .tracker-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 12px 18px;
+            margin-bottom: 1.5rem;
+            font-family: var(--mono);
+            font-size: 12px;
+        }
+        .tracker-step {
+            color: var(--lime);
+            font-weight: 500;
+        }
+        .tracker-category {
+            color: var(--muted);
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+        .tracker-score {
+            color: var(--text);
+        }
+
+        /* Progress Bar */
+        .progress-line {
+            width: 100%;
+            height: 4px;
+            background: var(--line);
+            border-radius: 2px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--lime);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Quiz Card */
+        .quiz-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: border-color 0.3s ease;
+        }
+        .quiz-q {
+            font-size: 1.15rem;
+            font-weight: 500;
+            line-height: 1.6;
+            margin-bottom: 1.25rem;
+            color: var(--text);
+        }
+        .code-box {
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            padding: 12px 16px;
+            font-family: var(--mono);
+            font-size: 13px;
+            color: var(--lime);
+            margin: 0.75rem 0 1.25rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        [data-theme="light"] .code-box {
+            background: rgba(0, 0, 0, 0.04);
+            color: #2b5608;
+        }
+
+        /* Options */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 1.5rem;
+        }
+        .option-btn {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            background: rgba(25, 28, 23, 0.4);
+            border: 1px solid var(--line);
+            border-radius: 5px;
+            color: var(--text);
+            font-size: 14px;
+            font-family: var(--body);
+            text-align: left;
+            cursor: pointer;
+            transition: border-color 0.2s, background-color 0.2s, transform 0.15s;
+        }
+        [data-theme="light"] .option-btn {
+            background: rgba(255, 255, 255, 0.7);
+        }
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--lime);
+            transform: translateX(4px);
+            background: rgba(213, 251, 120, 0.04);
+        }
+        .option-key {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--muted);
+            border: 1px solid var(--line);
+            border-radius: 3px;
+            padding: 2px 7px;
+            flex-shrink: 0;
+        }
+        .option-btn:hover:not(:disabled) .option-key {
+            border-color: var(--lime);
+            color: var(--lime);
+        }
+        .option-text {
+            flex: 1;
+        }
+
+        /* Answer states */
+        .option-btn.correct {
+            border-color: var(--lime) !important;
+            background: var(--green-bg) !important;
+            color: var(--lime) !important;
+        }
+        .option-btn.wrong {
+            border-color: var(--red) !important;
+            background: var(--red-bg) !important;
+            color: var(--red) !important;
+        }
+        .option-btn:disabled {
+            cursor: default;
+            opacity: 0.9;
+        }
+
+        /* Explanation Box */
+        .explanation-card {
+            display: none;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            animation: fadeIn 0.3s ease;
+        }
+        .explanation-card.show {
+            display: block;
+        }
+        .exp-head {
+            font-family: var(--mono);
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .exp-head.correct-txt { color: var(--lime); }
+        .exp-head.wrong-txt { color: var(--red); }
+        .exp-body {
+            font-size: 13.5px;
+            color: var(--muted);
+            line-height: 1.65;
+            margin-bottom: 1.25rem;
+        }
+        .action-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+        .action-btn {
+            background: var(--lime);
+            color: var(--lime-dark);
+            border: none;
+            font-family: var(--body);
+            font-weight: 600;
+            font-size: 13.5px;
+            padding: 11px 22px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(213, 251, 120, 0.3);
+        }
+
+        /* Result View */
+        .result-screen {
+            display: none;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            animation: fadeIn 0.35s ease;
+        }
+        .result-score-big {
+            font-family: var(--heading);
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--lime);
+            line-height: 1;
+            margin: 1rem 0 0.5rem;
+        }
+        .result-eval {
+            font-family: var(--mono);
+            font-size: 13px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 2rem;
+        }
+        .result-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 2rem;
+        }
+        .res-stat {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            padding: 1rem;
+        }
+        [data-theme="light"] .res-stat {
+            background: rgba(0, 0, 0, 0.03);
+        }
+        .res-stat-label {
+            font-family: var(--mono);
+            font-size: 10px;
+            color: var(--muted);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .res-stat-val {
+            font-family: var(--heading);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .result-actions {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .ghost-btn {
+            background: none;
+            border: 1px solid var(--line);
+            color: var(--text);
+            font-family: var(--body);
+            font-size: 13.5px;
+            font-weight: 500;
+            padding: 11px 20px;
+            border-radius: 4px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .ghost-btn:hover {
+            border-color: var(--lime);
+            color: var(--lime);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 2rem 1rem; }
+            .quiz-card { padding: 1.5rem 1.25rem; }
+            .result-stats-grid { grid-template-columns: 1fr; }
+            .tracker-bar { flex-direction: column; align-items: flex-start; gap: 6px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="topbar">
+        <a href="index.html#lab"><span>←</span> Back to Lab</a>
+        <div class="topbar-right">
+            <div class="topbar-title">04 / Code Quiz</div>
+            <button class="theme-toggle-btn" id="theme-btn" aria-label="Toggle theme">☀</button>
+        </div>
+    </header>
+
+    <main class="container">
+        <header>
+            <span class="eyebrow">04 / LAB EXPERIMENT</span>
+            <h1>Code Quiz</h1>
+            <p class="subtitle">Practical diagnostic questions testing core programming, modern JavaScript, web layout, SQL queries, and systems debugging.</p>
+        </header>
+
+        <div id="quiz-area">
+            <div class="tracker-bar">
+                <span class="tracker-step" id="tracker-step">QUESTION 01 / 10</span>
+                <span class="tracker-category" id="tracker-category">JAVASCRIPT ENGINE</span>
+                <span class="tracker-score" id="tracker-score">Score: 0 / 0</span>
+            </div>
+
+            <div class="progress-line">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+
+            <article class="quiz-card">
+                <p class="quiz-q" id="quiz-q"></p>
+                <div class="code-box" id="quiz-code" style="display:none"></div>
+                <div class="options-grid" id="options-grid"></div>
+            </article>
+
+            <div class="explanation-card" id="explanation-card">
+                <div class="exp-head" id="exp-status"></div>
+                <p class="exp-body" id="exp-text"></p>
+                <div class="action-row">
+                    <button class="action-btn" id="next-btn">Next Question <span>→</span></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="result-screen" id="result-screen">
+            <span class="eyebrow">ASSESSMENT COMPLETE</span>
+            <div class="result-score-big" id="res-score-pct">0%</div>
+            <p class="result-eval" id="res-eval">EVALUATING PERFORMANCE...</p>
+
+            <div class="result-stats-grid">
+                <div class="res-stat">
+                    <div class="res-stat-label">Correct Answers</div>
+                    <div class="res-stat-val" id="res-correct">0 / 10</div>
+                </div>
+                <div class="res-stat">
+                    <div class="res-stat-label">Accuracy</div>
+                    <div class="res-stat-val" id="res-acc">0%</div>
+                </div>
+                <div class="res-stat">
+                    <div class="res-stat-label">Personal Best</div>
+                    <div class="res-stat-val" id="res-pb">0%</div>
+                </div>
+            </div>
+
+            <div class="result-actions">
+                <button class="action-btn" id="restart-btn">Retake Quiz</button>
+                <a href="index.html#lab" class="ghost-btn">Back to Lab ↗</a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const themeBtn = document.getElementById('theme-btn');
+        if (themeBtn) {
+            const curTheme = document.documentElement.dataset.theme || 'dark';
+            themeBtn.textContent = curTheme === 'light' ? '☾' : '☀';
+            themeBtn.addEventListener('click', () => {
+                const next = (document.documentElement.dataset.theme || 'dark') === 'light' ? 'dark' : 'light';
+                document.documentElement.dataset.theme = next;
+                localStorage.setItem('theme', next);
+                themeBtn.textContent = next === 'light' ? '☾' : '☀';
+            });
+        }
+
+        const questions = [
+            {
+                category: "JavaScript Engine",
+                question: "What will the following JavaScript expressions output to the console?",
+                code: "console.log(typeof null, typeof undefined, typeof NaN);",
+                options: [
+                    '"null", "undefined", "number"',
+                    '"object", "undefined", "number"',
+                    '"object", "undefined", "NaN"',
+                    '"undefined", "undefined", "number"'
+                ],
+                correctIndex: 1,
+                explanation: 'typeof null returns "object" due to a historical bug in the first implementation of JavaScript that was retained for backward compatibility. typeof undefined is "undefined". NaN (Not a Number) is a numeric value representing an unrepresentable value in the IEEE 754 standard, so typeof NaN evaluates to "number".'
+            },
+            {
+                category: "Event Loop & Microtasks",
+                question: "In what order will the numbers be logged to the console by the JavaScript runtime?",
+                code: "console.log(1);\nsetTimeout(() => console.log(2), 0);\nPromise.resolve().then(() => console.log(3));\nconsole.log(4);",
+                options: [
+                    "1, 2, 3, 4",
+                    "1, 4, 2, 3",
+                    "1, 4, 3, 2",
+                    "1, 3, 4, 2"
+                ],
+                correctIndex: 2,
+                explanation: "Synchronous code executes first (1, then 4). Microtasks (Promise callbacks) execute immediately after the synchronous execution stack empties before any rendering or macrotasks (3). Macrotasks (setTimeout) execute on the subsequent event loop tick (2). Thus: 1, 4, 3, 2."
+            },
+            {
+                category: "React State & Batches",
+                question: "Why does clicking the button in this React component only increase count by 1 instead of 3?",
+                code: "function Counter() {\n  const [count, setCount] = useState(0);\n  function handleClick() {\n    setCount(count + 1);\n    setCount(count + 1);\n    setCount(count + 1);\n  }\n  return <button onClick={handleClick}>{count}</button>;\n}",
+                options: [
+                    "React batches updates and count is captured by closure from the current render (0 + 1 each call)",
+                    "React ignores consecutive setState calls inside the same event handler",
+                    "State variables can only be incremented once per animation frame",
+                    "useState variables are read-only and require useRef to mutate sequentially"
+                ],
+                correctIndex: 0,
+                explanation: "Inside the handleClick closure, count is captured with the value 0. Each setCount(count + 1) schedules the next state to be 0 + 1 = 1. To calculate updates sequentially based on previous state, you must pass an updater function: setCount(prev => prev + 1)."
+            },
+            {
+                category: "CSS Layout Engine",
+                question: "Under standard browser layout with box-sizing: border-box, what is the total rendered width of this box?",
+                code: ".box {\n  box-sizing: border-box;\n  width: 200px;\n  padding: 15px;\n  border: 5px solid #2c3028;\n  margin: 10px;\n}",
+                options: [
+                    "240px",
+                    "220px",
+                    "260px",
+                    "200px"
+                ],
+                correctIndex: 3,
+                explanation: "With box-sizing: border-box, the specified width of 200px already includes the padding (15px × 2) and border (5px × 2). The inner content area shrinks to 160px so the total rendered element width remains exactly 200px. Margin sits outside the box."
+            },
+            {
+                category: "SQL Data Query",
+                question: "Which clause must be used to filter grouped query records AFTER an aggregate calculation?",
+                code: "SELECT department_id, COUNT(*) AS emp_count\nFROM employees\nGROUP BY department_id\n______ COUNT(*) >= 5;",
+                options: [
+                    "WHERE",
+                    "HAVING",
+                    "FILTER",
+                    "ORDER BY"
+                ],
+                correctIndex: 1,
+                explanation: "WHERE filters rows before any grouping or aggregation takes place. HAVING is specifically evaluated after the GROUP BY clause to filter groups based on aggregate results (such as COUNT(*), SUM, or AVG)."
+            },
+            {
+                category: "Python Functions",
+                question: "What is the output of executing the following Python code?",
+                code: "def append_item(item, target_list=[]):\n    target_list.append(item)\n    return target_list\n\nprint(append_item('A'))\nprint(append_item('B'))",
+                options: [
+                    "['A'] followed by ['B']",
+                    "['A'] followed by ['B', 'A']",
+                    "['A'] followed by ['A', 'B']",
+                    "Raises a TypeError"
+                ],
+                correctIndex: 2,
+                explanation: "In Python, default parameter arguments are evaluated only once when the function is defined, not upon each call. Because target_list defaults to a mutable list [], the exact same list instance is mutated across subsequent calls."
+            },
+            {
+                category: "HTTP & REST Architecture",
+                question: "A RESTful API successfully processes a POST request and creates a new database record. Which HTTP status code is the most semantically accurate response?",
+                code: "POST /api/v1/servers HTTP/1.1\nHost: infra.lan\nContent-Type: application/json\n\nResponse:\nHTTP/1.1 ___ _______",
+                options: [
+                    "201 Created",
+                    "200 OK",
+                    "204 No Content",
+                    "202 Accepted"
+                ],
+                correctIndex: 0,
+                explanation: "201 Created signifies that the request succeeded and led to the creation of a new resource on the server. 200 OK is general success, 204 indicates success with no response body, and 202 means the request was accepted for asynchronous processing but not yet completed."
+            },
+            {
+                category: "Git Version Control",
+                question: "Which command safely shelves uncommitted local working directory changes so you can pull or switch branches cleanly?",
+                code: "# Shelve local uncommitted working tree modifications\n$ git _________\n$ git pull origin main\n$ git _________ pop",
+                options: [
+                    "revert",
+                    "reset",
+                    "cherry-pick",
+                    "stash"
+                ],
+                correctIndex: 3,
+                explanation: "git stash takes your uncommitted changes (both staged and unstaged), saves them on a local stack, and restores your working copy to match HEAD. git stash pop reapplies those shelved changes and removes them from the stash stack."
+            },
+            {
+                category: "CSS Flexbox Model",
+                question: "In a Flexbox container with flex-direction: row, which property aligns items along the CROSS (vertical) axis?",
+                code: ".flex-container {\n  display: flex;\n  flex-direction: row;\n  justify-content: space-between; /* Main axis */\n  ____________: center;          /* Cross axis */\n}",
+                options: [
+                    "justify-items",
+                    "align-items",
+                    "align-self",
+                    "content-align"
+                ],
+                correctIndex: 1,
+                explanation: "In Flexbox, justify-content distributes items along the main axis (horizontal in flex-direction: row), while align-items aligns items along the cross axis (vertical). justify-items has no effect in flex layouts."
+            },
+            {
+                category: "Data Structures & Complexity",
+                question: "What is the average time complexity of looking up a key in a hash table (hash map) with an effective hash function?",
+                code: "Operation: map.get(key)\nHash Table with low collision rate\nAverage Time Complexity: ?",
+                options: [
+                    "O(log n) — Logarithmic Time",
+                    "O(n) — Linear Time",
+                    "O(1) — Constant Time",
+                    "O(n log n) — Linearithmic Time"
+                ],
+                correctIndex: 2,
+                explanation: "With a uniform hashing distribution and low load factor, hash table lookups compute the key's hash and access the bucket index directly in O(1) constant average time. Only in the worst-case scenario (severe hash collisions) does it degrade to O(n)."
+            }
+        ];
+
+        let currentIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        const trackerStep = document.getElementById('tracker-step');
+        const trackerCategory = document.getElementById('tracker-category');
+        const trackerScore = document.getElementById('tracker-score');
+        const progressFill = document.getElementById('progress-fill');
+        const quizQ = document.getElementById('quiz-q');
+        const quizCode = document.getElementById('quiz-code');
+        const optionsGrid = document.getElementById('options-grid');
+        const expCard = document.getElementById('explanation-card');
+        const expStatus = document.getElementById('exp-status');
+        const expText = document.getElementById('exp-text');
+        const nextBtn = document.getElementById('next-btn');
+
+        const quizArea = document.getElementById('quiz-area');
+        const resultScreen = document.getElementById('result-screen');
+        const resScorePct = document.getElementById('res-score-pct');
+        const resEval = document.getElementById('res-eval');
+        const resCorrect = document.getElementById('res-correct');
+        const resAcc = document.getElementById('res-acc');
+        const resPb = document.getElementById('res-pb');
+        const restartBtn = document.getElementById('restart-btn');
+
+        function loadQuestion(idx) {
+            answered = false;
+            expCard.classList.remove('show');
+            const q = questions[idx];
+
+            const stepNum = idx + 1 < 10 ? `0${idx + 1}` : `${idx + 1}`;
+            const totalNum = questions.length < 10 ? `0${questions.length}` : `${questions.length}`;
+            trackerStep.textContent = `QUESTION ${stepNum} / ${totalNum}`;
+            trackerCategory.textContent = q.category;
+            trackerScore.textContent = `Score: ${score} / ${idx}`;
+            progressFill.style.width = `${(idx / questions.length) * 100}%`;
+
+            quizQ.textContent = q.question;
+            if (q.code) {
+                quizCode.style.display = 'block';
+                quizCode.textContent = q.code;
+            } else {
+                quizCode.style.display = 'none';
+            }
+
+            optionsGrid.innerHTML = '';
+            q.options.forEach((opt, oIdx) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerHTML = `<span class="option-key">${oIdx + 1}</span><span class="option-text">${opt}</span>`;
+                btn.addEventListener('click', () => handleAnswer(oIdx));
+                optionsGrid.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(selectedIdx) {
+            if (answered) return;
+            answered = true;
+
+            const q = questions[currentIndex];
+            const isCorrect = selectedIdx === q.correctIndex;
+            if (isCorrect) score++;
+
+            trackerScore.textContent = `Score: ${score} / ${currentIndex + 1}`;
+
+            const buttons = optionsGrid.querySelectorAll('.option-btn');
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === q.correctIndex) {
+                    btn.classList.add('correct');
+                } else if (idx === selectedIdx) {
+                    btn.classList.add('wrong');
+                }
+            });
+
+            if (isCorrect) {
+                expStatus.className = 'exp-head correct-txt';
+                expStatus.textContent = '✓ CORRECT SOLUTION';
+            } else {
+                expStatus.className = 'exp-head wrong-txt';
+                expStatus.textContent = '✕ INCORRECT SOLUTION';
+            }
+            expText.textContent = q.explanation;
+            expCard.classList.add('show');
+
+            if (currentIndex === questions.length - 1) {
+                nextBtn.innerHTML = 'View Assessment <span>→</span>';
+            } else {
+                nextBtn.innerHTML = 'Next Question <span>→</span>';
+            }
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                loadQuestion(currentIndex);
+            } else {
+                showResults();
+            }
+        });
+
+        function showResults() {
+            quizArea.style.display = 'none';
+            resultScreen.style.display = 'block';
+
+            const pct = Math.round((score / questions.length) * 100);
+            resScorePct.textContent = `${pct}%`;
+            resCorrect.textContent = `${score} / ${questions.length}`;
+            resAcc.textContent = `${pct}%`;
+
+            let evalText = "SYSTEM ARCHITECT — Exceptional mastery of core concepts and diagnostics.";
+            if (pct < 50) {
+                evalText = "JUNIOR TECHNICIAN — Good foundation, keep practicing core mechanics.";
+            } else if (pct < 80) {
+                evalText = "FIELD ENGINEER — Solid practical programming and troubleshooting knowledge.";
+            }
+            resEval.textContent = evalText;
+
+            const storedPb = parseInt(localStorage.getItem('codeQuizBest') || '0', 10);
+            const newPb = Math.max(storedPb, pct);
+            localStorage.setItem('codeQuizBest', newPb.toString());
+            resPb.textContent = `${newPb}%`;
+        }
+
+        restartBtn.addEventListener('click', () => {
+            score = 0;
+            currentIndex = 0;
+            resultScreen.style.display = 'none';
+            quizArea.style.display = 'block';
+            loadQuestion(0);
+        });
+
+        // Keyboard shortcuts (1, 2, 3, 4, Enter)
+        window.addEventListener('keydown', (e) => {
+            if (!answered && (e.key === '1' || e.key === '2' || e.key === '3' || e.key === '4')) {
+                const idx = parseInt(e.key, 10) - 1;
+                const buttons = optionsGrid.querySelectorAll('.option-btn');
+                if (buttons[idx]) buttons[idx].click();
+            } else if (answered && e.key === 'Enter') {
+                nextBtn.click();
+            }
+        });
+
+        loadQuestion(0);
+    </script>
+</body>
+</html>
