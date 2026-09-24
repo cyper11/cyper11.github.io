@@ -10,7 +10,7 @@ document.querySelectorAll('[data-stack]').forEach(btn=>btn.addEventListener('cli
 
 /* ─── Mobile menu ─── */
 const menu=document.querySelector('.mobile-menu'),nav=document.querySelector('nav');menu.addEventListener('click',()=>{const open=nav.classList.toggle('open');menu.setAttribute('aria-expanded',open);menu.textContent=open?'Close −':'Menu +'});
-nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('open');menu.setAttribute('aria-expanded','false');menu.textContent='Menu +'}));
+nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('open');menu.setAttribute('aria-expanded','false');menu.textContent='Menu +';if(a.hash)setActiveNav(a.hash.slice(1))}));
 
 /* ─── Theme toggle ─── */
 const themeBtn=document.getElementById('theme-toggle');
@@ -18,8 +18,61 @@ const curTheme=document.documentElement.dataset.theme||'dark';
 themeBtn.textContent=curTheme==='light'?'☾':'☀';
 themeBtn.addEventListener('click',()=>{document.body.classList.add('theme-switching');const next=(document.documentElement.dataset.theme||'dark')==='light'?'dark':'light';document.documentElement.dataset.theme=next;localStorage.setItem('theme',next);themeBtn.textContent=next==='light'?'☾':'☀';themeBtn.setAttribute('aria-label',next==='light'?'Switch to dark mode':'Switch to light mode');setTimeout(()=>document.body.classList.remove('theme-switching'),400)});
 
-/* ─── Active nav observer ─── */
-const navObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){document.querySelectorAll('nav a').forEach(a=>a.classList.toggle('active',a.hash==='#'+entry.target.id))}})},{rootMargin:'-15% 0px -65% 0px'});document.querySelectorAll('main section[id]').forEach(s=>navObserver.observe(s));
+/* ─── Active nav scroll-spy ─── */
+const sections=Array.from(document.querySelectorAll('main section[id]'));
+const navLinks=document.querySelectorAll('nav a');
+function setActiveNav(id){navLinks.forEach(a=>a.classList.toggle('active',a.hash==='#'+id))}
+function updateActiveNav(){
+  if(!sections.length)return;
+  const scrollY=window.scrollY||window.pageYOffset||0;
+  const vh=window.innerHeight;
+  const scrollHeight=document.documentElement.scrollHeight;
+  const maxScroll=scrollHeight-vh;
+  const distFromBottom=maxScroll-scrollY;
+
+  // 1. Bottom of page threshold: always activate Contact (09) at/near bottom
+  if(distFromBottom<=70){
+    setActiveNav(sections[sections.length-1].id);
+    return;
+  }
+
+  // 2. Top of page: always activate Overview (01) at top
+  if(scrollY<=60){
+    setActiveNav(sections[0].id);
+    return;
+  }
+
+  // 3. Viewport dominance: find the section occupying the primary focus of the viewport
+  let bestSection=null,maxScore=-1;
+  for(let i=0;i<sections.length;i++){
+    const s=sections[i];
+    const rect=s.getBoundingClientRect();
+    const visTop=Math.max(0,rect.top);
+    const visBottom=Math.min(vh,rect.bottom);
+    const visHeight=Math.max(0,visBottom-visTop);
+    if(visHeight<=0)continue;
+    let score=visHeight;
+    // When Contact enters prominently into the lower viewport
+    if(s.id==='contact'&&rect.top<=vh*0.65){
+      score+=vh*0.15;
+    }
+    if(score>maxScore){
+      maxScore=score;
+      bestSection=s;
+    }
+  }
+  if(bestSection)setActiveNav(bestSection.id);
+}
+let navTicking=false;
+function onNavScroll(){
+  if(!navTicking){
+    requestAnimationFrame(()=>{updateActiveNav();navTicking=false});
+    navTicking=true;
+  }
+}
+window.addEventListener('scroll',onNavScroll,{passive:true});
+window.addEventListener('resize',onNavScroll,{passive:true});
+updateActiveNav();
 
 /* ─── Case / credential dialogs ─── */
 document.querySelectorAll('[data-case]').forEach(btn=>{
