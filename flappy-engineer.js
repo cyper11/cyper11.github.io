@@ -1167,7 +1167,8 @@
     const feOverlay = document.getElementById('fe-overlay');
     const eeOverlay = document.getElementById('ee-overlay');
     const snOverlay = document.getElementById('sn-overlay');
-    if ((feOverlay && !feOverlay.hidden) || (eeOverlay && !eeOverlay.hidden) || (snOverlay && !snOverlay.hidden)) return;
+    const mmOverlay = document.getElementById('mm-overlay');
+    if ((feOverlay && !feOverlay.hidden) || (eeOverlay && !eeOverlay.hidden) || (snOverlay && !snOverlay.hidden) || (mmOverlay && !mmOverlay.hidden)) return;
     if (document.querySelector('dialog[open]')) return;
 
     const isFocusedInside = carouselEl.contains(document.activeElement);
