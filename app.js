@@ -578,7 +578,7 @@ if(window.matchMedia('(prefers-reduced-motion:reduce)').matches){
     const id=++runId;
     if(abortCtrl){try{abortCtrl.abort()}catch(e){}abortCtrl=null}
     overlay.classList.remove('ee-anomaly');
-    if(statusLabel)statusLabel.textContent='SYS.DIAGNOSTIC // CLIENT TELEMETRY';
+    if(statusLabel)statusLabel.textContent='SESSION // UNKNOWN';
     logEl.innerHTML='';
     promptActions.hidden=true;
     finalEl.hidden=true;
@@ -604,7 +604,7 @@ if(window.matchMedia('(prefers-reduced-motion:reduce)').matches){
     let netPromise=fetchEphemeralNetInfo(abortCtrl.signal).finally(()=>clearTimeout(timeoutId));
 
     overlay.classList.remove('ee-anomaly');
-    if(statusLabel)statusLabel.textContent='SYS.DIAGNOSTIC // CLIENT TELEMETRY';
+    if(statusLabel)statusLabel.textContent='SESSION // UNKNOWN';
     promptActions.hidden=true;
     finalEl.hidden=true;
     terminalEl.hidden=false;
@@ -632,7 +632,7 @@ if(window.matchMedia('(prefers-reduced-motion:reduce)').matches){
     if(!degBadge)return;
 
     overlay.classList.add('ee-anomaly');
-    if(statusLabel)statusLabel.textContent='SYS.DIAGNOSTIC // INTEGRITY DEGRADED';
+    if(statusLabel)statusLabel.textContent='SESSION // INTEGRITY DEGRADED';
     const restoreCorrupted=corruptFewChars(logEl,degBadge);
     if(!(await wait(680,id))){
       restoreCorrupted();
@@ -649,7 +649,7 @@ if(window.matchMedia('(prefers-reduced-motion:reduce)').matches){
     }
     restoreCorrupted();
     overlay.classList.remove('ee-anomaly');
-    if(statusLabel)statusLabel.textContent='SYS.DIAGNOSTIC // CLIENT TELEMETRY';
+    if(statusLabel)statusLabel.textContent='SESSION // UNKNOWN';
     triggerFlicker();
     if(!(await typeLine('> recovery complete.',id,'ee-accent',18)))return;
     if(!(await wait(240,id)))return;
@@ -766,7 +766,7 @@ if(window.matchMedia('(prefers-reduced-motion:reduce)').matches){
     runId++;
     if(abortCtrl){try{abortCtrl.abort()}catch(e){}abortCtrl=null}
     overlay.classList.remove('open','ee-anomaly','ee-flicker');
-    if(statusLabel)statusLabel.textContent='SYS.DIAGNOSTIC // CLIENT TELEMETRY';
+    if(statusLabel)statusLabel.textContent='SESSION // UNKNOWN';
     document.body.style.overflow='';
     setTimeout(()=>{
       overlay.hidden=true;
