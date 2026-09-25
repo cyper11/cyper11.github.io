@@ -12,11 +12,85 @@ document.querySelectorAll('[data-stack]').forEach(btn=>btn.addEventListener('cli
 const menu=document.querySelector('.mobile-menu'),nav=document.querySelector('nav');menu.addEventListener('click',()=>{const open=nav.classList.toggle('open');menu.setAttribute('aria-expanded',open);menu.textContent=open?'Close −':'Menu +'});
 nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('open');menu.setAttribute('aria-expanded','false');menu.textContent='Menu +';if(a.hash)setActiveNav(a.hash.slice(1))}));
 
-/* ─── Theme toggle ─── */
+/* ─── Theme toggle with warp effect ─── */
 const themeBtn=document.getElementById('theme-toggle');
+let warpTimeout=null;
+
+function updateThemeVisuals(theme){
+  themeBtn.textContent=theme==='light'?'☾':'☀';
+  themeBtn.setAttribute('aria-label',theme==='light'?'Switch to dark mode':'Switch to light mode');
+}
+
 const curTheme=document.documentElement.dataset.theme||'dark';
-themeBtn.textContent=curTheme==='light'?'☾':'☀';
-themeBtn.addEventListener('click',()=>{document.body.classList.add('theme-switching');const next=(document.documentElement.dataset.theme||'dark')==='light'?'dark':'light';document.documentElement.dataset.theme=next;localStorage.setItem('theme',next);themeBtn.textContent=next==='light'?'☾':'☀';themeBtn.setAttribute('aria-label',next==='light'?'Switch to dark mode':'Switch to light mode');setTimeout(()=>document.body.classList.remove('theme-switching'),400)});
+updateThemeVisuals(curTheme);
+
+function executeThemeToggle(){
+  const next=(document.documentElement.dataset.theme||'dark')==='light'?'dark':'light';
+  document.documentElement.dataset.theme=next;
+  localStorage.setItem('theme',next);
+  updateThemeVisuals(next);
+}
+
+function triggerWarpEffect(rect){
+  const x=rect.left+rect.width/2;
+  const y=rect.top+rect.height/2;
+  const maxR=Math.hypot(Math.max(x,window.innerWidth-x),Math.max(y,window.innerHeight-y));
+  const scale=(maxR*2)/20;
+
+  document.documentElement.style.setProperty('--warp-x',`${x}px`);
+  document.documentElement.style.setProperty('--warp-y',`${y}px`);
+  document.documentElement.style.setProperty('--warp-r',`${maxR}px`);
+  document.documentElement.style.setProperty('--warp-scale',scale.toFixed(2));
+
+  themeBtn.classList.remove('theme-warping');
+  void themeBtn.offsetWidth;
+  themeBtn.classList.add('theme-warping');
+
+  document.body.classList.remove('theme-warping-ui');
+  void document.body.offsetWidth;
+  document.body.classList.add('theme-warping-ui');
+
+  let wave=document.getElementById('theme-warp-wave');
+  if(!wave){
+    wave=document.createElement('div');
+    wave.id='theme-warp-wave';
+    wave.className='theme-warp-wave';
+    wave.setAttribute('aria-hidden','true');
+    document.body.appendChild(wave);
+  }
+  wave.classList.remove('active');
+  void wave.offsetWidth;
+  wave.classList.add('active');
+
+  clearTimeout(warpTimeout);
+  warpTimeout=setTimeout(()=>{
+    themeBtn.classList.remove('theme-warping');
+    document.body.classList.remove('theme-warping-ui');
+    if(wave)wave.classList.remove('active');
+  },600);
+}
+
+themeBtn.addEventListener('click',()=>{
+  const prefersReduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const rect=themeBtn.getBoundingClientRect();
+
+  if(prefersReduced){
+    executeThemeToggle();
+    return;
+  }
+
+  triggerWarpEffect(rect);
+
+  if(document.startViewTransition){
+    document.startViewTransition(()=>{
+      executeThemeToggle();
+    });
+  }else{
+    document.body.classList.add('theme-switching');
+    executeThemeToggle();
+    setTimeout(()=>document.body.classList.remove('theme-switching'),400);
+  }
+});
 
 /* ─── Active nav scroll-spy ─── */
 const sections=Array.from(document.querySelectorAll('main section[id]'));
@@ -229,14 +303,14 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
       const rEl=document.getElementById('gh-repos');
       const repos=allRepos.filter(r=>!r.fork).sort((a,b)=>new Date(b.pushed_at)-new Date(a.pushed_at)).slice(0,5);
       if(!repos.length){rEl.innerHTML='<div class="gh-placeholder">No public repositories</div>'}
-      else{rEl.innerHTML=repos.map(r=>{const l=r.language||'';const cl=LANG_COLORS[l]||'var(--muted)';const desc=r.description?`<span class="gh-repo-desc">${r.description}</span>`:'';const u=new Date(r.pushed_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});return`<a href="${r.html_url}" target="_blank" rel="noreferrer" class="gh-repo"><div class="gh-repo-info"><span class="gh-repo-name">${r.name}</span>${desc}</div><div class="gh-repo-meta">${l?`<span class="gh-repo-lang" style="--lang-color:${cl}">${l}</span>`:''}<span>${u}</span><span class="gh-repo-arrow">↗</span></div></a>`}).join('')}
+      else{rEl.innerHTML=repos.map(r=>{const l=r.language||'';const cl=LANG_COLORS[l]||'var(--muted)';const desc=r.description?`<span class="gh-repo-desc">${r.description}</span>`:'';const u=new Date(r.pushed_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});return`<a href="${r.html_url}" target="_blank" rel="noreferrer" class="gh-repo"><div class="gh-repo-info"><span class="gh-repo-name">${r.name}</span>${desc}</div><div class="gh-repo-meta">${l?`<span class="gh-repo-lang" style="--lang-color:${cl}">${l}</span>`:''}<span>${u}</span><span class="gh-repo-arrow"><svg class="ui-arrow ui-arrow-up-right" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></span></div></a>`}).join('')}
       try{
         let lb=cacheGet('langs');
         if(!lb){const lp=repos.slice(0,5).map(r=>fetch(r.languages_url).then(r=>r.json()).catch(()=>({})));const ld=await Promise.all(lp);lb={};ld.forEach(d=>{Object.entries(d).forEach(([l,b])=>{lb[l]=(lb[l]||0)+b})});cacheSet('langs',lb)}
         const lEl=document.getElementById('gh-langs');const sorted=Object.entries(lb).sort((a,b)=>b[1]-a[1]);const tb=sorted.reduce((s,l)=>s+l[1],0);
         if(sorted.length){const bar=sorted.map(([l,b])=>{const p=(b/tb*100).toFixed(1);return`<div class="gh-lang-seg" style="width:${p}%;background:${LANG_COLORS[l]||'#555'}" title="${l} ${p}%"></div>`}).join('');const leg=sorted.slice(0,6).map(([l,b])=>`<span class="gh-lang-item" style="--lang-color:${LANG_COLORS[l]||'#555'}">${l} <span style="opacity:.5">${(b/tb*100).toFixed(1)}%</span></span>`).join('');lEl.innerHTML=`<div class="gh-lang-bar">${bar}</div><div class="gh-lang-list">${leg}</div>`}
       }catch(e){document.getElementById('gh-langs').innerHTML='<div class="gh-error">—</div>'}
-    }catch(e){document.getElementById('gh-repos').innerHTML='<div class="gh-error">Could not load repositories — <a href="https://github.com/cyper11" target="_blank" style="color:var(--lime)">view on GitHub ↗</a></div>';document.getElementById('gh-langs').innerHTML='<div class="gh-error">—</div>'}
+    }catch(e){document.getElementById('gh-repos').innerHTML='<div class="gh-error">Could not load repositories — <a href="https://github.com/cyper11" target="_blank" style="color:var(--lime)">view on GitHub <svg class="ui-arrow ui-arrow-up-right" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a></div>';document.getElementById('gh-langs').innerHTML='<div class="gh-error">—</div>'}
     try{
       const evts=await cFetch(`https://api.github.com/users/${GH_USER}/events/public?per_page=30`,'events');
       const eEl=document.getElementById('gh-events');const pe=evts.filter(e=>e.type==='PushEvent').slice(0,5);

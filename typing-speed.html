@@ -547,12 +547,13 @@
         }
 
         @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+        .ui-arrow{display:inline-block;width:1em;height:1em;vertical-align:-0.15em;stroke:currentColor;fill:none;flex-shrink:0;pointer-events:none}
     </style>
 </head>
 <body>
 
     <header class="topbar">
-        <a href="index.html#lab"><span>←</span> Back to Portfolio</a>
+        <a href="index.html#lab"><span><svg class="ui-arrow ui-arrow-left" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></span> Back to Portfolio</a>
         <div style="display:flex;align-items:center;gap:12px">
             <div class="title">Typing Speed Test</div>
             <button class="theme-toggle-btn" id="theme-btn" aria-label="Toggle theme">☀</button>

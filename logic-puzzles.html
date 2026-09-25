@@ -433,12 +433,13 @@
         }
 
         @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+        .ui-arrow{display:inline-block;width:1em;height:1em;vertical-align:-0.15em;stroke:currentColor;fill:none;flex-shrink:0;pointer-events:none}
     </style>
 </head>
 <body>
 
     <header class="topbar">
-        <a href="index.html#lab"><span>←</span> Back to Lab</a>
+        <a href="index.html#lab"><span><svg class="ui-arrow ui-arrow-left" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></span> Back to Lab</a>
         <div class="topbar-right">
             <div class="topbar-title">02 / Logic Puzzles</div>
             <button class="theme-toggle-btn" id="theme-btn" aria-label="Toggle theme">☀</button>
@@ -473,7 +474,7 @@
                 <div class="exp-head" id="exp-status"></div>
                 <p class="exp-body" id="exp-text"></p>
                 <div class="action-row">
-                    <button class="action-btn" id="next-btn">Next Puzzle <span>→</span></button>
+                    <button class="action-btn" id="next-btn">Next Puzzle <span><svg class="ui-arrow ui-arrow-right" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></button>
                 </div>
             </div>
         </div>
@@ -500,7 +501,7 @@
 
             <div class="result-actions">
                 <button class="action-btn" id="restart-btn">Restart Puzzles</button>
-                <a href="index.html#lab" class="ghost-btn">Back to Lab ↗</a>
+                <a href="index.html#lab" class="ghost-btn">Back to Lab <svg class="ui-arrow ui-arrow-up-right" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a>
             </div>
         </div>
     </main>
@@ -710,9 +711,9 @@
             expCard.classList.add('show');
 
             if (currentIndex === puzzles.length - 1) {
-                nextBtn.innerHTML = 'View Evaluation <span>→</span>';
+                nextBtn.innerHTML = 'View Evaluation <span><svg class="ui-arrow ui-arrow-right" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>';
             } else {
-                nextBtn.innerHTML = 'Next Puzzle <span>→</span>';
+                nextBtn.innerHTML = 'Next Puzzle <span><svg class="ui-arrow ui-arrow-right" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>';
             }
         }
 
