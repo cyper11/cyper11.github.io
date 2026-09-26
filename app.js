@@ -166,12 +166,14 @@ themeBtn.addEventListener('click', () => {
     Math.max(y, window.innerHeight - y)
   );
 
+  document.documentElement.classList.add('vt-theme');
   const transition = document.startViewTransition(() => {
     executeThemeToggle();
     window.dispatchEvent(new CustomEvent('themetoggle'));
   });
 
   transition.ready.then(() => {
+    document.documentElement.classList.remove('vt-theme');
     // Hardware-accelerated circular clipPath animation on compositor thread
     const anim = document.documentElement.animate(
       {
@@ -188,6 +190,7 @@ themeBtn.addEventListener('click', () => {
     );
     return anim.finished;
   }).catch(() => {}).finally(() => {
+    document.documentElement.classList.remove('vt-theme');
     isThemeTransitioning = false;
     themeBtn.classList.remove('theme-warping');
   });
