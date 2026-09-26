@@ -315,43 +315,24 @@ dialog ul{margin:8px 0;padding-left:20px;list-style:none}dialog li{margin:6px 0;
 .skip{position:fixed;top:-80px;left:20px;z-index:100;background:var(--lime);color:#111;padding:10px}.skip:focus{top:10px}
 
 /* ─── Theme toggle ─── */
-.theme-toggle{position:absolute;top:42px;right:25px;width:30px;height:30px;background:none;border:1px solid var(--line);border-radius:50%;font-size:14px;color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .25s,color .25s,transform .3s;z-index:1;padding:0;line-height:1;view-transition-name:theme-toggle}
+.theme-toggle{position:absolute;top:42px;right:25px;width:30px;height:30px;background:none;border:1px solid var(--line);border-radius:50%;font-size:14px;color:var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .25s,color .25s,transform .3s;z-index:1;padding:0;line-height:1}
 .theme-toggle:hover{border-color:var(--lime);color:var(--lime);transform:rotate(30deg)}
 
-/* Theme toggle: localized pulse / shockwave */
-.theme-toggle::after{content:'';position:absolute;inset:-2px;border-radius:50%;border:1px solid var(--lime);opacity:0;pointer-events:none;box-sizing:border-box}
-.theme-toggle.theme-warping::after{animation:theme-btn-shockwave .56s cubic-bezier(.16,1,.3,1) forwards}
-@keyframes theme-btn-shockwave{0%{transform:scale(.9);opacity:.65;border-color:var(--lime)}35%{transform:scale(1.7);opacity:.25}100%{transform:scale(2.3);opacity:0}}
+/* Theme toggle: button spin micro-interaction */
+.theme-toggle.theme-warping{animation:theme-btn-spin .42s cubic-bezier(.2,.9,.3,1);color:var(--lime);border-color:var(--lime)}
+@keyframes theme-btn-spin{0%{transform:scale(1) rotate(0deg)}45%{transform:scale(1.18) rotate(180deg)}100%{transform:scale(1) rotate(360deg)}}
 
-/* Theme toggle: subtle inward pull / squash warp */
-.theme-toggle.theme-warping,.theme-toggle.theme-warping:hover{animation:theme-btn-warp .56s cubic-bezier(.2,.9,.3,1) forwards}
-@keyframes theme-btn-warp{0%{transform:scale(1) rotate(0deg) skew(0deg,0deg)}20%{transform:scale(.86,.82) rotate(-6deg) skew(2.5deg,-1.5deg)}50%{transform:scale(1.06,1.04) rotate(2.5deg) skew(-1.5deg,.8deg)}75%{transform:scale(.985,.99) rotate(-.5deg) skew(.5deg,-.2deg)}100%{transform:scale(1) rotate(0deg) skew(0deg,0deg)}}
-
-/* Surrounding UI: subtle momentary reality warp toward button */
-body.theme-warping-ui .sidebar{animation:theme-surround-warp .56s cubic-bezier(.22,1,.36,1);transform-origin:var(--warp-x,215px) var(--warp-y,55px)}
-@keyframes theme-surround-warp{0%{transform:scale(1)}22%{transform:scale(.996)}55%{transform:scale(1.0015)}80%{transform:scale(.9995)}100%{transform:scale(1)}}
-
-/* Radial wavefront distortion ripple expanding across the viewport */
-.theme-warp-wave{position:fixed;top:var(--warp-y,50%);left:var(--warp-x,50%);width:20px;height:20px;margin-top:-10px;margin-left:-10px;border-radius:50%;pointer-events:none;z-index:99998;opacity:0;border:1.5px solid var(--lime);box-shadow:0 0 18px rgba(213,251,120,.22),inset 0 0 12px rgba(213,251,120,.12);will-change:transform,opacity}
-[data-theme="light"] .theme-warp-wave{border-color:var(--lime);box-shadow:0 0 18px rgba(74,138,20,.18),inset 0 0 12px rgba(74,138,20,.1)}
-.theme-warp-wave.active{animation:theme-wave-propagate .58s cubic-bezier(.22,1,.36,1) forwards}
-@keyframes theme-wave-propagate{0%{transform:scale(0);opacity:.7}25%{opacity:.45}70%{opacity:.15}100%{transform:scale(var(--warp-scale,150));opacity:0}}
-
-/* View Transition: radial theme wave expansion originating from toggle */
+/* View Transition: hardware-accelerated circular reveal */
 ::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
 ::view-transition-old(root){z-index:1}
-::view-transition-new(root){z-index:2;animation:theme-warp-expand .58s cubic-bezier(.22,1,.36,1)}
-@keyframes theme-warp-expand{0%{clip-path:circle(0px at var(--warp-x,50%) var(--warp-y,50%))}100%{clip-path:circle(var(--warp-r,150vmax) at var(--warp-x,50%) var(--warp-y,50%))}}
-::view-transition-group(theme-toggle){z-index:99999;animation:none}
-::view-transition-old(theme-toggle){animation:theme-btn-fade-out .1s ease forwards}
-::view-transition-new(theme-toggle){animation:theme-btn-warp .56s cubic-bezier(.2,.9,.3,1) forwards}
-@keyframes theme-btn-fade-out{to{opacity:0}}
+::view-transition-new(root){z-index:99999}
 
 /* ─── Light Theme ─── */
 [data-theme="light"]{--bg:#f5f4f0;--panel:#ffffff;--line:#ddd8d0;--text:#1a1d17;--muted:#5f6258;--lime:#4a8a14}
 
-/* Smooth theme switch */
-body.theme-switching,body.theme-switching *,body.theme-switching *::before,body.theme-switching *::after{transition:background-color .35s ease,color .25s ease,border-color .3s ease,box-shadow .3s ease,filter .35s ease !important}
+/* Smooth theme switch fallback (targeted container surfaces only, zero layout thrash) */
+body.theme-switching{transition:background-color .25s ease,color .25s ease}
+body.theme-switching .sidebar,body.theme-switching main,body.theme-switching .contact,body.theme-switching .gh-heatmap-wrap,body.theme-switching .lab-card,body.theme-switching .learn-card,body.theme-switching .badge-card,body.theme-switching .cert-card,body.theme-switching .work-feature{transition:background-color .25s ease,border-color .25s ease,color .25s ease}
 
 /* Selection */
 [data-theme="light"] ::selection{background:#d5fb78;color:#1a1d17}

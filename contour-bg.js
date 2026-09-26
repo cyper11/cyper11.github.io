@@ -247,7 +247,7 @@
     lastMousePos.y = y;
 
     // Wake up render loop if paused
-    if (!rafId && isPageVisible && !isModalOpen) {
+    if (!rafId && isPageVisible && !isModalOpen && !isThemeWarping) {
       lastTime = performance.now();
       rafId = requestAnimationFrame(render);
     }
@@ -264,6 +264,22 @@
     window.addEventListener('pointermove', onPointerMove, { passive: true });
   }
 
+  // Handle theme transitions: paint 1 instant frame for snapshot, then yield GPU to compositor
+  let isThemeWarping = false;
+  let warpPauseTimer = null;
+  window.addEventListener('themetoggle', () => {
+    isThemeWarping = true;
+    clearTimeout(warpPauseTimer);
+    drawSingleFrame((performance.now() - startTime) * 0.001);
+    warpPauseTimer = setTimeout(() => {
+      isThemeWarping = false;
+      if (!rafId && isPageVisible && !isModalOpen && !isMobile && !prefersReduced) {
+        lastTime = performance.now();
+        rafId = requestAnimationFrame(render);
+      }
+    }, 480);
+  }, { passive: true });
+
   // Pause WebGL during fast scrolling to ensure 60fps smooth scrolling
   window.addEventListener('scroll', () => {
     isScrollingFast = true;
@@ -276,7 +292,7 @@
   // Pause WebGL when tab is hidden
   document.addEventListener('visibilitychange', () => {
     isPageVisible = !document.hidden;
-    if (isPageVisible && !rafId && !isModalOpen && !isMobile && !prefersReduced) {
+    if (isPageVisible && !rafId && !isModalOpen && !isMobile && !prefersReduced && !isThemeWarping) {
       lastTime = performance.now();
       rafId = requestAnimationFrame(render);
     }
@@ -288,7 +304,7 @@
                      Boolean(document.querySelector('dialog[open], .fe-overlay.open'));
     if (hasModal !== isModalOpen) {
       isModalOpen = hasModal;
-      if (!isModalOpen && isPageVisible && !rafId && !isMobile && !prefersReduced) {
+      if (!isModalOpen && isPageVisible && !rafId && !isMobile && !prefersReduced && !isThemeWarping) {
         lastTime = performance.now();
         rafId = requestAnimationFrame(render);
       }
@@ -313,7 +329,7 @@
   let lastRenderTime = 0;
 
   function render(now) {
-    if (!isPageVisible || isModalOpen) {
+    if (!isPageVisible || isModalOpen || isThemeWarping) {
       rafId = null;
       return;
     }

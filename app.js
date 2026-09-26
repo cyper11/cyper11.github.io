@@ -116,84 +116,81 @@ document.querySelectorAll('[data-stack]').forEach(btn => btn.addEventListener('c
 const menu=document.querySelector('.mobile-menu'),nav=document.querySelector('nav');menu.addEventListener('click',()=>{const open=nav.classList.toggle('open');menu.setAttribute('aria-expanded',open);menu.textContent=open?'Close −':'Menu +'});
 nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('open');menu.setAttribute('aria-expanded','false');menu.textContent='Menu +';if(a.hash)setActiveNav(a.hash.slice(1))}));
 
-/* ─── Theme toggle with warp effect ─── */
-const themeBtn=document.getElementById('theme-toggle');
-let warpTimeout=null;
+/* ─── Theme toggle with GPU-accelerated circular warp reveal ─── */
+const themeBtn = document.getElementById('theme-toggle');
 
 function updateThemeVisuals(theme){
-  themeBtn.textContent=theme==='light'?'☾':'☀';
-  themeBtn.setAttribute('aria-label',theme==='light'?'Switch to dark mode':'Switch to light mode');
+  themeBtn.textContent = theme === 'light' ? '☾' : '☀';
+  themeBtn.setAttribute('aria-label', theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode');
 }
 
-const curTheme=document.documentElement.dataset.theme||'dark';
+const curTheme = document.documentElement.dataset.theme || 'dark';
 updateThemeVisuals(curTheme);
 
 function executeThemeToggle(){
-  const next=(document.documentElement.dataset.theme||'dark')==='light'?'dark':'light';
-  document.documentElement.dataset.theme=next;
-  localStorage.setItem('theme',next);
+  const next = (document.documentElement.dataset.theme || 'dark') === 'light' ? 'dark' : 'light';
+  document.documentElement.dataset.theme = next;
+  localStorage.setItem('theme', next);
   updateThemeVisuals(next);
 }
 
-function triggerWarpEffect(rect){
-  const x=rect.left+rect.width/2;
-  const y=rect.top+rect.height/2;
-  const maxR=Math.hypot(Math.max(x,window.innerWidth-x),Math.max(y,window.innerHeight-y));
-  const scale=(maxR*2)/20;
+let isThemeTransitioning = false;
+themeBtn.addEventListener('click', () => {
+  if (isThemeTransitioning) return;
 
-  document.documentElement.style.setProperty('--warp-x',`${x}px`);
-  document.documentElement.style.setProperty('--warp-y',`${y}px`);
-  document.documentElement.style.setProperty('--warp-r',`${maxR}px`);
-  document.documentElement.style.setProperty('--warp-scale',scale.toFixed(2));
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // Immediate tactile rotation on button (no forced layout reflow)
   themeBtn.classList.remove('theme-warping');
-  void themeBtn.offsetWidth;
-  themeBtn.classList.add('theme-warping');
+  requestAnimationFrame(() => {
+    themeBtn.classList.add('theme-warping');
+  });
 
-  document.body.classList.remove('theme-warping-ui');
-  void document.body.offsetWidth;
-  document.body.classList.add('theme-warping-ui');
-
-  let wave=document.getElementById('theme-warp-wave');
-  if(!wave){
-    wave=document.createElement('div');
-    wave.id='theme-warp-wave';
-    wave.className='theme-warp-wave';
-    wave.setAttribute('aria-hidden','true');
-    document.body.appendChild(wave);
-  }
-  wave.classList.remove('active');
-  void wave.offsetWidth;
-  wave.classList.add('active');
-
-  clearTimeout(warpTimeout);
-  warpTimeout=setTimeout(()=>{
-    themeBtn.classList.remove('theme-warping');
-    document.body.classList.remove('theme-warping-ui');
-    if(wave)wave.classList.remove('active');
-  },600);
-}
-
-themeBtn.addEventListener('click',()=>{
-  const prefersReduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const rect=themeBtn.getBoundingClientRect();
-
-  if(prefersReduced){
+  if (prefersReduced || !document.startViewTransition) {
+    document.body.classList.add('theme-switching');
     executeThemeToggle();
+    window.dispatchEvent(new CustomEvent('themetoggle'));
+    setTimeout(() => {
+      document.body.classList.remove('theme-switching');
+      themeBtn.classList.remove('theme-warping');
+    }, 280);
     return;
   }
 
-  triggerWarpEffect(rect);
+  isThemeTransitioning = true;
+  const rect = themeBtn.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top + rect.height / 2;
+  const endRadius = Math.hypot(
+    Math.max(x, window.innerWidth - x),
+    Math.max(y, window.innerHeight - y)
+  );
 
-  if(document.startViewTransition){
-    document.startViewTransition(()=>{
-      executeThemeToggle();
-    });
-  }else{
-    document.body.classList.add('theme-switching');
+  const transition = document.startViewTransition(() => {
     executeThemeToggle();
-    setTimeout(()=>document.body.classList.remove('theme-switching'),400);
-  }
+    window.dispatchEvent(new CustomEvent('themetoggle'));
+  });
+
+  transition.ready.then(() => {
+    // Hardware-accelerated circular clipPath animation on compositor thread
+    const anim = document.documentElement.animate(
+      {
+        clipPath: [
+          `circle(0px at ${x}px ${y}px)`,
+          `circle(${endRadius}px at ${x}px ${y}px)`
+        ]
+      },
+      {
+        duration: 440,
+        easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+        pseudoElement: '::view-transition-new(root)'
+      }
+    );
+    return anim.finished;
+  }).catch(() => {}).finally(() => {
+    isThemeTransitioning = false;
+    themeBtn.classList.remove('theme-warping');
+  });
 });
 
 /* ─── Active nav scroll-spy (Precomputed Zero-Layout-Thrash Math) ─── */
