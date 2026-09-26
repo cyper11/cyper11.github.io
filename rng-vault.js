@@ -1345,9 +1345,11 @@
       launchBtn.addEventListener('click', openOverlay);
     }
 
-    // Topbar Exit & Audio
-    const exitBtn = document.getElementById('rng-exit-top-btn');
-    if (exitBtn) exitBtn.addEventListener('click', closeOverlay);
+    // Close / Exit buttons (topbar, footer, and any close triggers)
+    const closeTriggers = document.querySelectorAll('#rng-exit-top-btn, #rng-close-btn, #rng-footer-close-btn, .rng-close-btn, .rng-footer-close-btn');
+    closeTriggers.forEach((btn) => {
+      btn.addEventListener('click', closeOverlay);
+    });
 
     const audioToggle = document.getElementById('rng-audio-toggle');
     if (audioToggle) {

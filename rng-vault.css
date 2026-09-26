@@ -24,17 +24,110 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
 }
 
-/* Header & HUD */
+/* Header & Navigation */
 .rng-topbar {
-  background: rgba(14, 17, 13, 0.95);
+  background: rgba(14, 17, 13, 0.98);
   border-bottom: 1px solid var(--line);
-  padding: 12px 20px;
+  padding: 10px 18px;
   flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+
+.rng-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.rng-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Prominent Close Button */
+.rng-close-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  padding: 5px 12px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #f0f1e9;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  user-select: none;
+}
+
+.rng-close-btn:hover {
+  background: rgba(213, 251, 120, 0.16);
+  border-color: var(--lime);
+  color: var(--lime);
+  box-shadow: 0 0 12px rgba(213, 251, 120, 0.25);
+  transform: translateY(-1px);
+}
+
+.rng-close-btn:active {
+  transform: translateY(0);
+}
+
+.rng-close-label {
+  display: inline-block;
+}
+
+.rng-close-icon {
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 700;
+  color: inherit;
+}
+
+.rng-footer-close-btn {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 5px 12px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  transition: all 0.2s;
+}
+
+.rng-footer-close-btn:hover {
+  border-color: var(--lime);
+  color: var(--lime);
+  background: rgba(213, 251, 120, 0.06);
+}
+
+/* Dedicated Telemetry HUD Bar */
+.rng-hud-bar {
+  background: rgba(18, 22, 16, 0.95);
+  border-bottom: 1px solid var(--line);
+  padding: 8px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.rng-hud-bar::-webkit-scrollbar {
+  display: none;
 }
 
 .rng-sub-badge {
@@ -54,11 +147,12 @@
 .rng-hud-metrics {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   font-family: var(--mono);
   font-size: 11px;
   letter-spacing: 0.06em;
   color: var(--muted);
+  width: 100%;
 }
 
 .rng-hud-stat strong {
@@ -78,7 +172,7 @@
   background: transparent;
   border: 1px solid var(--line);
   border-radius: 4px;
-  padding: 4px 10px;
+  padding: 5px 10px;
   font-family: var(--mono);
   font-size: 11px;
   color: var(--muted);
@@ -98,6 +192,42 @@
   color: var(--lime);
   border-color: rgba(200, 255, 61, 0.4);
   background: rgba(200, 255, 61, 0.08);
+}
+
+/* Light Theme Overrides */
+[data-theme="light"] .rng-topbar {
+  background: rgba(255, 255, 255, 0.98);
+  border-bottom-color: var(--line);
+}
+
+[data-theme="light"] .rng-hud-bar {
+  background: rgba(246, 248, 242, 0.96);
+  border-bottom-color: var(--line);
+}
+
+[data-theme="light"] .rng-close-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.22);
+  color: #111;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .rng-close-btn:hover {
+  background: rgba(74, 138, 20, 0.14);
+  border-color: var(--lime);
+  color: var(--lime);
+  box-shadow: 0 4px 14px rgba(74, 138, 20, 0.18);
+}
+
+[data-theme="light"] .rng-footer-close-btn {
+  border-color: var(--line);
+  color: var(--muted);
+}
+
+[data-theme="light"] .rng-footer-close-btn:hover {
+  border-color: var(--lime);
+  color: var(--lime);
+  background: rgba(74, 138, 20, 0.08);
 }
 
 /* Tab Navigation */
@@ -1047,6 +1177,42 @@
   }
   .rng-topbar, .rng-footer {
     padding: 10px 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .rng-topbar {
+    padding: 8px 12px;
+  }
+  .rng-topbar-left .fe-status-badge {
+    padding: 2px 6px;
+    font-size: 8.5px;
+  }
+  .rng-topbar-left .fe-status-dot {
+    width: 5px;
+    height: 5px;
+  }
+  .rng-topbar-left .fe-top-title b {
+    display: none;
+  }
+  .rng-sub-badge {
+    display: none;
+  }
+  .rng-close-btn {
+    padding: 5px 9px;
+    font-size: 10.5px;
+    gap: 4px;
+  }
+  .rng-close-icon {
+    font-size: 15px;
+  }
+  .rng-hud-bar {
+    padding: 6px 12px;
+  }
+  .rng-hud-metrics {
+    gap: 10px;
+    font-size: 9.5px;
+    justify-content: space-between;
   }
 }
 

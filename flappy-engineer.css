@@ -356,25 +356,48 @@
 }
 
 .fe-exit-top-btn {
-  background: transparent;
-  border: 1px solid var(--fe-line);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 4px;
-  padding: 5px 11px;
+  padding: 5px 12px;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.08em;
-  color: var(--fe-muted);
+  color: #f0f1e9;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  user-select: none;
 }
 
 .fe-exit-top-btn:hover {
   border-color: var(--fe-lime);
   color: var(--fe-lime);
-  background: rgba(213, 251, 120, 0.05);
+  background: rgba(213, 251, 120, 0.16);
+  box-shadow: 0 0 12px rgba(213, 251, 120, 0.25);
+  transform: translateY(-1px);
+}
+
+.fe-exit-top-btn:active {
+  transform: translateY(0);
+}
+
+[data-theme="light"] .fe-exit-top-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.22);
+  color: #111;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .fe-exit-top-btn:hover {
+  background: rgba(74, 138, 20, 0.14);
+  border-color: var(--fe-lime);
+  color: var(--fe-lime);
+  box-shadow: 0 4px 14px rgba(74, 138, 20, 0.18);
 }
 
 /* ─── Stage & Canvas Container ─── */

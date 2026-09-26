@@ -196,105 +196,148 @@ themeBtn.addEventListener('click',()=>{
   }
 });
 
-/* ─── Active nav scroll-spy ─── */
-const sections=Array.from(document.querySelectorAll('main section[id]'));
-const navLinks=document.querySelectorAll('nav a');
-const tabbarItems=document.querySelectorAll('.mobile-tabbar .tabbar-item');
+/* ─── Active nav scroll-spy (Precomputed Zero-Layout-Thrash Math) ─── */
+const sections = Array.from(document.querySelectorAll('main section[id]'));
+const navLinks = document.querySelectorAll('nav a');
+const tabbarItems = document.querySelectorAll('.mobile-tabbar .tabbar-item');
+let activeNavId = null;
+
 function setActiveNav(id){
-  navLinks.forEach(a=>a.classList.toggle('active',a.hash==='#'+id));
-  tabbarItems.forEach(item=>{
-    const target=item.dataset.nav;
-    const isMatch=target===id||(id==='overview'&&target==='overview');
-    item.classList.toggle('active',isMatch);
+  if(activeNavId === id) return;
+  activeNavId = id;
+  navLinks.forEach(a => a.classList.toggle('active', a.hash === '#' + id));
+  tabbarItems.forEach(item => {
+    const target = item.dataset.nav;
+    const isMatch = target === id || (id === 'overview' && target === 'overview');
+    item.classList.toggle('active', isMatch);
   });
 }
 
-/* ─── Mobile Floating Tab Bar Scroll Behavior (brewed-ops inspired) ─── */
-const mobileTabbar=document.getElementById('mobile-tabbar');
-if(mobileTabbar){
-  let lastScrollY=window.scrollY;
-  const scrollDeltaThreshold=12;
-  window.addEventListener('scroll',()=>{
-    const currentY=window.scrollY;
-    const diff=currentY-lastScrollY;
-    if(currentY<=60){
-      mobileTabbar.classList.remove('tabbar-hidden');
-    }else if(diff>scrollDeltaThreshold&&currentY>100){
-      mobileTabbar.classList.add('tabbar-hidden');
-    }else if(diff<-scrollDeltaThreshold){
-      mobileTabbar.classList.remove('tabbar-hidden');
-    }
-    lastScrollY=currentY;
-  },{passive:true});
+// Precompute section offsets to completely eliminate getBoundingClientRect on scroll
+let sectionLayout = [];
+function cacheSectionLayout(){
+  const scrollY = window.scrollY || window.pageYOffset || 0;
+  sectionLayout = sections.map(s => {
+    const rect = s.getBoundingClientRect();
+    return {
+      id: s.id,
+      top: rect.top + scrollY,
+      bottom: rect.bottom + scrollY
+    };
+  });
+}
+cacheSectionLayout();
 
-  mobileTabbar.querySelectorAll('.tabbar-item').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const targetId=btn.getAttribute('href')?.slice(1);
-      if(targetId)setActiveNav(targetId);
+/* ─── Mobile Floating Tab Bar Scroll Behavior (Merged in unified rAF tick) ─── */
+const mobileTabbar = document.getElementById('mobile-tabbar');
+let lastScrollY = window.scrollY;
+const scrollDeltaThreshold = 12;
+
+if(mobileTabbar){
+  mobileTabbar.querySelectorAll('.tabbar-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('href')?.slice(1);
+      if(targetId) setActiveNav(targetId);
     });
   });
 }
 
-/* ─── Interactive Card Spotlight Glow (brewed-ops inspired) ─── */
-document.querySelectorAll('.work-feature, .interactive-slide, .principle-item').forEach(card=>{
-  card.addEventListener('pointermove',(e)=>{
-    const rect=card.getBoundingClientRect();
-    card.style.setProperty('--mouse-x',`${e.clientX-rect.left}px`);
-    card.style.setProperty('--mouse-y',`${e.clientY-rect.top}px`);
-  },{passive:true});
-});
-function updateActiveNav(){
+function updateScrollUI(){
+  const scrollY = window.scrollY || window.pageYOffset || 0;
+  const vh = window.innerHeight;
+  const scrollHeight = document.documentElement.scrollHeight;
+  const distFromBottom = (scrollHeight - vh) - scrollY;
 
-  if(!sections.length)return;
-  const scrollY=window.scrollY||window.pageYOffset||0;
-  const vh=window.innerHeight;
-  const scrollHeight=document.documentElement.scrollHeight;
-  const maxScroll=scrollHeight-vh;
-  const distFromBottom=maxScroll-scrollY;
+  // 1. Mobile tabbar toggle (zero duplicate listener overhead)
+  if(mobileTabbar){
+    const diff = scrollY - lastScrollY;
+    if(scrollY <= 60){
+      mobileTabbar.classList.remove('tabbar-hidden');
+    }else if(diff > scrollDeltaThreshold && scrollY > 100){
+      mobileTabbar.classList.add('tabbar-hidden');
+    }else if(diff < -scrollDeltaThreshold){
+      mobileTabbar.classList.remove('tabbar-hidden');
+    }
+  }
+  lastScrollY = scrollY;
 
-  // 1. Bottom of page threshold: always activate Contact (09) at/near bottom
-  if(distFromBottom<=70){
-    setActiveNav(sections[sections.length-1].id);
+  // 2. High-performance scroll-spy using precomputed layout (0 reflows)
+  if(!sectionLayout.length) return;
+
+  if(distFromBottom <= 80){
+    setActiveNav(sectionLayout[sectionLayout.length - 1].id);
     return;
   }
 
-  // 2. Top of page: always activate Overview (01) at top
-  if(scrollY<=60){
-    setActiveNav(sections[0].id);
+  if(scrollY <= 60){
+    setActiveNav(sectionLayout[0].id);
     return;
   }
 
-  // 3. Viewport dominance: find the section occupying the primary focus of the viewport
-  let bestSection=null,maxScore=-1;
-  for(let i=0;i<sections.length;i++){
-    const s=sections[i];
-    const rect=s.getBoundingClientRect();
-    const visTop=Math.max(0,rect.top);
-    const visBottom=Math.min(vh,rect.bottom);
-    const visHeight=Math.max(0,visBottom-visTop);
-    if(visHeight<=0)continue;
-    let score=visHeight;
-    // When Contact enters prominently into the lower viewport
-    if(s.id==='contact'&&rect.top<=vh*0.65){
-      score+=vh*0.15;
-    }
-    if(score>maxScore){
-      maxScore=score;
-      bestSection=s;
+  const probeY = scrollY + vh * 0.42;
+  for(let i = 0; i < sectionLayout.length; i++){
+    const s = sectionLayout[i];
+    if(probeY >= s.top && probeY < s.bottom){
+      setActiveNav(s.id);
+      break;
     }
   }
-  if(bestSection)setActiveNav(bestSection.id);
 }
-let navTicking=false;
+
+let navTicking = false;
 function onNavScroll(){
   if(!navTicking){
-    requestAnimationFrame(()=>{updateActiveNav();navTicking=false});
-    navTicking=true;
+    requestAnimationFrame(() => {
+      updateScrollUI();
+      navTicking = false;
+    });
+    navTicking = true;
   }
 }
-window.addEventListener('scroll',onNavScroll,{passive:true});
-window.addEventListener('resize',onNavScroll,{passive:true});
-updateActiveNav();
+window.addEventListener('scroll', onNavScroll, { passive: true });
+window.addEventListener('resize', () => {
+  cacheSectionLayout();
+  onNavScroll();
+}, { passive: true });
+updateScrollUI();
+
+/* ─── Interactive Card Spotlight Glow (Delegated & rAF Throttled) ─── */
+if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches && !('ontouchstart' in window)){
+  let cardGlowRaf = null;
+  let activeCard = null;
+  let activeCardRect = null;
+  let clientX = 0, clientY = 0;
+
+  document.addEventListener('pointerover', (e) => {
+    const card = e.target.closest('.work-feature, .interactive-slide, .principle-item');
+    if(card){
+      activeCard = card;
+      activeCardRect = card.getBoundingClientRect();
+    }
+  }, { passive: true });
+
+  document.addEventListener('pointerout', (e) => {
+    if(activeCard && (e.target === activeCard || !activeCard.contains(e.relatedTarget))){
+      activeCard = null;
+      activeCardRect = null;
+    }
+  }, { passive: true });
+
+  document.addEventListener('pointermove', (e) => {
+    if(!activeCard) return;
+    clientX = e.clientX;
+    clientY = e.clientY;
+    if(!cardGlowRaf){
+      cardGlowRaf = requestAnimationFrame(() => {
+        if(activeCard && activeCardRect){
+          activeCard.style.setProperty('--mouse-x', `${clientX - activeCardRect.left}px`);
+          activeCard.style.setProperty('--mouse-y', `${clientY - activeCardRect.top}px`);
+        }
+        cardGlowRaf = null;
+      });
+    }
+  }, { passive: true });
+}
 
 /* ─── Case / credential dialogs ─── */
 document.querySelectorAll('[data-case]').forEach(btn=>{
@@ -419,94 +462,311 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
 })();
 
 /* ═══════════════════════════════════════════════
-   GITHUB LIVE ACTIVITY (cached)
+   GITHUB LIVE ACTIVITY (Cached Singleton, Zero-Lag)
    ═══════════════════════════════════════════════ */
 (function(){
-  const GH_USER='cyper11';
-  const CACHE_TTL=3600000;
-  const LANG_COLORS={JavaScript:'#f1e05a',HTML:'#e34c26',CSS:'#563d7c',Java:'#b07219',Python:'#3572A5',PHP:'#4F5D95','C#':'#178600',TypeScript:'#3178c6',Shell:'#89e051',Kotlin:'#A97BFF',SCSS:'#c6538c',Vue:'#41b883'};
-  const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  function cacheGet(k){try{const d=JSON.parse(localStorage.getItem('gh_'+k));if(d&&Date.now()-d.ts<CACHE_TTL)return d.data}catch(e){}return null}
-  function cacheSet(k,v){try{localStorage.setItem('gh_'+k,JSON.stringify({ts:Date.now(),data:v}))}catch(e){}}
-  async function cFetch(url,k){const c=cacheGet(k);if(c)return c;const r=await fetch(url);if(!r.ok)throw new Error('err');const d=await r.json();cacheSet(k,d);return d}
-  let tip=document.createElement('div');tip.className='gh-tip';document.body.appendChild(tip);
-  function timeAgo(date){const s=Math.floor((Date.now()-date)/1000);if(s<60)return'just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';if(s<604800)return Math.floor(s/86400)+'d ago';return date.toLocaleDateString('en-US',{month:'short',day:'numeric'})}
-  async function init(){
-    const hEl=document.getElementById('gh-heatmap'),mEl=document.getElementById('gh-months'),tEl=document.getElementById('gh-total');
-    try{
-      const data=await cFetch(`https://github-contributions-api.jogruber.de/v4/${GH_USER}?y=last`,'heatmap');
-      const contributions=data.contributions;const total=data.total?data.total.lastYear||Object.values(data.total).reduce((a,b)=>a+b,0):0;
-      tEl.innerHTML=`<span class="gh-total-num">${total.toLocaleString()}</span> contributions in the last year`;
-      const weeks=[];let cw=[];
-      contributions.forEach((c,i)=>{const d=new Date(c.date);if(i===0){for(let p=0;p<d.getDay();p++)cw.push(null)}cw.push(c);if(d.getDay()===6||i===contributions.length-1){weeks.push(cw);cw=[]}});
-      let lm=-1;const ml=[];weeks.forEach((w,wi)=>{const f=w.find(d=>d);if(f){const m=new Date(f.date).getMonth();if(m!==lm){ml.push({week:wi,label:MONTHS[m]});lm=m}}});
-      mEl.innerHTML=ml.map((m,i)=>{const n=ml[i+1];const s=n?(n.week-m.week)*15:(weeks.length-m.week)*15;return`<span style="width:${s}px">${m.label}</span>`}).join('');
-      hEl.innerHTML=weeks.map(w=>{const c=[];for(let d=0;d<7;d++){const e=w[d];if(!e)c.push('<div class="gh-day" data-level="0" style="visibility:hidden"></div>');else c.push(`<div class="gh-day" data-level="${e.level}" data-date="${e.date}" data-count="${e.count}"></div>`)}return`<div class="gh-week">${c.join('')}</div>`}).join('');
-      hEl.addEventListener('mouseover',e=>{const day=e.target.closest('.gh-day');if(!day||!day.dataset.date)return;tip.innerHTML=`<strong>${day.dataset.count}</strong> contribution${day.dataset.count!=='1'?'s':''} on ${new Date(day.dataset.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`;tip.classList.add('show')});
-      hEl.addEventListener('mousemove',e=>{tip.style.left=e.clientX+12+'px';tip.style.top=e.clientY-36+'px'});
-      hEl.addEventListener('mouseout',e=>{if(e.target.closest('.gh-day'))tip.classList.remove('show')});
-    }catch(e){hEl.innerHTML='<div class="gh-error">Could not load contributions</div>'}
-    try{
-      const allRepos=await cFetch(`https://api.github.com/users/${GH_USER}/repos?sort=pushed&per_page=100`,'repos');
-      const rEl=document.getElementById('gh-repos');
-      const repos=allRepos.filter(r=>!r.fork).sort((a,b)=>new Date(b.pushed_at)-new Date(a.pushed_at)).slice(0,5);
-      if(!repos.length){rEl.innerHTML='<div class="gh-placeholder">No public repositories</div>'}
-      else{rEl.innerHTML=repos.map(r=>{const l=r.language||'';const cl=LANG_COLORS[l]||'var(--muted)';const desc=r.description?`<span class="gh-repo-desc">${r.description}</span>`:'';const u=new Date(r.pushed_at).toLocaleDateString('en-US',{month:'short',day:'numeric'});return`<a href="${r.html_url}" target="_blank" rel="noreferrer" class="gh-repo"><div class="gh-repo-info"><span class="gh-repo-name">${r.name}</span>${desc}</div><div class="gh-repo-meta">${l?`<span class="gh-repo-lang" style="--lang-color:${cl}">${l}</span>`:''}<span>${u}</span><span class="gh-repo-arrow"><svg class="ui-arrow ui-arrow-up-right" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></span></div></a>`}).join('')}
-      try{
-        let lb=cacheGet('langs');
-        if(!lb){const lp=repos.slice(0,5).map(r=>fetch(r.languages_url).then(r=>r.json()).catch(()=>({})));const ld=await Promise.all(lp);lb={};ld.forEach(d=>{Object.entries(d).forEach(([l,b])=>{lb[l]=(lb[l]||0)+b})});cacheSet('langs',lb)}
-        const lEl=document.getElementById('gh-langs');const sorted=Object.entries(lb).sort((a,b)=>b[1]-a[1]);const tb=sorted.reduce((s,l)=>s+l[1],0);
-        if(sorted.length){const bar=sorted.map(([l,b])=>{const p=(b/tb*100).toFixed(1);return`<div class="gh-lang-seg" style="width:${p}%;background:${LANG_COLORS[l]||'#555'}" title="${l} ${p}%"></div>`}).join('');const leg=sorted.slice(0,6).map(([l,b])=>`<span class="gh-lang-item" style="--lang-color:${LANG_COLORS[l]||'#555'}">${l} <span style="opacity:.5">${(b/tb*100).toFixed(1)}%</span></span>`).join('');lEl.innerHTML=`<div class="gh-lang-bar">${bar}</div><div class="gh-lang-list">${leg}</div>`}
-      }catch(e){document.getElementById('gh-langs').innerHTML='<div class="gh-error">—</div>'}
-    }catch(e){document.getElementById('gh-repos').innerHTML='<div class="gh-error">Could not load repositories — <a href="https://github.com/cyper11" target="_blank" style="color:var(--lime)">view on GitHub <svg class="ui-arrow ui-arrow-up-right" viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></a></div>';document.getElementById('gh-langs').innerHTML='<div class="gh-error">—</div>'}
-    try{
-      const evts=await cFetch(`https://api.github.com/users/${GH_USER}/events/public?per_page=30`,'events');
-      const eEl=document.getElementById('gh-events');const pe=evts.filter(e=>e.type==='PushEvent').slice(0,5);
-      if(!pe.length){eEl.innerHTML='<div class="gh-placeholder">No recent activity</div>'}
-      else{eEl.innerHTML=pe.map(e=>{const repo=e.repo.name.replace(GH_USER+'/','');const msg=e.payload.commits&&e.payload.commits.length?e.payload.commits[e.payload.commits.length-1].message.split('\n')[0]:'';return`<div class="gh-event"><span class="gh-event-time">${timeAgo(new Date(e.created_at))}</span><span class="gh-event-repo">${repo}</span><span class="gh-event-msg">${msg}</span></div>`}).join('')}
-    }catch(e){document.getElementById('gh-events').innerHTML='<div class="gh-error">Could not load activity</div>'}
+  const GH_USER = 'cyper11';
+  const CACHE_KEY = 'gh_heatmap_v2';
+  const CACHE_TTL = 6 * 3600 * 1000; // 6 hours
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  let memData = null;
+  let inFlightPromise = null;
+  let rendered = false;
+  const tipCache = new Map();
+
+  function cacheGet(){
+    if(memData) return memData;
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if(raw){
+        const parsed = JSON.parse(raw);
+        if(Date.now() - parsed.ts < CACHE_TTL){
+          memData = parsed.data;
+          return memData;
+        }
+      }
+    }catch(e){}
+    return null;
   }
-  const st=document.createElement('style');st.textContent='.gh-repo-lang::before{background:var(--lang-color,var(--muted))}.gh-lang-item::before{background:var(--lang-color,var(--muted))}';document.head.appendChild(st);
-  init();
+
+  function cacheSet(data){
+    memData = data;
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+    }catch(e){}
+  }
+
+  async function fetchHeatmapData(){
+    const cached = cacheGet();
+    if(cached) return cached;
+    if(inFlightPromise) return inFlightPromise;
+
+    inFlightPromise = (async () => {
+      try {
+        const res = await fetch(`https://github-contributions-api.jogruber.de/v4/${GH_USER}?y=last`);
+        if(!res.ok) throw new Error('API offline');
+        const json = await res.json();
+        cacheSet(json);
+        return json;
+      } finally {
+        inFlightPromise = null;
+      }
+    })();
+
+    return inFlightPromise;
+  }
+
+  let tip = document.querySelector('.gh-tip');
+  if(!tip){
+    tip = document.createElement('div');
+    tip.className = 'gh-tip';
+    document.body.appendChild(tip);
+  }
+
+  function renderHeatmap(data){
+    if(rendered) return;
+    const hEl = document.getElementById('gh-heatmap');
+    const mEl = document.getElementById('gh-months');
+    const tEl = document.getElementById('gh-total');
+    if(!hEl || !mEl || !tEl) return;
+
+    try {
+      const contributions = data.contributions;
+      const total = data.total ? data.total.lastYear || Object.values(data.total).reduce((a, b) => a + b, 0) : 0;
+      tEl.innerHTML = `<span class="gh-total-num">${total.toLocaleString()}</span> contributions in the last year`;
+
+      const weeks = [];
+      let cw = [];
+      tipCache.clear();
+
+      // Precompute weeks and tooltip content in a single linear pass
+      for(let i = 0; i < contributions.length; i++){
+        const c = contributions[i];
+        const parts = c.date.split('-');
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        const d = new Date(year, month, day);
+
+        if(i === 0){
+          for(let p = 0; p < d.getDay(); p++) cw.push(null);
+        }
+        cw.push(c);
+
+        // Precompute formatted date string once
+        const dateStr = `${MONTHS[month]} ${day}, ${year}`;
+        const count = c.count || 0;
+        const countStr = `<strong>${count > 0 ? count : 'No'}</strong> ${count === 1 ? 'contribution' : 'contributions'}`;
+        tipCache.set(c.date, `<span class="gh-tip-date">${dateStr}</span><span class="gh-tip-count">${countStr}</span>`);
+
+        if(d.getDay() === 6 || i === contributions.length - 1){
+          weeks.push(cw);
+          cw = [];
+        }
+      }
+
+      // Generate months header
+      let lm = -1;
+      const ml = [];
+      weeks.forEach((w, wi) => {
+        const f = w.find(d => d);
+        if(f){
+          const m = parseInt(f.date.split('-')[1], 10) - 1;
+          if(m !== lm){
+            ml.push({ week: wi, label: MONTHS[m] });
+            lm = m;
+          }
+        }
+      });
+
+      const colStep = 15; // 12px day cell + 3px gap
+      mEl.innerHTML = ml.map((m, i) => {
+        const n = ml[i + 1];
+        const s = n ? (n.week - m.week) * colStep : (weeks.length - m.week) * colStep;
+        return `<span style="width:${s}px">${m.label}</span>`;
+      }).join('');
+
+      // Build DOM in a single innerHTML injection
+      hEl.innerHTML = weeks.map(w => {
+        const c = [];
+        for(let d = 0; d < 7; d++){
+          const e = w[d];
+          if(!e) c.push('<div class="gh-day" data-level="0" style="visibility:hidden"></div>');
+          else c.push(`<div class="gh-day" data-level="${e.level}" data-date="${e.date}"></div>`);
+        }
+        return `<div class="gh-week">${c.join('')}</div>`;
+      }).join('');
+
+      // Efficient event delegation with Map lookup and transform positioning
+      let activeHoverDate = null;
+      hEl.addEventListener('mouseover', e => {
+        const dayEl = e.target.closest('.gh-day');
+        if(!dayEl || !dayEl.dataset.date) return;
+        const date = dayEl.dataset.date;
+        if(activeHoverDate === date) return;
+        activeHoverDate = date;
+
+        const tipHtml = tipCache.get(date);
+        if(!tipHtml) return;
+
+        tip.innerHTML = tipHtml;
+        tip.classList.add('show');
+        const rect = dayEl.getBoundingClientRect();
+        const posX = Math.round(rect.left + rect.width / 2);
+        const posY = Math.round(rect.top - 8);
+        tip.style.transform = `translate3d(${posX}px, ${posY}px, 0) translate(-50%, -100%)`;
+      }, { passive: true });
+
+      hEl.addEventListener('mouseout', e => {
+        if(e.target.closest('.gh-day')){
+          activeHoverDate = null;
+          tip.classList.remove('show');
+        }
+      }, { passive: true });
+
+      rendered = true;
+    } catch(err){
+      console.warn('Heatmap render fallback:', err);
+      showErrorState();
+    }
+  }
+
+  function showLoadingState(){
+    const tEl = document.getElementById('gh-total');
+    const hEl = document.getElementById('gh-heatmap');
+    if(tEl) tEl.innerHTML = '<span class="gh-total-num">—</span> Loading activity…';
+    if(hEl && !rendered) hEl.innerHTML = '<div class="gh-placeholder">Loading activity…</div>';
+  }
+
+  function showErrorState(){
+    const tEl = document.getElementById('gh-total');
+    const hEl = document.getElementById('gh-heatmap');
+    if(tEl) tEl.innerHTML = '<span class="gh-total-num">—</span> Activity unavailable';
+    if(hEl && !rendered) hEl.innerHTML = '<div class="gh-placeholder">Activity unavailable</div>';
+  }
+
+  async function loadAndRender(){
+    if(rendered) return;
+    showLoadingState();
+    try {
+      const data = await fetchHeatmapData();
+      renderHeatmap(data);
+    } catch(e){
+      showErrorState();
+    }
+  }
+
+  // Check cache immediately: if available, render with zero network delay
+  const cached = cacheGet();
+  if(cached){
+    renderHeatmap(cached);
+  } else {
+    // If not in cache, observe Section 07 to fetch when approaching viewport (or on idle)
+    const actSection = document.getElementById('activity');
+    if(actSection && 'IntersectionObserver' in window){
+      const obs = new IntersectionObserver(([entry]) => {
+        if(entry.isIntersecting){
+          obs.disconnect();
+          loadAndRender();
+        }
+      }, { rootMargin: '400px' });
+      obs.observe(actSection);
+
+      // Preload after 2.5s idle if user stays at top of page
+      if('requestIdleCallback' in window){
+        requestIdleCallback(() => { if(!rendered) loadAndRender(); }, { timeout: 3000 });
+      } else {
+        setTimeout(() => { if(!rendered) loadAndRender(); }, 3000);
+      }
+    } else {
+      loadAndRender();
+    }
+  }
 })();
 
 /* ═══════════════════════════════════════════════
-   CURSOR GLOW (desktop only, subtle)
+   CURSOR GLOW (Event-Delegated, Zero-Reflow)
    ═══════════════════════════════════════════════ */
 (function(){
-  if(window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;
-  if(window.matchMedia('(max-width:850px)').matches)return;
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if(window.matchMedia('(max-width: 850px)').matches || ('ontouchstart' in window)) return;
 
-  const targets=document.querySelectorAll('.hero, .lab-card, .contact-panel');
-  targets.forEach(el=>{
+  const targets = document.querySelectorAll('.hero, .lab-card, .contact-panel');
+  targets.forEach(el => {
     el.classList.add('cursor-glow-target');
-    const glow=document.createElement('div');
-    glow.className='cursor-glow';
+    const glow = document.createElement('div');
+    glow.className = 'cursor-glow';
     el.appendChild(glow);
   });
 
-  let glowTicking=false;
-  document.addEventListener('mousemove',e=>{
-    if(glowTicking)return;
-    glowTicking=true;
-    requestAnimationFrame(()=>{
-      targets.forEach(el=>{
-        const rect=el.getBoundingClientRect();
-        const x=e.clientX-rect.left;
-        const y=e.clientY-rect.top;
-        el.style.setProperty('--glow-x',x+'px');
-        el.style.setProperty('--glow-y',y+'px');
+  let activeTarget = null;
+  let activeRect = null;
+  let mouseX = 0, mouseY = 0;
+  let glowTicking = false;
+
+  document.addEventListener('pointerover', (e) => {
+    const target = e.target.closest('.cursor-glow-target');
+    if(target){
+      activeTarget = target;
+      activeRect = target.getBoundingClientRect();
+    }
+  }, { passive: true });
+
+  document.addEventListener('pointerout', (e) => {
+    if(activeTarget && (e.target === activeTarget || !activeTarget.contains(e.relatedTarget))){
+      activeTarget = null;
+      activeRect = null;
+    }
+  }, { passive: true });
+
+  document.addEventListener('mousemove', (e) => {
+    if(!activeTarget) return;
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+
+    if(!glowTicking){
+      glowTicking = true;
+      requestAnimationFrame(() => {
+        if(activeTarget && activeRect){
+          activeTarget.style.setProperty('--glow-x', `${mouseX - activeRect.left}px`);
+          activeTarget.style.setProperty('--glow-y', `${mouseY - activeRect.top}px`);
+        }
+        glowTicking = false;
       });
-      glowTicking=false;
-    });
-  },{passive:true});
+    }
+  }, { passive: true });
 })();
 
-/* ─── Marquee: respect reduced motion ─── */
-if(window.matchMedia('(prefers-reduced-motion:reduce)').matches){
-  const track=document.querySelector('.specialties-track');
-  if(track)track.style.animationPlayState='paused';
-}
+/* ─── Marquee: Offscreen Pause & Reduced Motion ─── */
+(function(){
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const specTrack = document.querySelector('.specialties-track');
+  const skillsTrack = document.querySelector('.skills-track');
+
+  if(prefersReduced){
+    if(specTrack) specTrack.style.animationPlayState = 'paused';
+    if(skillsTrack) skillsTrack.style.animationPlayState = 'paused';
+    return;
+  }
+
+  // Only animate marquees when in the viewport to conserve compositor threads
+  if('IntersectionObserver' in window){
+    const marqueeObs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const track = entry.target.querySelector('.specialties-track, .skills-track');
+        if(track){
+          track.style.animationPlayState = entry.isIntersecting ? 'running' : 'paused';
+        }
+      });
+    }, { threshold: 0.05 });
+
+    const specContainer = document.querySelector('.specialties');
+    const skillsContainer = document.querySelector('.skills-marquee');
+    if(specContainer) marqueeObs.observe(specContainer);
+    if(skillsContainer) marqueeObs.observe(skillsContainer);
+  }
+})();
 
 /* ═══════════════════════════════════════════════
    "CLICK THIS" EASTER EGG (ephemeral, browser-side)

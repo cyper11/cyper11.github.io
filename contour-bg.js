@@ -191,12 +191,17 @@
   let lastMouseTime = performance.now();
   let lastMousePos = { x: 0.5, y: 0.5 };
   let isPageVisible = true;
+  let isModalOpen = false;
+  let isScrollingFast = false;
+  let scrollTimer = null;
   let rafId = null;
 
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMobile = window.innerWidth <= 850 || ('ontouchstart' in window);
 
   function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    // 1.0 DPR native pixel grid avoids multi-million pixel GPU fill-rate bottleneck
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.0);
     width = window.innerWidth;
     height = window.innerHeight;
     canvas.width = Math.round(width * dpr);
@@ -213,7 +218,18 @@
     return 1.0;
   }
 
+  function drawSingleFrame(elapsedTime) {
+    gl.uniform1f(uTimeLoc, elapsedTime);
+    gl.uniform2f(uMouseLoc, mouse.x * 2.0 - 1.0, mouse.y * 2.0 - 1.0);
+    gl.uniform1f(uMousePaceLoc, mouseVelocity);
+    gl.uniform1f(uDarkMixLoc, getDarkMix());
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+
   function onPointerMove(e) {
+    if (isMobile) return;
     const x = e.clientX / Math.max(1, width);
     const y = 1.0 - e.clientY / Math.max(1, height);
     targetMouse.x = x;
@@ -229,18 +245,56 @@
     lastMouseTime = now;
     lastMousePos.x = x;
     lastMousePos.y = y;
+
+    // Wake up render loop if paused
+    if (!rafId && isPageVisible && !isModalOpen) {
+      lastTime = performance.now();
+      rafId = requestAnimationFrame(render);
+    }
   }
 
-  window.addEventListener('resize', resize, { passive: true });
-  window.addEventListener('pointermove', onPointerMove, { passive: true });
+  window.addEventListener('resize', () => {
+    resize();
+    if (isMobile || prefersReduced) {
+      drawSingleFrame(0.5);
+    }
+  }, { passive: true });
 
+  if (!isMobile) {
+    window.addEventListener('pointermove', onPointerMove, { passive: true });
+  }
+
+  // Pause WebGL during fast scrolling to ensure 60fps smooth scrolling
+  window.addEventListener('scroll', () => {
+    isScrollingFast = true;
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => {
+      isScrollingFast = false;
+    }, 70);
+  }, { passive: true });
+
+  // Pause WebGL when tab is hidden
   document.addEventListener('visibilitychange', () => {
     isPageVisible = !document.hidden;
-    if (isPageVisible && !rafId) {
+    if (isPageVisible && !rafId && !isModalOpen && !isMobile && !prefersReduced) {
       lastTime = performance.now();
       rafId = requestAnimationFrame(render);
     }
   });
+
+  // Watch for open modals to suspend background WebGL
+  const modalObserver = new MutationObserver(() => {
+    const hasModal = document.body.classList.contains('fe-modal-open') ||
+                     Boolean(document.querySelector('dialog[open], .fe-overlay.open'));
+    if (hasModal !== isModalOpen) {
+      isModalOpen = hasModal;
+      if (!isModalOpen && isPageVisible && !rafId && !isMobile && !prefersReduced) {
+        lastTime = performance.now();
+        rafId = requestAnimationFrame(render);
+      }
+    }
+  });
+  modalObserver.observe(document.body, { attributes: true, attributeFilter: ['class', 'style'], subtree: true });
 
   // Enable alpha blending for subtle background lines
   gl.enable(gl.BLEND);
@@ -248,14 +302,36 @@
 
   resize();
 
+  // On mobile or reduced motion: draw crisp initial frame and halt continuous loop
+  if (isMobile || prefersReduced) {
+    drawSingleFrame(0.5);
+    return;
+  }
+
   let startTime = performance.now();
   let lastTime = startTime;
+  let lastRenderTime = 0;
 
   function render(now) {
-    if (!isPageVisible) {
+    if (!isPageVisible || isModalOpen) {
       rafId = null;
       return;
     }
+
+    // Skip drawing during fast scrolling to give compositor 100% priority
+    if (isScrollingFast) {
+      rafId = requestAnimationFrame(render);
+      return;
+    }
+
+    // Paced frame rate: 60fps when interacting, 30fps when idle
+    const targetFps = mouseVelocity > 0.03 ? 60 : 30;
+    const minInterval = 1000 / targetFps;
+    if (now - lastRenderTime < minInterval) {
+      rafId = requestAnimationFrame(render);
+      return;
+    }
+    lastRenderTime = now;
 
     const dt = (now - lastTime) / 1000;
     lastTime = now;
@@ -265,16 +341,8 @@
     mouse.y += (targetMouse.y - mouse.y) * Math.min(1, dt * 6);
     mouseVelocity = Math.max(0, mouseVelocity - dt * 1.8);
 
-    const elapsed = prefersReduced ? 0 : (now - startTime) * 0.001;
-
-    gl.uniform1f(uTimeLoc, elapsed);
-    gl.uniform2f(uMouseLoc, mouse.x * 2.0 - 1.0, mouse.y * 2.0 - 1.0);
-    gl.uniform1f(uMousePaceLoc, mouseVelocity);
-    gl.uniform1f(uDarkMixLoc, getDarkMix());
-
-    gl.clearColor(0, 0, 0, 0);
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    const elapsed = (now - startTime) * 0.001;
+    drawSingleFrame(elapsed);
 
     rafId = requestAnimationFrame(render);
   }
