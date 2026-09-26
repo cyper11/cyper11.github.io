@@ -1,12 +1,116 @@
-/* ─── Toolkit tabs ─── */
-const stacks={field:['Hardware diagnostics','Laptop repair','Lenovo systems','Network troubleshooting','Structured cabling','CCTV / NVR','Technical documentation','B2B support','VirtualBox','Packet Tracer','IP networking'],dev:['Java','Python','C#','PHP','HTML & CSS','MySQL','Git & GitHub','VS Code','SDLC','Next.js','JavaScript']};
-const skills=document.querySelector('#skills');
-const fieldCards=document.getElementById('toolkit-cards-field');
-const devCards=document.getElementById('toolkit-cards-dev');
-const fieldBottom=document.getElementById('toolkit-bottom-field');
-const toolkitSub=document.querySelector('.toolkit-sub');
-function showStack(key){skills.replaceChildren(...stacks[key].map(label=>{const el=document.createElement('span');el.textContent=label;return el}));document.querySelectorAll('[data-stack]').forEach(btn=>{const active=btn.dataset.stack===key;btn.classList.toggle('selected',active);btn.setAttribute('aria-pressed',active)});const isField=key==='field';if(fieldCards)fieldCards.style.display=isField?'':'none';if(devCards)devCards.style.display=isField?'none':'';if(fieldBottom)fieldBottom.style.display=isField?'':'none';if(toolkitSub)toolkitSub.textContent=isField?'Tools, systems, and technologies I work with to solve real-world IT and field engineering problems.':'Languages, frameworks, and tools I use for software development, from building interfaces to deploying real-world applications.'}showStack('field');
-document.querySelectorAll('[data-stack]').forEach(btn=>btn.addEventListener('click',()=>showStack(btn.dataset.stack)));
+/* ─── Toolkit tabs & Marquee ─── */
+const TECH_ICONS = {
+  java: `<svg class="tech-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" aria-hidden="true"><path d="M7.8 4.2c-.8 1.4.3 2.6 1.4 3.4 1-.9 1.6-1.8 1.1-2.9-.4-.9-1.8-1.4-2.5-.5z" fill="#EA2D2E"/><path d="M11.6 2.5c-.9 1.6.4 3 1.7 4 1.2-1.1 1.9-2.2 1.3-3.5-.5-1.1-2.1-1.6-3-.5z" fill="#EA2D2E"/><path d="M4 14.2c.4 2.8 3 4.8 6.8 5 1.5.1 3.1.1 4.6-.2 2.5-.5 4.3-1.8 4.4-4V11H4v3.2zm15.4-1.7h-1.3v1.9c0 1.2-.8 2.1-2 2.5 1.8-.3 3.3-1.3 3.3-3.1v-1.3z" fill="#5382A1"/><path d="M3.2 19.8c2.7.9 7 1.3 10.7.8 2.5-.3 4.9-.9 6.3-1.7l.5.8c-1.7 1-4.3 1.7-7 2-3.9.4-8.4 0-11-1l.5-.9z" fill="#5382A1"/></svg>`,
+  python: `<svg class="tech-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" aria-hidden="true"><path d="M11.9 2c-5 0-4.7 2.2-4.7 2.2l.01 2.3h4.8v.7H5.2S2 6.8 2 12c0 5.1 2.8 4.9 2.8 4.9h1.7v-2.3s-.1-2.8 2.8-2.8h4.7s2.7 0 2.7-2.6V4.7S17 2 11.9 2zm-2.6 1.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" fill="#3776AB"/><path d="M12.1 22c5 0 4.7-2.2 4.7-2.2l-.01-2.3h-4.8v-.7h6.8s3.2.4 3.2-4.8c0-5.1-2.8-4.9-2.8-4.9h-1.7v2.3s.1 2.8-2.8 2.8H10s-2.7 0-2.7 2.6v4.5s-.4 2.7 4.8 2.7zm2.6-1.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" fill="#FFD43B"/></svg>`,
+  csharp: `<svg class="tech-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" aria-hidden="true"><path d="M12 1.5l9 5.2v10.6l-9 5.2-9-5.2V6.7l9-5.2z" fill="#9B4993"/><path d="M11.5 15.6c-2 0-3.3-1.4-3.3-3.6 0-2.2 1.3-3.6 3.3-3.6 1.3 0 2.2.6 2.7 1.5l-1.4.9c-.3-.5-.7-.8-1.3-.8-1.1 0-1.8.8-1.8 2s.7 2 1.8 2c.6 0 1-.3 1.3-.8l1.4.9c-.5.9-1.4 1.4-2.7 1.4zm3.9-.8l.4-1.5h-.9l.3-1.1h.9l.4-1.5h1.1l-.4 1.5h1l.4-1.5h1.1l-.4 1.5h.9l-.3 1.1h-.9l-.4 1.5h1.1l-.3 1.1h-.9l-.4 1.5h-1.1l.4-1.5h-1l-.4 1.5h-1.1l.4-1.5h-.9l.3-1.1h.9zm1.3 0h1l.3-1.1h-1l-.3 1.1z" fill="#fff"/></svg>`,
+  php: `<svg class="tech-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" aria-hidden="true"><ellipse cx="12" cy="12" rx="11" ry="7.2" fill="#777BB4"/><path d="M5.5 14.5l1.6-5.2h2.2c1.2 0 1.9.5 1.7 1.6-.2 1.2-1.1 1.7-2.3 1.7H7.1l-.6 1.9H5.5zm2.1-3.1h1.1c.5 0 .9-.2 1-.7.1-.5-.2-.7-.7-.7H7.9l-.3 1.4zm4.4 3.1l1.6-5.2h1.4l-.7 2.2h1.6c1.2 0 1.9.5 1.7 1.6-.2 1.2-1.1 1.7-2.3 1.7h-2.1l-.6 1.9H12zm2.1-3.1h1.1c.5 0 .9-.2 1-.7.1-.5-.2-.7-.7-.7h-.8l-.3 1.4zm3.7 3.1l1.6-5.2h1.4l-.7 2.2h1.8c1.2 0 1.9.5 1.7 1.6-.2 1.2-1.1 1.7-2.3 1.7H20l-.6 1.9h-1.6zm2.1-3.1h1.1c.5 0 .9-.2 1-.7.1-.5-.2-.7-.7-.7h-.8l-.3 1.4z" fill="#fff"/></svg>`,
+  html5: `<svg class="tech-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" aria-hidden="true"><path d="M3.2 2l1.6 18.2L12 22.4l7.2-2.2L20.8 2H3.2z" fill="#E34F26"/><path d="M12 3.8v16.7l5.6-1.7 1.3-15H12z" fill="#EF652A"/><path d="M12 8.4H7.8l.2 2.4h4V13H8.2l.2 2.4H12v2.4l-4.2-1.2-.3-3.6h2.2l.1 1.4 2.2.6v-1.6z" fill="#fff"/><path d="M12 8.4h4.4l-.4 4.8-4 1.1v-2.4l1.9-.5.2-1.9H12V8.4zm4.6-2.4H12V3.8h4.8l-.2 2.2z" fill="#EBEBEB"/></svg>`,
+  css3: `<svg class="tech-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" aria-hidden="true"><path d="M3.2 2l1.6 18.2L12 22.4l7.2-2.2L20.8 2H3.2z" fill="#1572B6"/><path d="M12 3.8v16.7l5.6-1.7 1.3-15H12z" fill="#33A9DC"/><path d="M12 8.4H7.8l.2 2.4H12V8.4zm0 4.6H8.2l.2 2.4H12v2.4l-4.2-1.2-.3-3.6h2.2l.1 1.4 2.2.6V13z" fill="#fff"/><path d="M12 8.4h4.4l-.4 4.8-4 1.1v-2.4l1.9-.5.2-1.9H12V8.4zm4.6-2.4H12V3.8h4.8l-.2 2.2z" fill="#EBEBEB"/></svg>`,
+  mysql: `<svg class="tech-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" aria-hidden="true"><path d="M18.8 13.5c-.3-.2-.7-.3-1.1-.2-.5.1-.9.4-1.3.6-.4.2-.8.4-1.3.4-.4 0-.8-.1-1.1-.4-.6-.6-.8-1.5-.6-2.3.2-.9.9-1.7 1.5-2.3 1-.9 2-1.7 2.9-2.7.2-.2.4-.5.4-.8 0-.4-.4-.7-.7-.7-.3 0-.6.1-.8.4-1.1 1.1-2.4 2.1-3.4 3.3-.9.9-1.6 1.9-2 3.1-.4 1.1-.5 2.3-.1 3.4.3.9.9 1.6 1.7 2 .7.4 1.4.5 2.2.4.9-.1 1.8-.5 2.6-1 .4-.3.9-.6 1.4-.8.4-.1.8-.1 1 .1.2.1.4.4.3.7-.1.6-.7 1-1.2 1.3-1.2.7-2.6 1-4 1-1.6 0-3.1-.7-4.2-1.8-1.3-1.2-2-2.8-2.2-4.5-.1-1.6.4-3.2 1.2-4.5.8-1.2 1.9-2.1 3.1-2.8.7-.4 1.5-.7 2.3-.8.4-.1.7-.1 1 .1.2.1.3.4.2.7-.1.2-.3.4-.5.5-.9.4-1.8 1.1-2.5 1.8-.9 1-1.7 2-2 3.3-.4 1.2-.4 2.5 0 3.7.4 1 1.1 1.8 2 2.3.8.4 1.7.6 2.7.4.9-.1 1.9-.6 2.6-1.2.4-.3.7-.7 1.2-.8.5-.2 1.1-.1 1.5.2.3.2.4.6.4 1-.2.5-.7.9-1.2 1.2z" fill="#00758F"/><path d="M12 20.8c-2.4 0-4.7-.7-6.5-2.1-.3-.2-.4-.6-.2-.9.2-.3.6-.4.9-.2 1.6 1.2 3.6 1.8 5.7 1.8 1 0 2-.1 3-.5.4-.1.8 0 1 .4.1.4 0 .8-.4 1-1.1.3-2.3.5-3.5.5z" fill="#F29111"/></svg>`,
+  git: `<svg class="tech-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" aria-hidden="true"><path d="M21.6 10.9L13.1 2.4c-.6-.6-1.5-.6-2.1 0L8.9 4.5l2.7 2.7c.6-.2 1.3-.1 1.8.4.5.5.6 1.3.4 1.9l2.6 2.6c.6-.2 1.4-.1 1.9.4.7.7.7 1.8 0 2.5-.7.7-1.8.7-2.5 0-.6-.6-.7-1.4-.3-2.1l-2.4-2.4v5.3c.2.2.3.4.3.7 0 .8-.7 1.5-1.5 1.5s-1.5-.7-1.5-1.5c0-.6.4-1.1.9-1.4V9.3c-.6-.3-.9-.9-.9-1.5 0-.4.2-.8.4-1.1L8.3 4.1 2.4 10c-.6.6-.6 1.5 0 2.1l8.5 8.5c.6.6 1.5.6 2.1 0l8.5-8.5c.6-.6.6-1.5.1-2.1z" fill="#F05032"/></svg>`,
+  github: `<svg class="tech-icon" viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>`,
+  vscode: `<svg class="tech-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" aria-hidden="true"><path d="M17.6 2.3l4.6 2.2c.5.3.8.8.8 1.4v12.2c0 .6-.3 1.1-.8 1.4l-4.6 2.2c-.6.3-1.3.1-1.7-.4L9.1 14.5l-4.5 3.5c-.3.2-.8.2-1.1 0L1.4 16.5c-.5-.4-.6-1.1-.3-1.6l3.8-4.9-3.8-4.9c-.3-.5-.2-1.2.3-1.6l2.1-1.5c.3-.2.8-.2 1.1 0l4.5 3.5 6.8-6.8c.4-.5 1.1-.7 1.7-.4z" fill="#007ACC"/><path d="M17.6 2.3c-.6-.3-1.3-.1-1.7.4L9.1 9.5l2.9 2.5 5.6-5.6V2.3z" fill="#0065A9"/><path d="M17.6 21.7c-.6.3-1.3.1-1.7-.4L9.1 14.5l2.9-2.5 5.6 5.6v4.1z" fill="#0065A9"/><path d="M17.6 6.4L12 12l5.6 5.6 4.6-2.2c.5-.3.8-.8.8-1.4V8c0-.6-.3-1.1-.8-1.4l-4.6-.2z" fill="#1F9CF0"/></svg>`,
+  sdlc: `<svg class="tech-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color:var(--lime)"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>`,
+  nextjs: `<svg class="tech-icon" viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.8 14.8l-5.6-7.8v7.8H8.8V7.2h1.5l5.9 8.2V7.2h1.6v9.6z"/></svg>`,
+  javascript: `<svg class="tech-icon" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><rect width="24" height="24" rx="3.5" fill="#F7DF1E"/><path d="M7.4 17.6c.6.9 1.5 1.5 2.7 1.5 1.4 0 2.2-.8 2.2-2.4V8.5H10v8.1c0 .7-.3 1-1 1-.5 0-.9-.3-1.2-.6l-.4.6zm8.1.1c1.2 0 2.2-.6 2.8-1.5l-.8-.5c-.4.6-1.1 1-1.9 1-1.1 0-1.8-.7-1.8-1.7 0-1.2.9-1.6 2.1-2.1 1.6-.7 2.6-1.3 2.6-2.9 0-1.6-1.2-2.7-2.8-2.7-1.4 0-2.3.6-2.8 1.6l.8.5c.3-.6.9-1.1 1.9-1.1 1 0 1.7.6 1.7 1.6 0 1.1-.8 1.5-2.1 2.1-1.5.6-2.6 1.3-2.6 2.9-.1 1.7 1.2 2.8 2.9 2.8z" fill="#000"/></svg>`
+};
+
+const stacks = {
+  field: [
+    { label: 'Hardware diagnostics' },
+    { label: 'Laptop repair' },
+    { label: 'Lenovo systems' },
+    { label: 'Network troubleshooting' },
+    { label: 'Structured cabling' },
+    { label: 'CCTV / NVR' },
+    { label: 'Technical documentation' },
+    { label: 'B2B support' },
+    { label: 'VirtualBox' },
+    { label: 'Packet Tracer' },
+    { label: 'IP networking' }
+  ],
+  dev: [
+    { label: 'Java', icons: [TECH_ICONS.java] },
+    { label: 'Python', icons: [TECH_ICONS.python] },
+    { label: 'C#', icons: [TECH_ICONS.csharp] },
+    { label: 'PHP', icons: [TECH_ICONS.php] },
+    { label: 'HTML & CSS', icons: [TECH_ICONS.html5, TECH_ICONS.css3] },
+    { label: 'MySQL', icons: [TECH_ICONS.mysql] },
+    { label: 'Git & GitHub', icons: [TECH_ICONS.git, TECH_ICONS.github] },
+    { label: 'VS Code', icons: [TECH_ICONS.vscode] },
+    { label: 'SDLC', icons: [TECH_ICONS.sdlc] },
+    { label: 'Next.js', icons: [TECH_ICONS.nextjs] },
+    { label: 'JavaScript', icons: [TECH_ICONS.javascript] }
+  ]
+};
+
+const skills = document.querySelector('#skills');
+const fieldCards = document.getElementById('toolkit-cards-field');
+const devCards = document.getElementById('toolkit-cards-dev');
+const fieldBottom = document.getElementById('toolkit-bottom-field');
+const toolkitSub = document.querySelector('.toolkit-sub');
+
+function showStack(key) {
+  const isDev = key === 'dev';
+  const list = stacks[key];
+  if (!skills || !list) return;
+
+  const fragment = document.createDocumentFragment();
+
+  // Create 2 identical sets for seamless infinite loop (0% -> -50%)
+  for (let pass = 0; pass < 2; pass++) {
+    const isClone = pass === 1;
+    list.forEach(item => {
+      const itemEl = document.createElement('span');
+      itemEl.className = 'ticker-item' + (isClone ? ' ticker-clone' : '');
+
+      if (isDev && item.icons && item.icons.length) {
+        const iconWrap = document.createElement('span');
+        iconWrap.className = 'ticker-icons';
+        iconWrap.innerHTML = item.icons.join('');
+        itemEl.appendChild(iconWrap);
+      }
+
+      const textEl = document.createElement('span');
+      textEl.className = 'ticker-text';
+      textEl.textContent = item.label;
+      itemEl.appendChild(textEl);
+
+      fragment.appendChild(itemEl);
+
+      const sep = document.createElement('span');
+      sep.className = 'ticker-sep' + (isClone ? ' ticker-clone' : '');
+      sep.setAttribute('aria-hidden', 'true');
+      sep.textContent = '+';
+      fragment.appendChild(sep);
+    });
+  }
+
+  skills.replaceChildren(fragment);
+
+  // Smoothly restart ticker animation on stack change
+  skills.style.animation = 'none';
+  void skills.offsetWidth;
+  skills.style.animation = '';
+
+  document.querySelectorAll('[data-stack]').forEach(btn => {
+    const active = btn.dataset.stack === key;
+    btn.classList.toggle('selected', active);
+    btn.setAttribute('aria-pressed', active);
+  });
+
+  const isField = key === 'field';
+  if (fieldCards) fieldCards.style.display = isField ? '' : 'none';
+  if (devCards) devCards.style.display = isField ? 'none' : '';
+  if (fieldBottom) fieldBottom.style.display = isField ? '' : 'none';
+  if (toolkitSub) {
+    toolkitSub.textContent = isField
+      ? 'Tools, systems, and technologies I work with to solve real-world IT and field engineering problems.'
+      : 'Languages, frameworks, and tools I use for software development, from building interfaces to deploying real-world applications.';
+  }
+}
+showStack('field');
+document.querySelectorAll('[data-stack]').forEach(btn => btn.addEventListener('click', () => showStack(btn.dataset.stack)));
 
 /* ─── Mobile menu ─── */
 const menu=document.querySelector('.mobile-menu'),nav=document.querySelector('nav');menu.addEventListener('click',()=>{const open=nav.classList.toggle('open');menu.setAttribute('aria-expanded',open);menu.textContent=open?'Close −':'Menu +'});
@@ -95,8 +199,52 @@ themeBtn.addEventListener('click',()=>{
 /* ─── Active nav scroll-spy ─── */
 const sections=Array.from(document.querySelectorAll('main section[id]'));
 const navLinks=document.querySelectorAll('nav a');
-function setActiveNav(id){navLinks.forEach(a=>a.classList.toggle('active',a.hash==='#'+id))}
+const tabbarItems=document.querySelectorAll('.mobile-tabbar .tabbar-item');
+function setActiveNav(id){
+  navLinks.forEach(a=>a.classList.toggle('active',a.hash==='#'+id));
+  tabbarItems.forEach(item=>{
+    const target=item.dataset.nav;
+    const isMatch=target===id||(id==='overview'&&target==='overview');
+    item.classList.toggle('active',isMatch);
+  });
+}
+
+/* ─── Mobile Floating Tab Bar Scroll Behavior (brewed-ops inspired) ─── */
+const mobileTabbar=document.getElementById('mobile-tabbar');
+if(mobileTabbar){
+  let lastScrollY=window.scrollY;
+  const scrollDeltaThreshold=12;
+  window.addEventListener('scroll',()=>{
+    const currentY=window.scrollY;
+    const diff=currentY-lastScrollY;
+    if(currentY<=60){
+      mobileTabbar.classList.remove('tabbar-hidden');
+    }else if(diff>scrollDeltaThreshold&&currentY>100){
+      mobileTabbar.classList.add('tabbar-hidden');
+    }else if(diff<-scrollDeltaThreshold){
+      mobileTabbar.classList.remove('tabbar-hidden');
+    }
+    lastScrollY=currentY;
+  },{passive:true});
+
+  mobileTabbar.querySelectorAll('.tabbar-item').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const targetId=btn.getAttribute('href')?.slice(1);
+      if(targetId)setActiveNav(targetId);
+    });
+  });
+}
+
+/* ─── Interactive Card Spotlight Glow (brewed-ops inspired) ─── */
+document.querySelectorAll('.work-feature, .interactive-slide, .principle-item').forEach(card=>{
+  card.addEventListener('pointermove',(e)=>{
+    const rect=card.getBoundingClientRect();
+    card.style.setProperty('--mouse-x',`${e.clientX-rect.left}px`);
+    card.style.setProperty('--mouse-y',`${e.clientY-rect.top}px`);
+  },{passive:true});
+});
 function updateActiveNav(){
+
   if(!sections.length)return;
   const scrollY=window.scrollY||window.pageYOffset||0;
   const vh=window.innerHeight;
@@ -152,7 +300,7 @@ updateActiveNav();
 document.querySelectorAll('[data-case]').forEach(btn=>{
   btn.addEventListener('click',e=>{
     e.preventDefault();
-    const map={mec:'case-dialog',triphil:'triphil-dialog',ganap:'ganap-dialog',codex:'codex-dialog',typing:'typing-dialog'};
+    const map={mec:'case-dialog',triphil:'triphil-dialog',ganap:'ganap-dialog',codex:'codex-dialog',c1p:'c1p-dialog',typing:'typing-dialog'};
     const id=map[btn.dataset.case]||'case-dialog';
     document.getElementById(id).showModal();
   });
