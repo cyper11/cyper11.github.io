@@ -113,8 +113,31 @@ showStack('field');
 document.querySelectorAll('[data-stack]').forEach(btn => btn.addEventListener('click', () => showStack(btn.dataset.stack)));
 
 /* ─── Mobile menu ─── */
-const menu=document.querySelector('.mobile-menu'),nav=document.querySelector('nav');menu.addEventListener('click',()=>{const open=nav.classList.toggle('open');menu.setAttribute('aria-expanded',open);menu.textContent=open?'Close −':'Menu +'});
-nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('open');menu.setAttribute('aria-expanded','false');menu.textContent='Menu +';if(a.hash)setActiveNav(a.hash.slice(1))}));
+const menu=document.querySelector('.mobile-menu'),nav=document.querySelector('nav');
+const tabbarMenuBtn=document.getElementById('tabbar-menu-btn');
+function syncMenuState(isOpen){
+  menu.setAttribute('aria-expanded',isOpen);
+  menu.textContent=isOpen?'Close −':'Menu +';
+  if(tabbarMenuBtn){
+    tabbarMenuBtn.setAttribute('aria-expanded',isOpen);
+    tabbarMenuBtn.classList.toggle('active',isOpen);
+  }
+}
+menu.addEventListener('click',()=>{
+  const open=nav.classList.toggle('open');
+  syncMenuState(open);
+});
+nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{
+  nav.classList.remove('open');
+  syncMenuState(false);
+  if(a.hash)setActiveNav(a.hash.slice(1));
+}));
+if(tabbarMenuBtn){
+  tabbarMenuBtn.addEventListener('click',(e)=>{
+    e.preventDefault();
+    menu.click();
+  });
+}
 
 /* ─── Theme toggle with GPU-accelerated circular warp reveal ─── */
 const themeBtn = document.getElementById('theme-toggle');
@@ -234,8 +257,12 @@ let lastScrollY = window.scrollY;
 const scrollDeltaThreshold = 12;
 
 if(mobileTabbar){
-  mobileTabbar.querySelectorAll('.tabbar-item').forEach(btn => {
+  mobileTabbar.querySelectorAll('.tabbar-item:not(#tabbar-menu-btn)').forEach(btn => {
     btn.addEventListener('click', () => {
+      if(nav && nav.classList.contains('open')){
+        nav.classList.remove('open');
+        syncMenuState(false);
+      }
       const targetId = btn.getAttribute('href')?.slice(1);
       if(targetId) setActiveNav(targetId);
     });
@@ -247,18 +274,6 @@ function updateScrollUI(){
   const vh = window.innerHeight;
   const scrollHeight = document.documentElement.scrollHeight;
   const distFromBottom = (scrollHeight - vh) - scrollY;
-
-  // 1. Mobile tabbar toggle (zero duplicate listener overhead)
-  if(mobileTabbar){
-    const diff = scrollY - lastScrollY;
-    if(scrollY <= 60){
-      mobileTabbar.classList.remove('tabbar-hidden');
-    }else if(diff > scrollDeltaThreshold && scrollY > 100){
-      mobileTabbar.classList.add('tabbar-hidden');
-    }else if(diff < -scrollDeltaThreshold){
-      mobileTabbar.classList.remove('tabbar-hidden');
-    }
-  }
   lastScrollY = scrollY;
 
   // 2. High-performance scroll-spy using precomputed layout (0 reflows)
