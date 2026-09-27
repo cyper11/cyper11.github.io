@@ -15,22 +15,35 @@ const TECH_ICONS = {
   javascript: `<svg class="tech-icon" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><rect width="24" height="24" rx="3.5" fill="#F7DF1E"/><path d="M7.4 17.6c.6.9 1.5 1.5 2.7 1.5 1.4 0 2.2-.8 2.2-2.4V8.5H10v8.1c0 .7-.3 1-1 1-.5 0-.9-.3-1.2-.6l-.4.6zm8.1.1c1.2 0 2.2-.6 2.8-1.5l-.8-.5c-.4.6-1.1 1-1.9 1-1.1 0-1.8-.7-1.8-1.7 0-1.2.9-1.6 2.1-2.1 1.6-.7 2.6-1.3 2.6-2.9 0-1.6-1.2-2.7-2.8-2.7-1.4 0-2.3.6-2.8 1.6l.8.5c.3-.6.9-1.1 1.9-1.1 1 0 1.7.6 1.7 1.6 0 1.1-.8 1.5-2.1 2.1-1.5.6-2.6 1.3-2.6 2.9-.1 1.7 1.2 2.8 2.9 2.8z" fill="#000"/></svg>`
 };
 
+const FIELD_ICONS = {
+  diagnostics: `<svg class="tech-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
+  laptop: `<svg class="tech-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M2 18h20a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/></svg>`,
+  lenovo: `<svg class="tech-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="14" y1="9.5" x2="18" y2="9.5"/><line x1="14" y1="14.5" x2="18" y2="14.5"/></svg>`,
+  network: `<svg class="tech-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/><path d="M12 10v4"/></svg>`,
+  cabling: `<svg class="tech-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="11" rx="2"/><path d="M9 13v5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-5M9 2v4M12 2v4M15 2v4"/></svg>`,
+  cctv: `<svg class="tech-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8h12l3.5 2.5v3L14 16H2a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><path d="M17.5 10.5l4.5-2.5v8l-4.5-2.5"/><circle cx="7" cy="12" r="1.5"/></svg>`,
+  docs: `<svg class="tech-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>`,
+  support: `<svg class="tech-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/><path d="M8 21h4a2 2 0 0 0 2-2v-1"/></svg>`,
+  virtualization: `<svg class="tech-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 12 12 17 22 12"/><polyline points="2 17 12 22 22 17"/></svg>`,
+  simulation: `<svg class="tech-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/><line x1="12" y1="7.5" x2="5" y2="16.5"/><line x1="12" y1="7.5" x2="19" y2="16.5"/></svg>`,
+  ip: `<svg class="tech-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>`
+};
+
 const stacks = {
   field: [
-    { label: 'Hardware diagnostics' },
-    { label: 'Laptop repair' },
-    { label: 'Lenovo systems' },
-    { label: 'Network troubleshooting' },
-    { label: 'Structured cabling' },
-    { label: 'CCTV / NVR' },
-    { label: 'Technical documentation' },
-    { label: 'B2B support' },
-    { label: 'VirtualBox' },
-    { label: 'Packet Tracer' },
-    { label: 'IP networking' }
+    { label: 'Hardware diagnostics', icons: [FIELD_ICONS.diagnostics] },
+    { label: 'Laptop repair', icons: [FIELD_ICONS.laptop] },
+    { label: 'Lenovo systems', icons: [FIELD_ICONS.lenovo] },
+    { label: 'Network troubleshooting', icons: [FIELD_ICONS.network] },
+    { label: 'Structured cabling', icons: [FIELD_ICONS.cabling] },
+    { label: 'CCTV / NVR', icons: [FIELD_ICONS.cctv] },
+    { label: 'Technical documentation', icons: [FIELD_ICONS.docs] },
+    { label: 'B2B support', icons: [FIELD_ICONS.support] },
+    { label: 'VirtualBox', icons: [FIELD_ICONS.virtualization] },
+    { label: 'Packet Tracer', icons: [FIELD_ICONS.simulation] },
+    { label: 'IP networking', icons: [FIELD_ICONS.ip] }
   ],
   dev: [
-    { label: 'Java', icons: [TECH_ICONS.java] },
     { label: 'Python', icons: [TECH_ICONS.python] },
     { label: 'C#', icons: [TECH_ICONS.csharp] },
     { label: 'PHP', icons: [TECH_ICONS.php] },
@@ -40,7 +53,8 @@ const stacks = {
     { label: 'VS Code', icons: [TECH_ICONS.vscode] },
     { label: 'SDLC', icons: [TECH_ICONS.sdlc] },
     { label: 'Next.js', icons: [TECH_ICONS.nextjs] },
-    { label: 'JavaScript', icons: [TECH_ICONS.javascript] }
+    { label: 'JavaScript', icons: [TECH_ICONS.javascript] },
+    { label: 'Java', icons: [TECH_ICONS.java] }
   ]
 };
 
@@ -64,7 +78,7 @@ function showStack(key) {
       const itemEl = document.createElement('span');
       itemEl.className = 'ticker-item' + (isClone ? ' ticker-clone' : '');
 
-      if (isDev && item.icons && item.icons.length) {
+      if (item.icons && item.icons.length) {
         const iconWrap = document.createElement('span');
         iconWrap.className = 'ticker-icons';
         iconWrap.innerHTML = item.icons.join('');
