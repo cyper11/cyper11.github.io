@@ -372,7 +372,7 @@ if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches && !('ontouchs
 document.querySelectorAll('[data-case]').forEach(btn=>{
   btn.addEventListener('click',e=>{
     e.preventDefault();
-    const map={mec:'case-dialog',triphil:'triphil-dialog',ganap:'ganap-dialog',codex:'codex-dialog',c1p:'c1p-dialog',typing:'typing-dialog'};
+    const map={mec:'case-dialog',triphil:'triphil-dialog',ganap:'ganap-dialog',codex:'codex-dialog',c1p:'c1p-dialog',c1convert:'c1convert-dialog',typing:'typing-dialog'};
     const id=map[btn.dataset.case]||'case-dialog';
     document.getElementById(id).showModal();
   });
@@ -418,8 +418,26 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
   let current=0;
   let animating=false;
 
+  try {
+    const p = new URLSearchParams(window.location.search);
+    const s = parseInt(p.get('slide'), 10);
+    if (!isNaN(s) && s >= 0 && s < total) {
+      slides[0].classList.remove('active');
+      slides[s].classList.add('active');
+      current = s;
+    }
+    if (p.get('scroll')) {
+      const el = document.getElementById(p.get('scroll'));
+      if (el) {
+        try { el.scrollIntoView({ behavior: 'instant' }); } catch(e) { el.scrollIntoView(); }
+        window.scrollTo(0, el.offsetTop);
+      }
+    }
+  } catch(e){}
+
   function pad(n){return String(n).padStart(2,'0')}
   function updateCounter(){counter.textContent=pad(current+1)+' / '+pad(total)}
+  updateCounter();
 
   function goTo(index,direction){
     if(animating||index===current)return;
