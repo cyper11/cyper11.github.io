@@ -382,7 +382,41 @@ document.querySelectorAll('[data-scroll]').forEach(btn=>{
     document.getElementById(btn.dataset.scroll).scrollIntoView({behavior:'smooth'});
   });
 });
-document.querySelectorAll('[data-image]').forEach(btn=>btn.addEventListener('click',()=>{document.querySelector('#image-title').textContent=btn.dataset.title;const img=document.querySelector('#credential-image');img.src=btn.dataset.image;img.alt=btn.dataset.title;document.querySelector('#image-dialog').showModal()}));
+/* ─── Image Preview Lightbox (Certificates, Badges, Field Work, Portrait) ─── */
+function openImagePreview(src, title, category) {
+  const dialog = document.querySelector('#image-dialog');
+  if (!dialog) return;
+  const titleEl = dialog.querySelector('#image-title');
+  const catEl = dialog.querySelector('#image-category');
+  const imgEl = dialog.querySelector('#credential-image');
+  const linkEl = dialog.querySelector('#image-direct-link');
+
+  if (titleEl) titleEl.textContent = title || 'Image Preview';
+  if (catEl) catEl.textContent = category || 'PREVIEW / VIEW';
+  if (imgEl) {
+    imgEl.src = src;
+    imgEl.alt = title || 'Preview image';
+  }
+  if (linkEl) {
+    linkEl.href = src;
+  }
+  dialog.showModal();
+}
+
+document.querySelectorAll('[data-image]').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openImagePreview(btn.dataset.image, btn.dataset.title, btn.dataset.category);
+  });
+  if (btn.getAttribute('role') === 'button' || btn.tagName !== 'BUTTON') {
+    btn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openImagePreview(btn.dataset.image, btn.dataset.title, btn.dataset.category);
+      }
+    });
+  }
+});
 document.querySelectorAll('dialog').forEach(d=>{d.querySelector('.close').addEventListener('click',()=>d.close());d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close()}})});
 
 /* ─── Copy email ─── */
