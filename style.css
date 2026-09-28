@@ -583,6 +583,11 @@ body.theme-switching .sidebar,body.theme-switching main,body.theme-switching .co
 [data-theme="light"] .contour-canvas {
   opacity: 0.65;
 }
+body.game-active .contour-canvas,
+body.fe-modal-open .contour-canvas {
+  display: none !important;
+  visibility: hidden !important;
+}
 main#main {
   position: relative;
   z-index: 1;

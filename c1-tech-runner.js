@@ -1371,6 +1371,17 @@
   function render() {
     if (!ctx || !currentLevel) return;
 
+    if (gameState !== 'playing' && gameState !== 'paused') {
+      // Lightweight backdrop when in menus to avoid heavy entity passes
+      ctx.save();
+      ctx.clearRect(0, 0, V_WIDTH, V_HEIGHT);
+      ctx.fillStyle = '#080a07';
+      ctx.fillRect(0, 0, V_WIDTH, V_HEIGHT);
+      renderCircuitGrid(cameraX * 0.25);
+      ctx.restore();
+      return;
+    }
+
     ctx.save();
     ctx.clearRect(0, 0, V_WIDTH, V_HEIGHT);
 
@@ -1481,16 +1492,26 @@
     ctx.restore();
   }
 
+  let cachedFanGrad = null;
+
   function renderFanDrafts() {
+    const viewLeft = cameraX - 80;
+    const viewRight = cameraX + V_WIDTH + 80;
+
+    if (!cachedFanGrad) {
+      cachedFanGrad = ctx.createLinearGradient(0, 0, 0, -180);
+      cachedFanGrad.addColorStop(0, 'rgba(0, 229, 255, 0.22)');
+      cachedFanGrad.addColorStop(1, 'rgba(0, 229, 255, 0.0)');
+    }
+
     currentLevel.platforms.forEach(p => {
       if (p.style !== 'fan') return;
+      if (p.x + p.w < viewLeft || p.x > viewRight) return;
 
-      const grad = ctx.createLinearGradient(0, p.y, 0, p.y - 180);
-      grad.addColorStop(0, 'rgba(0, 229, 255, 0.22)');
-      grad.addColorStop(1, 'rgba(0, 229, 255, 0.0)');
-
-      ctx.fillStyle = grad;
-      ctx.fillRect(p.x, p.y - 180, p.w, 180);
+      ctx.save();
+      ctx.translate(0, p.y);
+      ctx.fillStyle = cachedFanGrad;
+      ctx.fillRect(p.x, -180, p.w, 180);
 
       // Air streak lines
       ctx.strokeStyle = 'rgba(0, 229, 255, 0.45)';
@@ -1498,18 +1519,23 @@
       const t = Date.now() * 0.008;
       for (let i = 0; i < 4; i++) {
         const lx = p.x + 12 + i * 20;
-        const ly = p.y - ((t * 80 + i * 40) % 170);
+        const ly = -((t * 80 + i * 40) % 170);
         ctx.beginPath();
         ctx.moveTo(lx, ly);
         ctx.lineTo(lx, ly - 22);
         ctx.stroke();
       }
+      ctx.restore();
     });
   }
 
   function renderPlatforms() {
+    const viewLeft = cameraX - 60;
+    const viewRight = cameraX + V_WIDTH + 60;
+
     currentLevel.platforms.forEach(p => {
       if (p.fallen || p.active === false) return;
+      if (p.x + p.w < viewLeft || p.x > viewRight) return;
 
       ctx.save();
 
@@ -1605,9 +1631,13 @@
   }
 
   function renderSwitchesAndTerminals() {
+    const viewLeft = cameraX - 50;
+    const viewRight = cameraX + V_WIDTH + 50;
+
     // Switches
     if (currentLevel.switches) {
       currentLevel.switches.forEach(sw => {
+        if (sw.x + 24 < viewLeft || sw.x - 24 > viewRight) return;
         ctx.save();
         ctx.fillStyle = '#1c221a';
         ctx.fillRect(sw.x - 12, sw.y - 20, 24, 20);
@@ -1632,6 +1662,7 @@
     // Terminals
     if (currentLevel.terminals) {
       currentLevel.terminals.forEach(tm => {
+        if (tm.x + 30 < viewLeft || tm.x - 30 > viewRight) return;
         ctx.save();
         // Server console terminal body
         ctx.fillStyle = '#141813';
@@ -1661,73 +1692,84 @@
   }
 
   function renderCheckpointsAndGoal() {
+    const viewLeft = cameraX - 60;
+    const viewRight = cameraX + V_WIDTH + 60;
+
     // Checkpoint
     if (currentLevel.checkpoint) {
       const cp = currentLevel.checkpoint;
-      ctx.save();
-      ctx.fillStyle = cp.reached ? '#d5fb78' : '#8e9684';
-      ctx.fillRect(cp.x - 3, cp.y - 50, 6, 50);
+      if (cp.x + 20 >= viewLeft && cp.x - 20 <= viewRight) {
+        ctx.save();
+        ctx.fillStyle = cp.reached ? '#d5fb78' : '#8e9684';
+        ctx.fillRect(cp.x - 3, cp.y - 50, 6, 50);
 
-      // Antenna beacon
-      ctx.beginPath();
-      ctx.arc(cp.x, cp.y - 54, 7, 0, Math.PI * 2);
-      ctx.fillStyle = cp.reached ? '#d5fb78' : '#262c22';
-      ctx.fill();
-      ctx.strokeStyle = cp.reached ? '#ffffff' : '#8e9684';
-      ctx.stroke();
-
-      if (cp.reached) {
-        // Radiating signal pulse
-        ctx.strokeStyle = 'rgba(213, 251, 120, 0.4)';
+        // Antenna beacon
         ctx.beginPath();
-        ctx.arc(cp.x, cp.y - 54, 14 + (Date.now() * 0.02 % 10), 0, Math.PI * 2);
+        ctx.arc(cp.x, cp.y - 54, 7, 0, Math.PI * 2);
+        ctx.fillStyle = cp.reached ? '#d5fb78' : '#262c22';
+        ctx.fill();
+        ctx.strokeStyle = cp.reached ? '#ffffff' : '#8e9684';
         ctx.stroke();
+
+        if (cp.reached) {
+          // Radiating signal pulse
+          ctx.strokeStyle = 'rgba(213, 251, 120, 0.4)';
+          ctx.beginPath();
+          ctx.arc(cp.x, cp.y - 54, 14 + (Date.now() * 0.02 % 10), 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.restore();
       }
-      ctx.restore();
     }
 
     // Goal System Core
     if (currentLevel.goal) {
       const g = currentLevel.goal;
-      ctx.save();
-      const pulse = Math.sin(Date.now() * 0.005) * 6;
+      if (g.x + 60 >= viewLeft && g.x - 20 <= viewRight) {
+        ctx.save();
+        const pulse = Math.sin(Date.now() * 0.005) * 6;
 
-      // Outer containment ring
-      ctx.strokeStyle = '#00e5ff';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(g.x + 24, g.y + 24, 28 + pulse, 0, Math.PI * 2);
-      ctx.stroke();
+        // Outer containment ring
+        ctx.strokeStyle = '#00e5ff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(g.x + 24, g.y + 24, 28 + pulse, 0, Math.PI * 2);
+        ctx.stroke();
 
-      // Pulsing Core
-      const grad = ctx.createRadialGradient(g.x + 24, g.y + 24, 2, g.x + 24, g.y + 24, 24);
-      grad.addColorStop(0, '#ffffff');
-      grad.addColorStop(0.4, '#d5fb78');
-      grad.addColorStop(0.8, '#00e5ff');
-      grad.addColorStop(1, 'rgba(0, 229, 255, 0)');
+        // Pulsing Core
+        const grad = ctx.createRadialGradient(g.x + 24, g.y + 24, 2, g.x + 24, g.y + 24, 24);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.4, '#d5fb78');
+        grad.addColorStop(0.8, '#00e5ff');
+        grad.addColorStop(1, 'rgba(0, 229, 255, 0)');
 
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(g.x + 24, g.y + 24, 22, 0, Math.PI * 2);
-      ctx.fill();
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(g.x + 24, g.y + 24, 22, 0, Math.PI * 2);
+        ctx.fill();
 
-      // Core pedestal
-      ctx.fillStyle = '#191f16';
-      ctx.fillRect(g.x + 10, g.y + 48, 28, 20);
-      ctx.strokeStyle = '#2c3526';
-      ctx.strokeRect(g.x + 10, g.y + 48, 28, 20);
+        // Core pedestal
+        ctx.fillStyle = '#191f16';
+        ctx.fillRect(g.x + 10, g.y + 48, 28, 20);
+        ctx.strokeStyle = '#2c3526';
+        ctx.strokeRect(g.x + 10, g.y + 48, 28, 20);
 
-      ctx.fillStyle = '#d5fb78';
-      ctx.font = '10px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('SYSTEM CORE', g.x + 24, g.y - 12);
-      ctx.restore();
+        ctx.fillStyle = '#d5fb78';
+        ctx.font = '10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('SYSTEM CORE', g.x + 24, g.y - 12);
+        ctx.restore();
+      }
     }
   }
 
   function renderCollectibles() {
+    const viewLeft = cameraX - 50;
+    const viewRight = cameraX + V_WIDTH + 50;
+
     currentLevel.collectibles.forEach(c => {
       if (c.collected) return;
+      if (c.x + 20 < viewLeft || c.x - 20 > viewRight) return;
       ctx.save();
       const drawY = c.y + Math.sin(c.bobAngle) * 4;
 
@@ -1790,8 +1832,12 @@
   }
 
   function renderEnemies() {
+    const viewLeft = cameraX - 50;
+    const viewRight = cameraX + V_WIDTH + 50;
+
     currentLevel.enemies.forEach(en => {
       if (!en.alive) return;
+      if (en.x + en.w < viewLeft || en.x > viewRight) return;
       ctx.save();
 
       if (en.type === 'bug') {
@@ -1937,26 +1983,29 @@
   }
 
   function renderParticles() {
-    particles.forEach(p => {
-      ctx.save();
-      ctx.globalAlpha = p.alpha;
+    if (particles.length === 0) return;
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      ctx.globalAlpha = Math.max(0, Math.min(1, p.alpha));
       ctx.fillStyle = p.color;
       ctx.fillRect(p.x, p.y, p.size, p.size);
-      ctx.restore();
-    });
+    }
+    ctx.globalAlpha = 1.0;
   }
 
   function renderFloatingTexts() {
-    floatingTexts.forEach(ft => {
-      ctx.save();
+    if (floatingTexts.length === 0) return;
+    ctx.save();
+    ctx.font = 'bold 11px monospace';
+    ctx.textAlign = 'center';
+    for (let i = 0; i < floatingTexts.length; i++) {
+      const ft = floatingTexts[i];
+      ctx.fillStyle = '#000000';
+      ctx.fillText(ft.text, ft.x + 1, ft.y + 1); // Crisp shadow without expensive shadowBlur
       ctx.fillStyle = ft.color;
-      ctx.font = 'bold 11px monospace';
-      ctx.textAlign = 'center';
-      ctx.shadowColor = 'rgba(0,0,0,0.8)';
-      ctx.shadowBlur = 4;
       ctx.fillText(ft.text, ft.x, ft.y);
-      ctx.restore();
-    });
+    }
+    ctx.restore();
   }
 
   function renderCanvasHUD() {
@@ -2207,15 +2256,20 @@
     bindTouchButton(btnAction, () => { keys.action = true; }, () => { keys.action = false; });
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // MODAL OPEN / CLOSE LIFECYCLE
-  // ─────────────────────────────────────────────────────────────────────────
+  let physicsAccumulator = 0;
+  const FIXED_STEP = 1 / 60;
+
   function openRunnerModal() {
     if (isModalOpen) return;
     isModalOpen = true;
 
     overlay.hidden = false;
+    document.body.classList.add('fe-modal-open', 'game-active');
     document.body.style.overflow = 'hidden';
+
+    if (window.__pauseContourBackground) {
+      window.__pauseContourBackground();
+    }
 
     loadSavedState();
     sfxEnabled = appState.audioEnabled || false;
@@ -2233,6 +2287,7 @@
       resizeCanvas();
     });
 
+    physicsAccumulator = 0;
     lastTime = performance.now();
     if (rafId === null) {
       rafId = requestAnimationFrame(mainLoop);
@@ -2249,7 +2304,12 @@
     }
 
     overlay.classList.remove('open');
+    document.body.classList.remove('fe-modal-open', 'game-active');
     document.body.style.overflow = '';
+
+    if (window.__resumeContourBackground) {
+      window.__resumeContourBackground();
+    }
 
     setTimeout(() => {
       if (!isModalOpen) {
@@ -2262,7 +2322,9 @@
   function resizeCanvas() {
     if (!canvas || !stage) return;
     const rect = stage.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const isMobileDevice = window.innerWidth < 768 || ('ontouchstart' in window);
+    const maxDpr = isMobileDevice ? 1.0 : 1.5;
+    const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
 
     canvas.width = Math.floor(rect.width * dpr);
     canvas.height = Math.floor(rect.height * dpr);
@@ -2275,14 +2337,38 @@
   function mainLoop(now) {
     if (!isModalOpen) return;
 
-    const dt = Math.min((now - lastTime) / 1000, 0.05);
+    const rawDt = (now - lastTime) / 1000;
     lastTime = now;
+    const dt = Math.min(rawDt, 0.1);
+    physicsAccumulator += dt;
 
-    update(dt);
+    let updates = 0;
+    while (physicsAccumulator >= FIXED_STEP && updates < 4) {
+      update(FIXED_STEP);
+      physicsAccumulator -= FIXED_STEP;
+      updates++;
+    }
+
     render();
 
     rafId = requestAnimationFrame(mainLoop);
   }
+
+  document.addEventListener('visibilitychange', () => {
+    if (!isModalOpen) return;
+    if (document.hidden) {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+    } else {
+      if (rafId === null) {
+        lastTime = performance.now();
+        physicsAccumulator = 0;
+        rafId = requestAnimationFrame(mainLoop);
+      }
+    }
+  });
 
   // ─────────────────────────────────────────────────────────────────────────
   // INITIALIZATION ON DOM CONTENT LOADED

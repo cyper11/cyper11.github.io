@@ -229,7 +229,7 @@
   }
 
   function onPointerMove(e) {
-    if (isMobile) return;
+    if (isMobile || isModalOpen || document.body.classList.contains('fe-modal-open') || document.body.classList.contains('game-active')) return;
     const x = e.clientX / Math.max(1, width);
     const y = 1.0 - e.clientY / Math.max(1, height);
     targetMouse.x = x;
@@ -252,6 +252,25 @@
       rafId = requestAnimationFrame(render);
     }
   }
+
+  /* ─── Global Pause / Resume API for Interactive Modals and Games ─── */
+  window.__pauseContourBackground = function () {
+    isModalOpen = true;
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+    canvas.style.display = 'none';
+  };
+
+  window.__resumeContourBackground = function () {
+    isModalOpen = false;
+    canvas.style.display = '';
+    if (!rafId && isPageVisible && !isMobile && !prefersReduced && !isThemeWarping) {
+      lastTime = performance.now();
+      rafId = requestAnimationFrame(render);
+    }
+  };
 
   window.addEventListener('resize', () => {
     resize();
@@ -292,25 +311,31 @@
   // Pause WebGL when tab is hidden
   document.addEventListener('visibilitychange', () => {
     isPageVisible = !document.hidden;
-    if (isPageVisible && !rafId && !isModalOpen && !isMobile && !prefersReduced && !isThemeWarping) {
+    if (document.hidden) {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+    } else if (isPageVisible && !rafId && !isModalOpen && !isMobile && !prefersReduced && !isThemeWarping) {
       lastTime = performance.now();
       rafId = requestAnimationFrame(render);
     }
   });
 
-  // Watch for open modals to suspend background WebGL
+  // Watch for open modals/games to immediately suspend background WebGL and yield GPU
   const modalObserver = new MutationObserver(() => {
     const hasModal = document.body.classList.contains('fe-modal-open') ||
-                     Boolean(document.querySelector('dialog[open], .fe-overlay.open'));
+                     document.body.classList.contains('game-active') ||
+                     Boolean(document.querySelector('dialog[open], .fe-overlay.open:not([hidden])'));
     if (hasModal !== isModalOpen) {
-      isModalOpen = hasModal;
-      if (!isModalOpen && isPageVisible && !rafId && !isMobile && !prefersReduced && !isThemeWarping) {
-        lastTime = performance.now();
-        rafId = requestAnimationFrame(render);
+      if (hasModal) {
+        window.__pauseContourBackground();
+      } else {
+        window.__resumeContourBackground();
       }
     }
   });
-  modalObserver.observe(document.body, { attributes: true, attributeFilter: ['class', 'style'], subtree: true });
+  modalObserver.observe(document.body, { attributes: true, attributeFilter: ['class', 'style', 'hidden', 'open'], subtree: true });
 
   // Enable alpha blending for subtle background lines
   gl.enable(gl.BLEND);

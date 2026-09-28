@@ -162,7 +162,9 @@
     const rect = stage.getBoundingClientRect();
     viewW = Math.max(300, Math.floor(rect.width));
     viewH = Math.max(320, Math.floor(rect.height));
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const isMobileDevice = window.innerWidth < 768 || ('ontouchstart' in window);
+    const maxDpr = isMobileDevice ? 1.0 : 1.5;
+    dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
 
     canvas.width = Math.floor(viewW * dpr);
     canvas.height = Math.floor(viewH * dpr);
@@ -745,16 +747,20 @@
     }
   }
 
+  let cachedConeGrad = null;
+
   function drawEngineerCharacter() {
     ctx.save();
     ctx.translate(player.x, player.y);
     ctx.rotate(player.angle);
 
     /* 1. Subtle Headlamp Light Cone Ahead of Engineer */
-    const coneGrad = ctx.createLinearGradient(12, -4, 98, -4);
-    coneGrad.addColorStop(0, 'rgba(213, 251, 120, 0.14)');
-    coneGrad.addColorStop(1, 'rgba(213, 251, 120, 0)');
-    ctx.fillStyle = coneGrad;
+    if (!cachedConeGrad) {
+      cachedConeGrad = ctx.createLinearGradient(12, -4, 98, -4);
+      cachedConeGrad.addColorStop(0, 'rgba(213, 251, 120, 0.14)');
+      cachedConeGrad.addColorStop(1, 'rgba(213, 251, 120, 0)');
+    }
+    ctx.fillStyle = cachedConeGrad;
     ctx.beginPath();
     ctx.moveTo(12, -7);
     ctx.lineTo(96, -28);
@@ -980,6 +986,22 @@
     window.addEventListener('resize', handleWindowResize, { passive: true });
     canvas.addEventListener('pointerdown', handleCanvasPointerDown, { passive: false });
     overlay.addEventListener('touchmove', handleTouchMovePreventScroll, { passive: false });
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+  }
+
+  function handleVisibilityChange() {
+    if (!isModalOpen) return;
+    if (document.hidden) {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+    } else {
+      if (rafId === null) {
+        lastTime = performance.now();
+        rafId = requestAnimationFrame(loop);
+      }
+    }
   }
 
   function unmountRuntimeListeners() {
@@ -989,6 +1011,7 @@
     window.removeEventListener('resize', handleWindowResize);
     canvas.removeEventListener('pointerdown', handleCanvasPointerDown);
     overlay.removeEventListener('touchmove', handleTouchMovePreventScroll);
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
   }
 
   /* ─── Modal Open / Close Lifecycle ─── */
@@ -998,7 +1021,12 @@
 
     bestScore = loadBestScore();
     overlay.hidden = false;
+    document.body.classList.add('fe-modal-open', 'game-active');
     document.body.style.overflow = 'hidden';
+
+    if (window.__pauseContourBackground) {
+      window.__pauseContourBackground();
+    }
 
     resizeCanvas();
     resetToReadyState();
@@ -1026,7 +1054,12 @@
     unmountRuntimeListeners();
 
     overlay.classList.remove('open');
+    document.body.classList.remove('fe-modal-open', 'game-active');
     document.body.style.overflow = '';
+
+    if (window.__resumeContourBackground) {
+      window.__resumeContourBackground();
+    }
 
     setTimeout(() => {
       if (!isModalOpen) {

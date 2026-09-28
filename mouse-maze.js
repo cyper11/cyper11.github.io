@@ -587,7 +587,9 @@
     const rect = stage.getBoundingClientRect();
     viewW = Math.max(300, Math.floor(rect.width));
     viewH = Math.max(280, Math.floor(rect.height));
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const isMobileDevice = window.innerWidth < 768 || ('ontouchstart' in window);
+    const maxDpr = isMobileDevice ? 1.0 : 1.5;
+    dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
 
     canvas.width = Math.floor(viewW * dpr);
     canvas.height = Math.floor(viewH * dpr);
@@ -1537,6 +1539,22 @@
     canvas.addEventListener('pointerdown', handlePointerDown, { passive: true });
     canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
     overlay.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+  }
+
+  function handleVisibilityChange() {
+    if (!isModalOpen) return;
+    if (document.hidden) {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+    } else {
+      if (rafId === null) {
+        lastTime = performance.now();
+        rafId = requestAnimationFrame(loop);
+      }
+    }
   }
 
   function unmountRuntimeListeners() {
@@ -1548,6 +1566,7 @@
     canvas.removeEventListener('pointerdown', handlePointerDown);
     canvas.removeEventListener('touchmove', handleTouchMove);
     overlay.removeEventListener('touchmove', handleTouchMove);
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
   }
 
   /* ─── Modal Open / Close Lifecycle ─── */
@@ -1556,7 +1575,12 @@
     isModalOpen = true;
 
     overlay.hidden = false;
+    document.body.classList.add('fe-modal-open', 'game-active');
     document.body.style.overflow = 'hidden';
+
+    if (window.__pauseContourBackground) {
+      window.__pauseContourBackground();
+    }
 
     resetToReadyState();
     mountRuntimeListeners();
@@ -1584,7 +1608,12 @@
     unmountRuntimeListeners();
 
     overlay.classList.remove('open');
+    document.body.classList.remove('fe-modal-open', 'game-active');
     document.body.style.overflow = '';
+
+    if (window.__resumeContourBackground) {
+      window.__resumeContourBackground();
+    }
 
     setTimeout(() => {
       if (!isModalOpen) {

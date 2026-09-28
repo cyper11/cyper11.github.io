@@ -1300,10 +1300,15 @@
 
     lastActiveElement = document.activeElement;
     overlay.hidden = false;
+    document.body.classList.add('fe-modal-open', 'game-active');
+
+    if (window.__pauseContourBackground) {
+      window.__pauseContourBackground();
+    }
+
     // Allow display: flex before adding active open transition
     requestAnimationFrame(() => {
       overlay.classList.add('open');
-      document.body.classList.add('fe-modal-open');
     });
 
     updateHUD();
@@ -1322,7 +1327,11 @@
     if (!overlay) return;
 
     overlay.classList.remove('open');
-    document.body.classList.remove('fe-modal-open');
+    document.body.classList.remove('fe-modal-open', 'game-active');
+
+    if (window.__resumeContourBackground) {
+      window.__resumeContourBackground();
+    }
 
     setTimeout(() => {
       overlay.hidden = true;
