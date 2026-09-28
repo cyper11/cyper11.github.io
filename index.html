@@ -547,11 +547,26 @@
 </div>
 <button type="button" class="tr-audio-btn" id="tr-audio-toggle" aria-label="Toggle audio effects">SFX: <span id="tr-audio-state">OFF</span></button>
 <button type="button" class="tr-level-select-btn" id="tr-open-levels-btn" aria-label="Open Sector Select">SECTORS</button>
+<button type="button" class="tr-rotate-btn" id="tr-rotate-toggle-btn" aria-label="Toggle landscape orientation" title="Toggle Landscape Rotation"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg> <span class="tr-rotate-lbl">ROTATE</span></button>
 <button type="button" class="fe-exit-top-btn" id="tr-exit-top-btn" aria-label="Exit Tech Runner">EXIT <span>×</span></button>
 </div>
 </header>
 <div class="tr-stage" id="tr-stage">
 <canvas id="tr-canvas" width="960" height="540" aria-label="C1 Tech Runner game view"></canvas>
+<div class="tr-rotate-prompt" id="tr-rotate-prompt" hidden>
+<div class="tr-rotate-box">
+<div class="tr-rotate-icon" aria-hidden="true">
+<svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="3"></rect><path d="M12 18h.01"></path><path d="M19 12a7 7 0 0 1-7 7m0-14a7 7 0 0 1 7 7" stroke-dasharray="2 2"></path><polyline points="18 4 21 7 18 10"></polyline></svg>
+</div>
+<h3 class="tr-rotate-title">ROTATE TO LANDSCAPE</h3>
+<p class="tr-rotate-desc">For the best retro arcade experience, rotate your device to landscape for widescreen handheld controls.</p>
+<div class="tr-rotate-actions">
+<button type="button" class="fe-btn fe-btn-primary" id="tr-rotate-lock-btn">[ ⛶ FULLSCREEN LANDSCAPE ]</button>
+<button type="button" class="fe-btn" id="tr-rotate-force-btn">[ 🔄 FORCE ROTATE ]</button>
+<button type="button" class="fe-btn tr-dismiss-btn" id="tr-rotate-dismiss-btn">[ PLAY IN PORTRAIT ]</button>
+</div>
+</div>
+</div>
 <div class="tr-screen" id="tr-screen-menu">
 <div class="tr-panel">
 <p class="fe-panel-eyebrow">RETRO-TECHNICAL 2D PLATFORMER // 10 SECTORS</p>

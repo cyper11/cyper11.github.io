@@ -735,6 +735,9 @@
   let screenMenu, screenBoot, screenLevels, screenPause, screenGameover, screenVictory, screenGrandVictory;
   let levelsGridEl;
   let touchControlsEl, btnLeft, btnRight, btnJump, btnAction;
+  let rotatePromptEl, rotateToggleBtn, rotateLockBtn, rotateForceBtn, rotateDismissBtn;
+  let isForcedLandscape = false;
+  let rotatePromptDismissed = false;
   let openBtn;
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -2232,21 +2235,38 @@
 
   function bindTouchButton(btn, onPress, onRelease) {
     if (!btn) return;
-    const pressHandler = (e) => {
-      e.preventDefault();
+    let isPressed = false;
+
+    const startPress = (e) => {
+      if (e) {
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+      }
+      if (isPressed) return;
+      isPressed = true;
       btn.classList.add('active');
       onPress();
     };
-    const releaseHandler = (e) => {
-      e.preventDefault();
+
+    const endPress = (e) => {
+      if (e) {
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+      }
+      if (!isPressed) return;
+      isPressed = false;
       btn.classList.remove('active');
       onRelease();
     };
 
-    btn.addEventListener('pointerdown', pressHandler);
-    btn.addEventListener('pointerup', releaseHandler);
-    btn.addEventListener('pointercancel', releaseHandler);
-    btn.addEventListener('pointerleave', releaseHandler);
+    btn.addEventListener('pointerdown', startPress, { passive: false });
+    btn.addEventListener('pointerup', endPress, { passive: false });
+    btn.addEventListener('pointercancel', endPress, { passive: false });
+    btn.addEventListener('pointerleave', endPress, { passive: false });
+
+    btn.addEventListener('touchstart', startPress, { passive: false });
+    btn.addEventListener('touchend', endPress, { passive: false });
+    btn.addEventListener('touchcancel', endPress, { passive: false });
   }
 
   function setupTouchControls() {
@@ -2254,6 +2274,90 @@
     bindTouchButton(btnRight, () => { keys.right = true; }, () => { keys.right = false; });
     bindTouchButton(btnJump, () => { keys.jump = true; player.jumpBufferTimer = 6; }, () => { keys.jump = false; });
     bindTouchButton(btnAction, () => { keys.action = true; }, () => { keys.action = false; });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // MOBILE LANDSCAPE ORIENTATION & ROTATION MANAGERS
+  // ─────────────────────────────────────────────────────────────────────────
+  function isMobileOrTouch() {
+    return window.innerWidth < 860 || ('ontouchstart' in window) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+  }
+
+  function checkOrientationPrompt() {
+    if (!isModalOpen) return;
+    const isMobile = isMobileOrTouch();
+    const isPortrait = window.innerHeight > window.innerWidth;
+
+    if (!isMobile) {
+      if (rotatePromptEl) rotatePromptEl.hidden = true;
+      return;
+    }
+
+    if (!isPortrait) {
+      // Hardware / browser already in landscape
+      if (isForcedLandscape) {
+        toggleForcedLandscape(false);
+      }
+      if (rotatePromptEl) rotatePromptEl.hidden = true;
+      return;
+    }
+
+    // Hardware in portrait orientation
+    if (isForcedLandscape) {
+      if (rotatePromptEl) rotatePromptEl.hidden = true;
+    } else if (!rotatePromptDismissed) {
+      if (rotatePromptEl) rotatePromptEl.hidden = false;
+    }
+  }
+
+  async function attemptLandscapeLock() {
+    try {
+      const docEl = document.documentElement;
+      if (!document.fullscreenElement) {
+        if (docEl.requestFullscreen) {
+          await docEl.requestFullscreen();
+        } else if (docEl.webkitRequestFullscreen) {
+          await docEl.webkitRequestFullscreen();
+        }
+      }
+      if (screen.orientation && screen.orientation.lock) {
+        await screen.orientation.lock('landscape');
+      }
+    } catch (_) {
+      // Screen orientation lock not permitted or unsupported (e.g. iOS Safari)
+      toggleForcedLandscape(true);
+    }
+    if (rotatePromptEl) rotatePromptEl.hidden = true;
+    rotatePromptDismissed = true;
+    setTimeout(resizeCanvas, 60);
+  }
+
+  function toggleForcedLandscape(forceState) {
+    if (typeof forceState === 'boolean') {
+      isForcedLandscape = forceState;
+    } else {
+      isForcedLandscape = !isForcedLandscape;
+    }
+
+    if (overlay) {
+      overlay.classList.toggle('tr-forced-landscape', isForcedLandscape);
+    }
+    if (rotateToggleBtn) {
+      rotateToggleBtn.classList.toggle('active', isForcedLandscape);
+    }
+    if (rotatePromptEl) {
+      rotatePromptEl.hidden = true;
+    }
+    rotatePromptDismissed = true;
+
+    setTimeout(resizeCanvas, 50);
+    setTimeout(resizeCanvas, 200);
+  }
+
+  function dismissRotatePrompt() {
+    rotatePromptDismissed = true;
+    if (rotatePromptEl) rotatePromptEl.hidden = true;
+    resizeCanvas();
   }
 
   let physicsAccumulator = 0;
@@ -2282,6 +2386,8 @@
     gameState = 'menu';
     showScreen('menu');
 
+    checkOrientationPrompt();
+
     requestAnimationFrame(() => {
       overlay.classList.add('open');
       resizeCanvas();
@@ -2303,6 +2409,18 @@
       rafId = null;
     }
 
+    if (isForcedLandscape) {
+      toggleForcedLandscape(false);
+    }
+    if (rotatePromptEl) {
+      rotatePromptEl.hidden = true;
+    }
+    rotatePromptDismissed = false;
+
+    if (document.fullscreenElement && document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    }
+
     overlay.classList.remove('open');
     document.body.classList.remove('fe-modal-open', 'game-active');
     document.body.style.overflow = '';
@@ -2322,12 +2440,21 @@
   function resizeCanvas() {
     if (!canvas || !stage) return;
     const rect = stage.getBoundingClientRect();
+
+    let displayW = stage.clientWidth || rect.width || V_WIDTH;
+    let displayH = stage.clientHeight || rect.height || V_HEIGHT;
+
+    if (isForcedLandscape && (!stage.clientWidth || stage.clientWidth < 100)) {
+      displayW = rect.height || V_WIDTH;
+      displayH = rect.width || V_HEIGHT;
+    }
+
     const isMobileDevice = window.innerWidth < 768 || ('ontouchstart' in window);
     const maxDpr = isMobileDevice ? 1.0 : 1.5;
     const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
 
-    canvas.width = Math.floor(rect.width * dpr);
-    canvas.height = Math.floor(rect.height * dpr);
+    canvas.width = Math.floor(displayW * dpr);
+    canvas.height = Math.floor(displayH * dpr);
     if (ctx) {
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(canvas.width / V_WIDTH, canvas.height / V_HEIGHT);
@@ -2408,6 +2535,26 @@
     btnRight = document.getElementById('tr-btn-right');
     btnJump = document.getElementById('tr-btn-jump');
     btnAction = document.getElementById('tr-btn-action');
+
+    // Rotation & Landscape elements
+    rotatePromptEl = document.getElementById('tr-rotate-prompt');
+    rotateToggleBtn = document.getElementById('tr-rotate-toggle-btn');
+    rotateLockBtn = document.getElementById('tr-rotate-lock-btn');
+    rotateForceBtn = document.getElementById('tr-rotate-force-btn');
+    rotateDismissBtn = document.getElementById('tr-rotate-dismiss-btn');
+
+    if (rotateToggleBtn) {
+      rotateToggleBtn.addEventListener('click', () => toggleForcedLandscape());
+    }
+    if (rotateLockBtn) {
+      rotateLockBtn.addEventListener('click', attemptLandscapeLock);
+    }
+    if (rotateForceBtn) {
+      rotateForceBtn.addEventListener('click', () => toggleForcedLandscape(true));
+    }
+    if (rotateDismissBtn) {
+      rotateDismissBtn.addEventListener('click', dismissRotatePrompt);
+    }
 
     // Launch button in carousel
     openBtn = document.getElementById('open-runner-btn');
@@ -2509,10 +2656,19 @@
     });
     if (grandExitBtn) grandExitBtn.addEventListener('click', closeRunnerModal);
 
-    // Global Key and Resize Listeners
+    // Global Key, Resize and Orientation Listeners
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
-    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      checkOrientationPrompt();
+    });
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        resizeCanvas();
+        checkOrientationPrompt();
+      }, 100);
+    });
 
     setupTouchControls();
   }

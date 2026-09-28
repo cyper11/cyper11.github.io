@@ -418,6 +418,8 @@
   pointer-events: none;
   touch-action: none;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .tr-touch-dpad,
@@ -442,6 +444,9 @@
   justify-content: center;
   backdrop-filter: blur(4px);
   touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   transition: transform 0.08s ease, background 0.1s ease, border-color 0.1s ease;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
 }
@@ -473,26 +478,291 @@
   background: rgba(0, 229, 255, 0.1);
 }
 
-/* ─── Responsive Media Queries ─── */
+/* ─── Mobile Landscape Rotation Prompt ─── */
+.tr-rotate-prompt {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 10, 7, 0.94);
+  backdrop-filter: blur(8px);
+  padding: 16px;
+  animation: tr-panel-in 0.3s ease both;
+}
+
+.tr-rotate-prompt[hidden] {
+  display: none !important;
+}
+
+.tr-rotate-box {
+  background: var(--tr-panel);
+  border: 1px solid var(--tr-lime);
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.9), 0 0 24px rgba(213, 251, 120, 0.15);
+  border-radius: 6px;
+  padding: 22px 20px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+}
+
+.tr-rotate-icon {
+  margin: 0 auto 12px;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(213, 251, 120, 0.1);
+  border: 1px solid rgba(213, 251, 120, 0.35);
+  color: var(--tr-lime);
+  animation: tr-rotate-wiggle 2s ease-in-out infinite;
+}
+
+@keyframes tr-rotate-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-25deg); }
+  75% { transform: rotate(90deg); }
+}
+
+.tr-rotate-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--tr-text);
+  margin: 0 0 6px;
+}
+
+.tr-rotate-desc {
+  font-size: 11.5px;
+  color: var(--tr-muted);
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+
+.tr-rotate-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tr-rotate-actions .fe-btn {
+  width: 100%;
+  justify-content: center;
+  font-size: 11px;
+  padding: 9px 12px;
+}
+
+.tr-rotate-actions .tr-dismiss-btn {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+/* ─── Rotate Toggle Button in Topbar ─── */
+.tr-rotate-btn {
+  display: none;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--tr-line);
+  color: var(--tr-muted);
+  font-family: var(--tr-mono);
+  font-size: 10px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tr-rotate-btn:hover,
+.tr-rotate-btn.active {
+  background: rgba(213, 251, 120, 0.12);
+  border-color: var(--tr-lime);
+  color: var(--tr-lime);
+}
+
 @media (max-width: 860px) {
+  .tr-rotate-btn {
+    display: inline-flex;
+  }
+}
+
+/* ─── CSS-Forced Landscape Mode (For phones with Portrait Lock ON) ─── */
+#tr-overlay.tr-forced-landscape {
+  overflow: hidden !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  padding: 0 !important;
+}
+
+#tr-overlay.tr-forced-landscape .fe-shell.tr-shell {
+  width: 100vh !important;
+  height: 100vw !important;
+  max-width: 100vh !important;
+  max-height: 100vw !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) rotate(90deg) !important;
+  transform-origin: center center !important;
+  border-radius: 0 !important;
+  border: 0 !important;
+  transition: none !important;
+}
+
+#tr-overlay.tr-forced-landscape .fe-footer {
+  display: none !important;
+}
+
+#tr-overlay.tr-forced-landscape .tr-topbar {
+  height: 38px !important;
+  padding: 4px 12px !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+}
+
+#tr-overlay.tr-forced-landscape .fe-topbar-left .fe-top-title {
+  display: none !important;
+}
+
+#tr-overlay.tr-forced-landscape .tr-topbar-right {
+  width: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+}
+
+#tr-overlay.tr-forced-landscape .tr-hud-bar {
+  font-size: 10px !important;
+  gap: 8px !important;
+  flex-wrap: nowrap !important;
+}
+
+#tr-overlay.tr-forced-landscape .tr-hud-item span {
+  display: none !important;
+}
+
+#tr-overlay.tr-forced-landscape .tr-audio-btn,
+#tr-overlay.tr-forced-landscape .tr-level-select-btn,
+#tr-overlay.tr-forced-landscape .tr-rotate-btn {
+  padding: 4px 7px !important;
+  font-size: 9.5px !important;
+}
+
+#tr-overlay.tr-forced-landscape .fe-exit-top-btn {
+  padding: 4px 8px !important;
+  font-size: 10px !important;
+}
+
+#tr-overlay.tr-forced-landscape .tr-stage {
+  flex: 1 1 auto;
+  height: calc(100% - 38px) !important;
+}
+
+#tr-overlay.tr-forced-landscape .tr-panel {
+  padding: 12px 18px !important;
+  max-height: calc(100vw - 46px) !important;
+  overflow-y: auto !important;
+}
+
+#tr-overlay.tr-forced-landscape .tr-panel-title {
+  font-size: 17px !important;
+  margin: 2px 0 !important;
+}
+
+#tr-overlay.tr-forced-landscape .tr-panel-tagline {
+  font-size: 9.5px !important;
+  margin-bottom: 6px !important;
+}
+
+#tr-overlay.tr-forced-landscape .tr-stats-summary-bar {
+  grid-template-columns: repeat(4, 1fr) !important;
+  padding: 6px 10px !important;
+  margin: 6px 0 10px !important;
+}
+
+#tr-overlay.tr-forced-landscape .tr-levels-grid {
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 6px !important;
+}
+
+#tr-overlay.tr-forced-landscape .tr-touch-controls {
+  display: flex !important;
+  bottom: 10px !important;
+  left: 12px !important;
+  right: 12px !important;
+}
+
+/* ─── Mobile Portrait Layout (Shows rotate prompt if un-dismissed) ─── */
+@media (max-width: 860px) and (orientation: portrait) {
   .tr-topbar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    padding: 8px 12px;
+    height: 38px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 8px;
+    gap: 4px;
+    flex-wrap: nowrap;
+  }
+
+  .fe-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .fe-topbar-left .fe-status-badge {
+    padding: 2px 5px;
+    font-size: 8.5px;
+  }
+
+  .fe-topbar-left .fe-top-title {
+    display: none !important;
   }
 
   .tr-topbar-right {
-    width: 100%;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 8px;
+    width: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: nowrap;
   }
 
   .tr-hud-bar {
-    font-size: 9.5px;
-    gap: 8px;
-    flex-wrap: wrap;
+    font-size: 8.5px;
+    gap: 4px;
+    flex-wrap: nowrap;
+  }
+
+  .tr-hud-item span {
+    display: none !important;
+  }
+
+  .tr-topbar .tr-level-select-btn {
+    display: none !important;
+  }
+
+  .tr-topbar .tr-rotate-btn .tr-rotate-lbl {
+    display: none !important;
+  }
+
+  .tr-audio-btn,
+  .tr-rotate-btn {
+    padding: 3px 6px;
+    font-size: 8.5px;
+  }
+
+  .fe-exit-top-btn {
+    padding: 3px 6px;
+    font-size: 9px;
   }
 
   .tr-levels-grid {
@@ -504,15 +774,227 @@
   }
 
   .tr-panel {
-    padding: 20px 16px;
+    padding: 16px 14px;
+    max-height: 82vh;
+    overflow-y: auto;
   }
 
   .tr-panel-title {
-    font-size: 20px;
+    font-size: 19px;
   }
 
   .tr-stats-summary-bar {
     grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    padding: 8px 10px;
+  }
+}
+
+/* ─── Mobile Landscape Layout (Device in Landscape or Short Viewports) ─── */
+@media (max-height: 520px), (max-width: 950px) and (orientation: landscape) {
+  #tr-overlay {
+    padding: 0 !important;
+  }
+
+  #tr-overlay .fe-shell.tr-shell {
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+    border: 0 !important;
+  }
+
+  /* Automatically hide the rotate prompt when already in landscape */
+  .tr-rotate-prompt {
+    display: none !important;
+  }
+
+  /* Ultra-slim single row topbar in landscape */
+  .tr-topbar {
+    height: 38px;
+    padding: 4px calc(12px + env(safe-area-inset-right, 0px)) 4px calc(12px + env(safe-area-inset-left, 0px)) !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+  }
+
+  .fe-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .fe-topbar-left .fe-top-title {
+    display: none !important;
+  }
+
+  .tr-topbar-right {
+    width: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+  }
+
+  .tr-hud-bar {
+    font-size: 10px !important;
+    gap: 8px !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .tr-hud-item span {
+    display: none;
+  }
+
+  .tr-audio-btn,
+  .tr-level-select-btn,
+  .tr-rotate-btn {
+    padding: 4px 7px !important;
+    font-size: 9.5px !important;
+  }
+
+  .fe-exit-top-btn {
+    padding: 4px 8px !important;
+    font-size: 10px !important;
+  }
+
+  /* Hide footer in landscape to maximize vertical canvas space */
+  #tr-overlay .fe-footer {
+    display: none !important;
+  }
+
+  /* Stage fills all remaining vertical room */
+  .tr-stage {
+    flex: 1 1 auto;
+    height: calc(100% - 38px) !important;
+    min-height: 0 !important;
+  }
+
+  #tr-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+  }
+
+  /* Ergonomic thumb controls for landscape */
+  .tr-touch-controls {
+    display: flex !important;
+    bottom: max(10px, env(safe-area-inset-bottom, 10px)) !important;
+    left: max(12px, env(safe-area-inset-left, 12px)) !important;
+    right: max(12px, env(safe-area-inset-right, 12px)) !important;
+    padding: 0 !important;
+  }
+
+  .tr-touch-dpad {
+    gap: 10px !important;
+  }
+
+  .tr-touch-actions {
+    gap: 10px !important;
+  }
+
+  .tr-touch-btn {
+    width: 52px !important;
+    height: 52px !important;
+    font-size: 16px !important;
+    border-radius: 10px !important;
+  }
+
+  .tr-action-jump {
+    width: 68px !important;
+    height: 54px !important;
+    font-size: 12px !important;
+  }
+
+  .tr-action-interact {
+    width: 46px !important;
+    height: 46px !important;
+    font-size: 11px !important;
+  }
+
+  /* Compact panels in landscape */
+  .tr-panel {
+    padding: 12px 18px !important;
+    max-height: calc(100vh - 46px) !important;
+    overflow-y: auto !important;
+  }
+
+  .tr-panel-title {
+    font-size: 17px !important;
+    margin: 2px 0 !important;
+  }
+
+  .tr-panel-tagline {
+    font-size: 9.5px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .tr-panel .fe-panel-desc {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+    margin-bottom: 8px !important;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .tr-stats-summary-bar {
+    grid-template-columns: repeat(4, 1fr) !important;
+    padding: 6px 10px !important;
+    margin: 6px 0 10px !important;
+  }
+
+  .tr-qstat small {
+    font-size: 8px !important;
+  }
+
+  .tr-qstat span {
+    font-size: 11px !important;
+  }
+
+  .tr-controls-box {
+    margin: 6px 0 10px !important;
+  }
+
+  .fe-controls-keys {
+    gap: 6px !important;
+  }
+
+  .fe-key-chip {
+    padding: 3px 6px !important;
+  }
+
+  .tr-actions {
+    gap: 8px !important;
+  }
+
+  .tr-actions .fe-btn {
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+  }
+
+  .tr-levels-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+  }
+
+  .tr-level-card {
+    padding: 8px 10px !important;
+  }
+
+  .tr-lvl-name {
+    font-size: 13px !important;
+  }
+
+  .tr-pause-stats,
+  .tr-scoreboard {
+    margin: 8px 0 12px !important;
+    padding: 8px 12px !important;
   }
 }
 
