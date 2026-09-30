@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "updated_at": "2026-09-30T10:55:07.923Z",
+  "posts": [
+    {
+      "id": 4,
+      "type": "CERTIFICATION",
+      "title": "Lenovo Field Service — Rising Star Qualification",
+      "content": "Earned the Lenovo Field Service Rising Star qualification. Grateful for the hands-on troubleshooting, customer unit repairs, and continuous hardware diagnostics experience with IPVCYX across Cavite and nearby regions.",
+      "image_url": "rising-star.png",
+      "external_link": "https://pcsupport.lenovo.com/",
+      "created_at": "2026-09-29T10:52:01.163Z",
+      "likes_count": 20
+    },
+    {
+      "id": 5,
+      "type": "FIELD UPDATE",
+      "title": "MEC Cabling & Infrastructure Quality Inspections",
+      "content": "Completed on-site structured cabling audits and equipment inspections. Prepared circuit diagrams, verified patch panel terminologies, and documented fiber/coaxial run conditions for client handover.",
+      "image_url": "field-01.png",
+      "external_link": null,
+      "created_at": "2026-09-28T13:52:01.170Z",
+      "likes_count": 12
+    },
+    {
+      "id": 6,
+      "type": "PROJECT",
+      "title": "C1-Convert — All-in-One Client-Side File Utility",
+      "content": "Shipped C1-Convert: a browser-native document and image conversion engine. Built with privacy at its core — zero cloud retention, automated 30-minute purging, and instantaneous conversions for PDFs, Word documents, and spreadsheets.",
+      "image_url": "c1convert-01.png",
+      "external_link": "https://c1-convert.vercel.app/",
+      "created_at": "2026-09-27T11:52:01.175Z",
+      "likes_count": 21
+    },
+    {
+      "id": 7,
+      "type": "LEARNING",
+      "title": "Diagnose First, Never Swap Blindly",
+      "content": "“Walang sasagip sa’yo. Kaya matuto kang bumangon at laging galingan.” In field engineering, it is easy to assume the first error code is the root cause. Real reliability comes from verifying voltages, testing continuity, and understanding the entire system before replacing parts.",
+      "image_url": null,
+      "external_link": null,
+      "created_at": "2026-09-26T05:52:01.180Z",
+      "likes_count": 16
+    }
+  ]
+}

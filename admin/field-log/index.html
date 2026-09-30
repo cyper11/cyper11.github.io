@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Field Log Admin // Cyper Ivan Pelina</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin/field-log/admin.css">
+</head>
+<body>
+
+  <!-- ─── Login Screen (Unauthenticated) ─── -->
+  <section class="admin-login-wrap" id="admin-login-view">
+    <div class="admin-login-box">
+      <p class="login-eyebrow">
+        <span>●</span> OWNER VERIFICATION
+      </p>
+      <h1 class="login-title">Field Log CMS</h1>
+      <p class="login-desc">Enter your passkey to manage certifications, field logs, and engineering updates.</p>
+
+      <div class="login-error" id="admin-login-error"></div>
+
+      <form class="login-form" id="admin-login-form">
+        <div class="form-group">
+          <label class="form-label" for="admin-pass-input">OWNER PASSKEY</label>
+          <input type="password" id="admin-pass-input" class="form-input" placeholder="Enter security passkey..." autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="login-btn">AUTHENTICATE ACCESS →</button>
+      </form>
+
+      <div class="login-foot">
+        <a href="/" class="login-back-link">← Return to Public Portfolio</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Admin Dashboard (Authenticated) ─── -->
+  <div class="admin-shell" id="admin-dashboard-view" hidden>
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="admin-brand">C1<span>.</span></div>
+      <div class="admin-owner-tag">
+        <span class="admin-owner-dot"></span> OWNER SESSION
+      </div>
+
+      <nav class="admin-nav">
+        <a href="#posts" class="admin-nav-item active" id="admin-nav-posts">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          Field Log Entries
+        </a>
+      </nav>
+
+      <div class="admin-sidebar-foot">
+        <a href="/#field-log" class="admin-foot-link">
+          <span>Public Field Log</span>
+          <span>↗</span>
+        </a>
+        <a href="/" class="admin-foot-link">
+          <span>Public Portfolio</span>
+          <span>↗</span>
+        </a>
+        <button type="button" class="admin-logout-btn" id="admin-logout-btn">LOGOUT</button>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div class="admin-heading">
+          <h1>FIELD LOG</h1>
+          <p>Manage your professional updates and certifications.</p>
+        </div>
+        <div class="admin-topbar-actions">
+          <button type="button" class="admin-btn admin-btn-primary" id="admin-new-post-btn">+ NEW POST</button>
+          <a href="/#field-log" class="admin-btn">VIEW PUBLIC FEED ↗</a>
+          <button type="button" class="admin-btn" id="admin-top-logout-btn">LOGOUT</button>
+        </div>
+      </header>
+
+      <!-- Post Creation & Editor Form Card -->
+      <section class="admin-editor-card hidden" id="admin-editor-card">
+        <div class="editor-head">
+          <h2 id="editor-heading">CREATE FIELD LOG ENTRY</h2>
+        </div>
+
+        <form id="admin-post-form">
+          <div class="editor-grid">
+            <div class="form-group">
+              <label class="form-label" for="post-type-select">POST TYPE</label>
+              <select id="post-type-select" class="form-select">
+                <option value="CERTIFICATION">Certification</option>
+                <option value="FIELD UPDATE">Field Update</option>
+                <option value="PROJECT">Project</option>
+                <option value="LEARNING">Learning</option>
+                <option value="HARDWARE">Hardware</option>
+                <option value="NETWORKING">Networking</option>
+                <option value="ACHIEVEMENT">Achievement</option>
+                <option value="GENERAL">General</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="post-date-input">DATE</label>
+              <input type="date" id="post-date-input" class="form-input">
+            </div>
+
+            <div class="form-group editor-grid-full">
+              <label class="form-label" for="post-title-input">TITLE</label>
+              <input type="text" id="post-title-input" class="form-input" placeholder="e.g. Cisco Networking Basics" required>
+            </div>
+
+            <div class="form-group editor-grid-full">
+              <label class="form-label" for="post-content-input">CONTENT</label>
+              <textarea id="post-content-input" class="form-textarea" placeholder="Describe the field work, troubleshooting, or certification details..." required></textarea>
+            </div>
+
+            <!-- Media / Certificate Upload -->
+            <div class="form-group editor-grid-full">
+              <label class="form-label">MEDIA / CERTIFICATE (OPTIONAL)</label>
+              <input type="file" id="media-file-input" accept=".jpg,.jpeg,.png,.webp" style="display: none;">
+
+              <div class="media-upload-zone" id="media-upload-zone">
+                <div class="media-upload-icon">☁</div>
+                <p class="media-upload-text">Click or drag &amp; drop certificate or photo here</p>
+                <p class="media-upload-hint">Supported: JPG, JPEG, PNG, WEBP (Max 10MB)</p>
+              </div>
+
+              <div class="media-preview-box" id="media-preview-box" style="display: none;">
+                <img id="media-preview-img" src="" alt="Certificate Preview">
+                <div class="media-preview-actions">
+                  <button type="button" class="admin-btn btn-sm" id="media-replace-btn">Replace Image</button>
+                  <button type="button" class="admin-btn btn-sm btn-danger" id="media-remove-btn">Remove Image</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group editor-grid-full">
+              <label class="form-label" for="post-link-input">EXTERNAL LINK (OPTIONAL)</label>
+              <input type="url" id="post-link-input" class="form-input" placeholder="https://www.credly.com/...">
+            </div>
+
+            <div class="form-group editor-grid-full">
+              <label class="form-label">STATUS</label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" name="post_status" id="status-published-radio" value="1" checked>
+                  Published (Visible on Portfolio)
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="post_status" id="status-draft-radio" value="0">
+                  Draft (Private)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="editor-actions">
+            <button type="submit" class="admin-btn admin-btn-primary">PUBLISH POST</button>
+            <button type="button" class="admin-btn" id="editor-cancel-btn">CANCEL</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Existing Posts List Section -->
+      <section class="admin-posts-section" id="admin-posts-section">
+        <div class="posts-section-head">
+          <h2>MY FIELD LOGS</h2>
+          <div class="posts-filter-tabs">
+            <button type="button" class="filter-tab active" data-filter="all">All</button>
+            <button type="button" class="filter-tab" data-filter="published">Published</button>
+            <button type="button" class="filter-tab" data-filter="drafts">Drafts</button>
+            <button type="button" class="filter-tab" data-filter="certifications">Certificates</button>
+          </div>
+        </div>
+
+        <div class="admin-posts-list" id="admin-posts-list">
+          <!-- Dynamically populated by admin.js -->
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="admin-toast" id="admin-toast"></div>
+
+  <script src="/admin/field-log/admin.js"></script>
+</body>
+</html>
