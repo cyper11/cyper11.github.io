@@ -163,10 +163,12 @@ const server = http.createServer(async (req, res) => {
   const pathname = parsedUrl.pathname;
   const clientIp = req.socket.remoteAddress || '127.0.0.1';
 
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  // CORS headers (public read APIs only; the admin panel is same-origin)
+  if (!pathname.startsWith('/api/admin')) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  }
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);

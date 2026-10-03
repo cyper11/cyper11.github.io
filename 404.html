@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#111310">
+  <title>404 — Signal Lost · cyper1van</title>
+  <link rel="icon" type="image/png" sizes="64x64" href="/favicon-64.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Space+Grotesk:wght@700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script>const t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t</script>
+  <style>
+    :root{--bg:#111310;--panel:#191c17;--line:#2c3028;--text:#f0f1e9;--muted:#a0a598;--lime:#d5fb78;--mono:'IBM Plex Mono',monospace}
+    [data-theme="light"]{--bg:#f5f4f0;--panel:#ffffff;--line:#ddd8d0;--text:#1a1d17;--muted:#5f6258;--lime:#4a8a14}
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;display:grid;place-items:center;padding:24px 16px;
+      background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:44px 44px;background-position:center}
+    main{max-width:520px;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:40px 32px}
+    .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:var(--lime);margin:0 0 18px}
+    h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(64px,18vw,112px);line-height:.9;letter-spacing:-.06em;margin:0}
+    h1 em{font-style:normal;color:var(--lime)}
+    p{color:var(--muted);line-height:1.6;margin:18px 0 28px}
+    pre{font-family:var(--mono);font-size:12.5px;color:var(--muted);border-left:2px solid var(--lime);padding:4px 0 4px 14px;margin:0 0 28px;white-space:pre-wrap}
+    a{display:inline-flex;align-items:center;gap:8px;background:var(--lime);color:var(--bg);font-weight:500;padding:12px 20px;border-radius:999px;text-decoration:none}
+    a:focus-visible{outline:2px solid var(--lime);outline-offset:4px}
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">ERROR / PAGE NOT FOUND</p>
+    <h1>4<em>0</em>4</h1>
+    <p>Signal lost. This page doesn't exist, or it was moved during the last site visit.</p>
+    <pre>&gt; ping <span id="p">this-page</span>
+Request timed out.
+&gt; suggested fix: return to base</pre>
+    <a href="/">Back to portfolio →</a>
+  </main>
+  <script>document.getElementById('p').textContent = location.pathname.replace(/^\//,'') || 'this-page';</script>
+</body>
+</html>

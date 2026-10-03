@@ -264,6 +264,15 @@ function cacheSectionLayout(){
   });
 }
 cacheSectionLayout();
+// Async content (Field Log feed, lazy images, 3D map) shifts sections after load:
+// recache whenever the page height changes so the active link isn't off by one.
+if('ResizeObserver' in window){
+  let layoutRaf = 0;
+  new ResizeObserver(() => {
+    cancelAnimationFrame(layoutRaf);
+    layoutRaf = requestAnimationFrame(cacheSectionLayout);
+  }).observe(document.querySelector('main') || document.body);
+}
 
 /* ─── Mobile Floating Tab Bar Scroll Behavior (Merged in unified rAF tick) ─── */
 const mobileTabbar = document.getElementById('mobile-tabbar');
@@ -857,6 +866,48 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
   const overlay=document.getElementById('ee-overlay');
   if(!triggerBtn||!overlay)return;
 
+  /* ─── Session awareness: everything below stays in this tab's memory,
+     except a tiny visit counter kept in this browser's localStorage ─── */
+  const pageStart=performance.now();
+  const session={hovers:0,clicks:0,mouseM:0,maxScroll:0,dwell:{},themeFlips:0,clickAt:0,snap:{}};
+  let visit={n:1,prevLast:null};
+  try{
+    const prev=JSON.parse(localStorage.getItem('c1_seen')||'null');
+    visit={n:prev&&prev.n?prev.n+1:1,prevLast:prev&&prev.last?prev.last:null};
+    localStorage.setItem('c1_seen',JSON.stringify({n:visit.n,last:Date.now()}));
+  }catch(e){}
+  triggerBtn.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')session.hovers++});
+  document.addEventListener('click',e=>{if(!overlay.contains(e.target))session.clicks++},true);
+  let lastPt=null;
+  document.addEventListener('pointermove',e=>{
+    if(e.pointerType!=='mouse')return;
+    if(lastPt)session.mouseM+=Math.hypot(e.clientX-lastPt[0],e.clientY-lastPt[1])*0.0002646; // px → m at ~96dpi
+    lastPt=[e.clientX,e.clientY];
+  },{passive:true});
+  addEventListener('scroll',()=>{
+    const max=document.documentElement.scrollHeight-innerHeight;
+    if(max>0)session.maxScroll=Math.max(session.maxScroll,scrollY/max);
+  },{passive:true});
+  new MutationObserver(()=>session.themeFlips++).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  const SECTION_NAMES={overview:'THE HERO',work:'FIELD WORK',experience:'EXPERIENCE',credentials:'CREDENTIALS',stack:'TOOLKIT',lab:'THE LAB',activity:'ACTIVITY',learning:'CURRENTLY LEARNING',contact:'CONTACT'};
+  if('IntersectionObserver' in window){
+    const since={};
+    const dwellObs=new IntersectionObserver(entries=>{
+      const now=performance.now();
+      entries.forEach(en=>{
+        const id=en.target.id;
+        if(en.isIntersecting)since[id]=now;
+        else if(since[id]){session.dwell[id]=(session.dwell[id]||0)+(now-since[id]);delete since[id]}
+      });
+    },{threshold:0.35});
+    document.querySelectorAll('main section[id]').forEach(sec=>dwellObs.observe(sec));
+    session.flushDwell=()=>{const now=performance.now();for(const id in since){session.dwell[id]=(session.dwell[id]||0)+(now-since[id]);since[id]=now}};
+  }
+
+  /* Click / Space inside the terminal fast-forwards the typing */
+  let speed=1;
+  let facts=0;
+
   const logEl=document.getElementById('ee-log');
   const bodyEl=document.getElementById('ee-body');
   const terminalEl=document.getElementById('ee-terminal');
@@ -877,7 +928,7 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
   }
 
   function wait(ms,id){
-    const d=isReducedMotion()?Math.min(ms,80):ms;
+    const d=(isReducedMotion()?Math.min(ms,80):ms)*speed;
     return new Promise(resolve=>{
       setTimeout(()=>resolve(id===runId),d);
     });
@@ -926,7 +977,7 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
       if(id!==runId)return false;
       span.textContent=text.slice(0,i);
       scrollToBottom();
-      await new Promise(r=>setTimeout(r,charSpeed));
+      await new Promise(r=>setTimeout(r,charSpeed*speed));
     }
     return id===runId;
   }
@@ -945,6 +996,7 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
     attachCursor(p);
     scrollToBottom();
 
+    facts++;
     const prefix='> '+key+': ';
     if(isReducedMotion()){
       kSpan.textContent=prefix;
@@ -955,13 +1007,13 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
     for(let i=1;i<=prefix.length;i++){
       if(id!==runId)return false;
       kSpan.textContent=prefix.slice(0,i);
-      await new Promise(r=>setTimeout(r,14));
+      await new Promise(r=>setTimeout(r,14*speed));
     }
     for(let i=1;i<=val.length;i++){
       if(id!==runId)return false;
       vSpan.textContent=val.slice(0,i);
       scrollToBottom();
-      await new Promise(r=>setTimeout(r,18));
+      await new Promise(r=>setTimeout(r,18*speed));
     }
     return id===runId;
   }
@@ -1068,7 +1120,7 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
     for(let i=1;i<=prefix.length;i++){
       if(id!==runId)return null;
       preSpan.textContent=prefix.slice(0,i);
-      await new Promise(r=>setTimeout(r,15));
+      await new Promise(r=>setTimeout(r,15*speed));
     }
     if(!(await wait(140,id)))return null;
     bSpan.textContent=badge;
@@ -1101,7 +1153,7 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
     for(let i=1;i<=prefix.length;i++){
       if(id!==runId)return false;
       preSpan.textContent=prefix.slice(0,i);
-      await new Promise(r=>setTimeout(r,14));
+      await new Promise(r=>setTimeout(r,14*speed));
     }
     const steps=[
       ['[███░░░░░░░░░░░░░] 19%',90],
@@ -1114,7 +1166,7 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
       if(id!==runId)return false;
       barSpan.textContent=txt;
       scrollToBottom();
-      await new Promise(r=>setTimeout(r,delay));
+      await new Promise(r=>setTimeout(r,delay*speed));
     }
     return id===runId;
   }
@@ -1137,6 +1189,143 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
     };
   }
 
+  function deepEnv(){
+    const out={};
+    try{
+      const gl=document.createElement('canvas').getContext('webgl');
+      const ext=gl&&gl.getExtension('WEBGL_debug_renderer_info');
+      if(ext){
+        let r=String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)||'');
+        const m=r.match(/ANGLE \(([^,]+),\s*([^,]+?)(\s*\(0x[0-9a-f]+\))?\s*(Direct3D|OpenGL|Vulkan|Metal|,)/i);
+        if(m)r=m[2];
+        out.gpu=r.replace(/\s+/g,' ').trim().toUpperCase().slice(0,48)||null;
+      }
+    }catch(e){}
+    out.dark=window.matchMedia('(prefers-color-scheme: dark)').matches?'DARK':'LIGHT';
+    out.input=(navigator.maxTouchPoints||0)>0&&matchMedia('(pointer: coarse)').matches?'TOUCHSCREEN':'MOUSE / TRACKPAD';
+    out.dpr=String(window.devicePixelRatio||1);
+    return out;
+  }
+
+  async function batteryInfo(){
+    try{
+      if(!navigator.getBattery)return null;
+      const b=await navigator.getBattery();
+      return Math.round(b.level*100)+'%'+(b.charging?' · CHARGING':' · ON BATTERY');
+    }catch(e){return null}
+  }
+
+  async function fingerprint(env,deep){
+    let raw=[env.os,env.browser,env.lang,env.threads,env.memory,env.display,env.tz,deep.gpu,deep.dpr,navigator.userAgent].join('|');
+    try{
+      const c=document.createElement('canvas');c.width=240;c.height=60;
+      const x=c.getContext('2d');
+      x.textBaseline='top';x.font='16px Arial';x.fillStyle='#d5fb78';x.fillRect(2,2,120,30);
+      x.fillStyle='#111310';x.fillText('C1 // fingerprint \u{1F441}',6,8);
+      x.strokeStyle='rgba(255,0,80,.6)';x.beginPath();x.arc(170,30,22,0,Math.PI*1.7);x.stroke();
+      raw+='|'+c.toDataURL();
+    }catch(e){}
+    let hex='';
+    try{
+      const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw));
+      hex=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    }catch(e){
+      let h=2166136261;for(let i=0;i<raw.length;i++){h^=raw.charCodeAt(i);h=Math.imul(h,16777619)}
+      hex=(h>>>0).toString(16).padStart(8,'0').repeat(2);
+    }
+    return ('FP-'+hex.slice(0,4)+'-'+hex.slice(4,8)+'-'+hex.slice(8,12)).toUpperCase();
+  }
+
+  function referrerLabel(){
+    const r=document.referrer;
+    if(!r)return 'A DIRECT LINK (OR AN APP THAT HIDES IT)';
+    let host='';
+    try{host=new URL(r).hostname.replace(/^www\./,'')}catch(e){return null}
+    if(host===location.hostname)return null;
+    const map=[[/facebook|fb\.|messenger/,'FACEBOOK'],[/linkedin|lnkd/,'LINKEDIN'],[/google\./,'GOOGLE SEARCH'],[/tiktok/,'TIKTOK'],[/github/,'GITHUB'],[/^t\.co$|twitter|x\.com/,'X / TWITTER'],[/bing/,'BING'],[/instagram/,'INSTAGRAM']];
+    for(const [re,label] of map)if(re.test(host))return label;
+    return host.toUpperCase();
+  }
+
+  function fmtDuration(ms){
+    const t=Math.max(1,Math.round(ms/1000));
+    const m=Math.floor(t/60),sec=t%60;
+    return m?`${m}m ${String(sec).padStart(2,'0')}s`:`${sec}s`;
+  }
+
+  function ago(ts){
+    const d=Date.now()-ts;
+    if(d<90e3)return 'moments ago';
+    if(d<3600e3)return Math.round(d/60e3)+' minutes ago';
+    if(d<86400e3)return Math.round(d/3600e3)+' hours ago';
+    const days=Math.round(d/86400e3);
+    return days===1?'yesterday':days+' days ago';
+  }
+
+  function ordinal(n){
+    const v=n%100;
+    if(v>=11&&v<=13)return n+'th';
+    return n+({1:'st',2:'nd',3:'rd'}[n%10]||'th');
+  }
+
+  /* Digits spin like a lock before settling on the real value */
+  async function typeLock(text,id,cls='ee-accent'){
+    if(id!==runId)return false;
+    const p=document.createElement('p');
+    p.className='ee-line '+cls;
+    const span=document.createElement('span');
+    p.appendChild(span);
+    logEl.appendChild(p);
+    attachCursor(p);
+    scrollToBottom();
+    const full='> '+text;
+    if(isReducedMotion()){span.textContent=full;return true}
+    const frames=18;
+    for(let f=0;f<=frames;f++){
+      if(id!==runId)return false;
+      const lock=Math.floor(full.length*f/frames);
+      span.textContent=full.split('').map((ch,i)=>i<lock||!/[0-9A-F]/i.test(ch)?ch:'0123456789ABCDEF'[(Math.random()*16)|0]).join('');
+      await new Promise(r=>setTimeout(r,45*speed));
+    }
+    span.textContent=full;
+    return id===runId;
+  }
+
+  /* Live readout: follows the visitor's pointer for a few seconds */
+  async function watchPointer(id){
+    if(id!==runId)return false;
+    const touch=matchMedia('(pointer: coarse)').matches;
+    if(!(await typeLine(touch?'> tap anywhere.':'> move your mouse.',id,'ee-bright',30)))return false;
+    const p=document.createElement('p');
+    p.className='ee-line ee-accent ee-live';
+    const span=document.createElement('span');
+    span.textContent=touch?'> waiting for your finger...':'> waiting for your hand...';
+    p.appendChild(span);
+    logEl.appendChild(p);
+    attachCursor(p);
+    scrollToBottom();
+    let moved=0,last=null,got=false;
+    const onMove=e=>{
+      got=true;
+      if(last)moved+=Math.hypot(e.clientX-last[0],e.clientY-last[1]);
+      last=[e.clientX,e.clientY];
+      span.textContent=`> x ${String(Math.round(e.clientX)).padStart(4,'0')} · y ${String(Math.round(e.clientY)).padStart(4,'0')}`;
+    };
+    window.addEventListener('pointermove',onMove);
+    window.addEventListener('pointerdown',onMove);
+    const t0=performance.now();
+    while(id===runId&&performance.now()-t0<4200&&moved<900){
+      await new Promise(r=>setTimeout(r,60));
+    }
+    window.removeEventListener('pointermove',onMove);
+    window.removeEventListener('pointerdown',onMove);
+    if(id!==runId)return false;
+    if(!got)return typeLine('> ...still there? i can wait.',id,'ee-note',22);
+    triggerFlicker();
+    facts++;
+    return typeLine('> i see you.',id,'ee-bright',60);
+  }
+
   async function startPromptStage(){
     const id=++runId;
     if(abortCtrl){try{abortCtrl.abort()}catch(e){}abortCtrl=null}
@@ -1150,6 +1339,10 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
     if(!(await wait(180,id)))return;
     if(!(await typeLine('> ???',id,'ee-bright',32)))return;
     if(!(await wait(420,id)))return;
+    if(session.hovers>=2){
+      if(!(await typeLine(`> you hesitated. ${session.hovers} times.`,id,'ee-warn',30)))return;
+      if(!(await wait(500,id)))return;
+    }
     if(!(await typeLine('> are you sure?',id,'ee-accent',28)))return;
     if(!(await wait(220,id)))return;
 
@@ -1159,6 +1352,9 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
 
   async function runSequence(){
     const id=++runId;
+    speed=1;
+    facts=0;
+    const runStart=performance.now();
     if(abortCtrl){try{abortCtrl.abort()}catch(e){}}
     abortCtrl=new AbortController();
     const timeoutId=setTimeout(()=>{try{abortCtrl.abort()}catch(e){}},4000);
@@ -1251,6 +1447,20 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
       if(!(await wait(140,id)))return;
     }
     if(!(await typeKeyValue('status',env.status,id)))return;
+    if(!(await wait(140,id)))return;
+    const deep=deepEnv();
+    if(deep.gpu){
+      if(!(await typeKeyValue('graphics card',deep.gpu,id)))return;
+      if(!(await wait(140,id)))return;
+    }
+    const batt=await batteryInfo();
+    if(batt){
+      if(!(await typeKeyValue('battery',batt,id)))return;
+      if(!(await wait(140,id)))return;
+    }
+    if(!(await typeKeyValue('input',deep.input,id)))return;
+    if(!(await wait(140,id)))return;
+    if(!(await typeKeyValue('you prefer',deep.dark+' MODE',id)))return;
     if(!(await wait(520,id)))return;
 
     let net=await netPromise;
@@ -1259,24 +1469,29 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
     if(net&&net.ip){
       addSpacer();
       if(!(await typeLine('> your public ip address is',id,'',18)))return;
-      if(!(await typeLine('> '+net.ip,id,'ee-accent',22)))return;
+      facts++;
+      if(!(await typeLock(net.ip,id)))return;
       if(!(await wait(480,id)))return;
 
       if(net.isp){
         if(!(await typeLine('> you are connected through',id,'',18)))return;
+        facts++;
         if(!(await typeLine('> '+String(net.isp).toUpperCase(),id,'ee-bright',18)))return;
         if(!(await wait(460,id)))return;
       }
 
       if(net.lat!==null&&net.lon!==null){
         if(!(await typeLine('> your approximate coordinates are around',id,'',18)))return;
-        if(!(await typeLine(`> ${Number(net.lat).toFixed(4)}, ${Number(net.lon).toFixed(4)}`,id,'ee-accent',20)))return;
+        if(!(await typeLine('> triangulating...',id,'ee-note',18)))return;
+        facts++;
+        if(!(await typeLock(`${Number(net.lat).toFixed(4)}, ${Number(net.lon).toFixed(4)}`,id)))return;
         if(!(await wait(460,id)))return;
       }
 
       if(net.region||net.country){
         const locStr=[net.region,net.country].filter(Boolean).join(', ').toUpperCase();
         if(!(await typeLine('> your approximate region is',id,'',18)))return;
+        facts++;
         if(!(await typeLine('> '+locStr,id,'ee-bright',20)))return;
         if(!(await typeLine('> location is approximate and network-derived.',id,'ee-note',12)))return;
         if(!(await wait(480,id)))return;
@@ -1293,6 +1508,62 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
     /* Wipe ephemeral network info from memory immediately after display */
     net=null;
 
+    /* What you did here — observed silently since the page loaded */
+    if(!(await wait(700,id)))return;
+    triggerFlicker();
+    addSpacer();
+    if(!(await typeLine("> and here's what you did on this site.",id,'ee-bright',24)))return;
+    if(!(await wait(500,id)))return;
+    facts++;
+    if(!(await typeLine(`> you were here for ${fmtDuration(session.clickAt-pageStart)} before clicking.`,id,'',18)))return;
+    const top=Object.entries(session.snap).sort((a,b)=>b[1]-a[1])[0];
+    if(top&&top[1]>2500){
+      facts++;
+      if(!(await typeLine(`> you lingered longest on ${SECTION_NAMES[top[0]]||top[0].toUpperCase()} (${fmtDuration(top[1])}).`,id,'ee-accent',18)))return;
+    }
+    if(session.maxScroll>0.02){
+      facts++;
+      if(!(await typeLine(`> you scrolled through ${Math.round(session.maxScroll*100)}% of the page.`,id,'',18)))return;
+    }
+    if(session.mouseM>0.05){
+      facts++;
+      if(!(await typeLine(`> your mouse traveled ${session.mouseM>=1?session.mouseM.toFixed(1)+' meters':Math.round(session.mouseM*100)+' cm'}.`,id,'',18)))return;
+    }
+    if(session.clicks>0){
+      facts++;
+      if(!(await typeLine(`> you clicked ${session.clicks} time${session.clicks===1?'':'s'}.`,id,'',18)))return;
+    }
+    if(session.themeFlips>0){
+      facts++;
+      if(!(await typeLine(`> you switched the theme ${session.themeFlips===1?'once':session.themeFlips+' times'}.`,id,'',18)))return;
+    }
+    const ref=referrerLabel();
+    if(ref){
+      facts++;
+      if(!(await typeLine('> you came here from '+ref+'.',id,'ee-bright',18)))return;
+    }
+    facts++;
+    if(visit.n>1&&visit.prevLast){
+      if(!(await typeLine(`> welcome back. this is your ${ordinal(visit.n)} visit.`,id,'ee-accent',24)))return;
+      if(!(await typeLine(`> last time you were here: ${ago(visit.prevLast)}.`,id,'',18)))return;
+    }else{
+      if(!(await typeLine('> first visit. this browser will remember that.',id,'ee-accent',24)))return;
+    }
+    if(!(await wait(700,id)))return;
+
+    /* Fingerprint: recognizable without cookies or login */
+    addSpacer();
+    if(!(await typeLine('> generating your browser fingerprint...',id,'',18)))return;
+    const fp=await fingerprint(env,deep);
+    facts++;
+    if(!(await typeLock(fp,id,'ee-accent')))return;
+    if(!(await typeLine('> no cookies. no login. no permission asked.',id,'ee-note',16)))return;
+    if(!(await typeLine('> sites can recognize you with this alone.',id,'ee-bright',20)))return;
+    if(!(await wait(800,id)))return;
+
+    addSpacer();
+    if(!(await watchPointer(id)))return;
+
     if(!(await wait(850,id)))return;
     triggerFlicker();
     addSpacer();
@@ -1307,21 +1578,70 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
     triggerFlicker();
     terminalEl.hidden=true;
     logEl.innerHTML='';
+    const tally=document.getElementById('ee-tally');
+    if(tally)tally.textContent=`IN ${fmtDuration(performance.now()-runStart).toUpperCase()}, THIS PAGE LEARNED ${facts} THINGS ABOUT YOU.`;
+    seen=true;
+    if(!triggerBtn.querySelector('.owner-pill'))triggerBtn.textContent='!!!';
     finalEl.hidden=false;
     if(bodyEl)bodyEl.scrollTop=0;
     replayBtn.focus();
   }
 
+  let seen=false;
+  const pageTitle=document.title;
+  document.addEventListener('visibilitychange',()=>{
+    if(!seen)return;
+    document.title=document.hidden?'\u{1F441} still watching...':pageTitle;
+  });
+
+  /* The whole site "breaks" for a beat before the terminal takes over */
+  function takeover(done){
+    if(isReducedMotion()){done();return}
+    const root=document.documentElement;
+    const nodes=[];
+    document.querySelectorAll('.sidebar nav a, main h1, main h2, main h3, main .eyebrow, main p').forEach(el=>{
+      const r=el.getBoundingClientRect();
+      if(r.bottom<0||r.top>innerHeight||el.closest('.ee-overlay'))return;
+      const tw=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);
+      while(tw.nextNode())if(tw.currentNode.textContent.trim())nodes.push([tw.currentNode,tw.currentNode.textContent]);
+    });
+    const G='!<>-_\\/[]{}=+*^?#01░▒▓';
+    root.classList.add('ee-takeover');
+    const t0=performance.now();
+    const tick=()=>{
+      const p=(performance.now()-t0)/950;
+      if(p>=1){
+        nodes.forEach(([n,t])=>{n.textContent=t});
+        root.classList.remove('ee-takeover');
+        done();
+        return;
+      }
+      nodes.forEach(([n,t])=>{
+        n.textContent=t.split('').map(ch=>ch===' '||Math.random()>p*0.9?ch:G[(Math.random()*G.length)|0]).join('');
+      });
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
   function openOverlay(){
+    if(triggerBtn.querySelector('.owner-pill'))return;
+    if(document.documentElement.classList.contains('ee-takeover'))return;
+    // Freeze the behaviour stats at the moment of the click
+    session.clickAt=performance.now();
+    if(session.flushDwell)session.flushDwell();
+    session.snap=Object.assign({},session.dwell);
     if(nav&&nav.classList.contains('open')){
       nav.classList.remove('open');
       if(menu){menu.setAttribute('aria-expanded','false');menu.textContent='Menu +'}
     }
-    overlay.hidden=false;
-    document.body.style.overflow='hidden';
-    requestAnimationFrame(()=>{
-      overlay.classList.add('open');
-      startPromptStage();
+    takeover(()=>{
+      overlay.hidden=false;
+      document.body.style.overflow='hidden';
+      requestAnimationFrame(()=>{
+        overlay.classList.add('open');
+        startPromptStage();
+      });
     });
   }
 
@@ -1341,6 +1661,7 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
   }
 
   triggerBtn.addEventListener('click',openOverlay);
+  bodyEl.addEventListener('click',e=>{if(!e.target.closest('button'))speed=0.2});
   continueBtn.addEventListener('click',runSequence);
   replayBtn.addEventListener('click',runSequence);
   cancelBtn.addEventListener('click',closeOverlay);
@@ -1352,6 +1673,7 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
   });
 
   document.addEventListener('keydown',e=>{
+    if(e.key===' '&&!overlay.hidden&&!terminalEl.hidden&&promptActions.hidden&&!(e.target.closest&&e.target.closest('button'))){e.preventDefault();speed=0.2;return}
     if(e.key==='Escape'&&!overlay.hidden){
       e.preventDefault();
       closeOverlay();

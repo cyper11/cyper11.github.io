@@ -343,15 +343,16 @@
 
   resize();
 
+  // Declared before the early return: the theme listener reads startTime on mobile too
+  let startTime = performance.now();
+  let lastTime = startTime;
+  let lastRenderTime = 0;
+
   // On mobile or reduced motion: draw crisp initial frame and halt continuous loop
   if (isMobile || prefersReduced) {
     drawSingleFrame(0.5);
     return;
   }
-
-  let startTime = performance.now();
-  let lastTime = startTime;
-  let lastRenderTime = 0;
 
   function render(now) {
     if (!isPageVisible || isModalOpen || isThemeWarping) {

@@ -87,12 +87,19 @@ function verifyPassword(password, storedHash, salt) {
 const checkPwdStmt = db.prepare('SELECT value FROM admin_config WHERE key = ?');
 const pwdRow = checkPwdStmt.get('password_hash');
 if (!pwdRow) {
-  const defaultPass = process.env.ADMIN_PASSWORD || 'FieldEngineer2026!';
-  const { hash, salt } = hashPassword(defaultPass);
+  // Never ship a hardcoded fallback: this repo is public.
+  const envPass = process.env.ADMIN_PASSWORD;
+  const initialPass = envPass || crypto.randomBytes(12).toString('base64url');
+  const { hash, salt } = hashPassword(initialPass);
   const insCfg = db.prepare('INSERT OR REPLACE INTO admin_config (key, value) VALUES (?, ?)');
   insCfg.run('password_hash', hash);
   insCfg.run('password_salt', salt);
-  console.log('[FieldLog DB] Initialized owner admin account. (Passkey configured)');
+  if (envPass) {
+    console.log('[FieldLog DB] Initialized owner admin account from ADMIN_PASSWORD.');
+  } else {
+    console.log(`[FieldLog DB] Initialized owner admin account. One-time generated password: ${initialPass}`);
+    console.log('[FieldLog DB] Log in and change it from the admin panel (shown only once).');
+  }
 }
 
 /* ─── Seed Initial Sample Posts (If empty) ─── */
@@ -108,7 +115,7 @@ if (totalPostsRow.count === 0) {
     'CERTIFICATION',
     'Lenovo Field Service — Rising Star Qualification',
     'Earned the Lenovo Field Service Rising Star qualification. Grateful for the hands-on troubleshooting, customer unit repairs, and continuous hardware diagnostics experience with IPVCYX across Cavite and nearby regions.',
-    'rising-star.png',
+    'rising-star.webp',
     'https://pcsupport.lenovo.com/',
     new Date(Date.now() - 3600000 * 3).toISOString(),
     new Date().toISOString(),
@@ -120,7 +127,7 @@ if (totalPostsRow.count === 0) {
     'FIELD UPDATE',
     'MEC Cabling & Infrastructure Quality Inspections',
     'Completed on-site structured cabling audits and equipment inspections. Prepared circuit diagrams, verified patch panel terminologies, and documented fiber/coaxial run conditions for client handover.',
-    'field-01.png',
+    'field-01.webp',
     null,
     new Date(Date.now() - 3600000 * 24).toISOString(),
     new Date().toISOString(),
@@ -132,7 +139,7 @@ if (totalPostsRow.count === 0) {
     'PROJECT',
     'C1-Convert — All-in-One Client-Side File Utility',
     'Shipped C1-Convert: a browser-native document and image conversion engine. Built with privacy at its core — zero cloud retention, automated 30-minute purging, and instantaneous conversions for PDFs, Word documents, and spreadsheets.',
-    'c1convert-01.png',
+    'c1convert-01.webp',
     'https://c1-convert.vercel.app/',
     new Date(Date.now() - 3600000 * 50).toISOString(),
     new Date().toISOString(),
