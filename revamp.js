@@ -33,13 +33,6 @@
       const t = (r.top + r.height / 2 - vh / 2) / vh; // -1..1 around center
       n.el.style.setProperty('--rv-par', (t * 40).toFixed(1) + 'px');
     }
-    if (wordmark) {
-      const r = wordmark.getBoundingClientRect();
-      if (r.top < vh && r.bottom > 0) {
-        const t = 1 - (r.top + r.height) / (vh + r.height);
-        wordmark.style.setProperty('--rv-wm', (-40 + t * 180).toFixed(1) + '%');
-      }
-    }
   }
   addEventListener('scroll', () => {
     if (!scrollQueued) { scrollQueued = true; requestAnimationFrame(onScrollFrame); }
@@ -174,6 +167,28 @@
   }
 
   onScrollFrame();
+
+  /* ─── Footer wordmark: shine + sparkles, animated only while visible ─── */
+  if (wordmark) {
+    if (!reduce) {
+      const rnd = (a, b) => a + Math.random() * (b - a);
+      const place = sp => {
+        sp.style.setProperty('--x', rnd(6, 94).toFixed(1) + '%');
+        sp.style.setProperty('--y', rnd(14, 86).toFixed(1) + '%');
+        sp.style.setProperty('--s', rnd(10, 26).toFixed(0) + 'px');
+      };
+      for (let i = 0; i < 10; i++) {
+        const sp = document.createElement('i');
+        sp.className = 'rv-spark';
+        place(sp);
+        sp.style.setProperty('--d', rnd(1.8, 3.4).toFixed(2) + 's');
+        sp.style.setProperty('--delay', rnd(0, 3).toFixed(2) + 's');
+        sp.addEventListener('animationiteration', () => place(sp));
+        wordmark.appendChild(sp);
+      }
+    }
+    new IntersectionObserver(([e]) => wordmark.classList.toggle('rv-live', e.isIntersecting)).observe(wordmark);
+  }
 
   if (!finePointer) { initNavPill(); return; }
 

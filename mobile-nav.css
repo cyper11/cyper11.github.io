@@ -1,0 +1,111 @@
+/* ═══════════════════════════════════════════════════════════════════
+   MOBILE NAV — iOS-style docked tab bar + Menu bottom sheet
+   (≤ 850px). Overrides the older floating pill in style.css.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.msheet,.msheet-backdrop{display:none}
+
+@media (max-width:850px){
+  /* Top header: hide the old dropdown trigger, slide away on scroll-down */
+  .mobile-menu{display:none!important}
+  .sidebar{animation:none;transition:transform .38s cubic-bezier(.22,1,.36,1),background .3s;will-change:transform}
+  .sidebar.mh-hidden{transform:translateY(-102%)}
+  html{scroll-padding-top:20px}
+
+  /* Docked tab bar (the generic `nav{top:100%}` rule used to push it off-screen) */
+  .mobile-tabbar{
+    display:block;position:fixed;top:auto;left:0;right:0;bottom:0;transform:none;
+    width:100%;max-width:none;height:auto;margin:0;
+    padding:0 0 env(safe-area-inset-bottom,0px);
+    border:0;border-top:1px solid var(--line);border-radius:0;
+    background:rgba(17,19,16,.84);
+    backdrop-filter:blur(22px) saturate(180%);-webkit-backdrop-filter:blur(22px) saturate(180%);
+    box-shadow:0 -10px 30px -18px rgba(0,0,0,.6);
+    z-index:140;animation:none
+  }
+  [data-theme="light"] .mobile-tabbar{background:rgba(245,244,240,.86);border:0;border-top:1px solid var(--line);box-shadow:0 -10px 30px -20px rgba(0,0,0,.18)}
+  .mobile-tabbar-inner{position:relative;display:grid;grid-template-columns:repeat(6,1fr);height:58px;gap:0;width:100%}
+
+  .tabbar-ink{position:absolute;top:-1px;left:0;width:calc(100% / 6);height:3px;pointer-events:none;display:flex;justify-content:center;
+    transform:translateX(calc(var(--ink,0) * 100%));transition:transform .45s cubic-bezier(.34,1.4,.64,1),opacity .25s;opacity:0}
+  .tabbar-ink::before{content:'';width:34px;height:100%;border-radius:0 0 4px 4px;background:var(--lime);box-shadow:0 0 14px var(--lime)}
+  .tabbar-ink.on{opacity:1}
+
+  .tabbar-item{
+    height:58px;padding:0;gap:4px;border-radius:0;background:none!important;
+    font-family:'DM Sans',sans-serif;font-size:10.5px;font-weight:500;letter-spacing:0;color:var(--muted);
+    justify-content:center;transform:none!important
+  }
+  .mobile-tabbar .tabbar-item::before{display:none}
+  .mobile-tabbar .tabbar-item>span:not(.tabbar-avatar){transform:none!important;display:block;width:auto;height:auto;flex-shrink:0;line-height:1;overflow:visible;font-size:10.5px;white-space:nowrap}
+  .tabbar-item svg{width:23px;height:23px;transition:transform .35s cubic-bezier(.34,1.56,.64,1),fill .25s,color .25s}
+  .tabbar-item:active svg,.tabbar-item:active .tabbar-avatar{transform:scale(.86)}
+  .tabbar-item.active,.tabbar-item.active span{color:var(--lime);font-weight:600}
+  .tabbar-item.active svg{color:var(--lime);fill:rgba(213,251,120,.16);transform:translateY(-1px)}
+  [data-theme="light"] .tabbar-item.active svg{fill:rgba(74,138,20,.14)}
+
+  /* Menu tab = profile photo with a hamburger badge */
+  .tabbar-avatar{position:relative;width:26px;height:26px;border-radius:50%;display:block;transition:transform .35s cubic-bezier(.34,1.56,.64,1),box-shadow .25s}
+  .tabbar-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+  .tabbar-avatar i{position:absolute;right:-4px;bottom:-3px;width:15px;height:15px;border-radius:50%;display:grid;place-items:center;background:var(--panel);color:var(--text);border:1.5px solid var(--bg)}
+  .tabbar-item-menu.active .tabbar-avatar,.tabbar-item-menu[aria-expanded="true"] .tabbar-avatar{box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--lime)}
+  .tabbar-item-menu[aria-expanded="true"],.tabbar-item-menu[aria-expanded="true"] span{color:var(--lime)}
+
+  body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))!important}
+
+  /* ─── Bottom sheet ─── */
+  .msheet-backdrop{display:block;position:fixed;inset:0;z-index:130;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .3s}
+  .msheet-backdrop.open{opacity:1;pointer-events:auto}
+  .msheet{
+    display:block;position:fixed;left:0;right:0;bottom:0;z-index:135;
+    max-height:calc(100dvh - 40px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+    background:var(--bg);border-top:1px solid var(--line);border-radius:22px 22px 0 0;
+    padding:8px 16px calc(84px + env(safe-area-inset-bottom,0px));
+    transform:translateY(105%);transition:transform .48s cubic-bezier(.22,1,.36,1);visibility:hidden;
+    box-shadow:0 -24px 60px -20px rgba(0,0,0,.7)
+  }
+  .msheet.open{transform:translateY(var(--drag,0px));visibility:visible}
+  .msheet.dragging{transition:none}
+  .msheet-grab{display:block;width:100%;padding:6px 0 14px;background:none;border:0;cursor:grab;touch-action:none}
+  .msheet-grab::before{content:'';display:block;margin:0 auto;width:40px;height:4.5px;border-radius:9px;background:var(--line)}
+
+  .msheet-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 14px}
+  .msheet-head h2{font-size:26px;letter-spacing:-.04em}
+  .msheet-close{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--text);display:grid;place-items:center;font-size:15px}
+
+  .msheet-profile{display:flex;align-items:center;gap:13px;padding:13px;border:1px solid var(--line);border-radius:16px;background:var(--panel);margin-bottom:20px}
+  .msheet-profile img{width:50px;height:50px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px var(--bg),0 0 0 3.5px var(--lime)}
+  .msheet-profile div{flex:1;min-width:0}
+  .msheet-profile strong{display:block;font-size:16px;line-height:1.2}
+  .msheet-profile small{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+  .msheet-profile a{flex-shrink:0;font:500 11px var(--mono);letter-spacing:.06em;padding:9px 12px;border-radius:999px;background:var(--lime);color:#1c2711}
+
+  .msheet-label{font:400 10.5px var(--mono);letter-spacing:.12em;color:var(--muted);margin:0 2px 10px}
+  .msheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
+  .msheet-tile{position:relative;display:flex;flex-direction:column;gap:12px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--text);font-size:14px;font-weight:500;
+    opacity:0;transform:translateY(12px);transition:opacity .4s,transform .45s cubic-bezier(.22,1,.36,1),border-color .2s}
+  .msheet.open .msheet-tile{opacity:1;transform:none;transition-delay:calc(var(--n) * 28ms + 80ms)}
+  .msheet-tile:active{transform:scale(.97)!important}
+  .msheet-tile .ico{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:rgba(213,251,120,.1);color:var(--lime)}
+  [data-theme="light"] .msheet-tile .ico{background:rgba(74,138,20,.1)}
+  .msheet-tile .ico svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .msheet-tile b{position:absolute;top:14px;right:14px;font:400 10.5px var(--mono);color:var(--muted)}
+  .msheet-tile.is-current{border-color:var(--lime)}
+  .msheet-tile.is-current b{color:var(--lime)}
+
+  .msheet-list{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden;margin-bottom:18px}
+  .msheet-row{display:flex;align-items:center;gap:12px;width:100%;padding:14px;border:0;border-top:1px solid var(--line);background:none;color:var(--text);font-size:14px;text-align:left}
+  .msheet-row:first-child{border-top:0}
+  .msheet-row .ico{flex:0 0 30px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--bg);color:var(--lime);font-size:13px;flex-shrink:0}
+  .msheet-row .ico svg{width:16px;height:16px}
+  .msheet-row span:not(.ico){flex:1;min-width:0}
+  .msheet-row em{font-style:normal;font:400 11px var(--mono);color:var(--muted)}
+  .msheet-row:active{background:rgba(213,251,120,.06)}
+  .msheet-row.secret span{font-family:var(--mono);letter-spacing:.1em}
+  .msheet-foot{text-align:center;font:400 10px var(--mono);letter-spacing:.12em;color:var(--muted)}
+}
+
+@media (max-width:850px) and (prefers-reduced-motion:reduce){
+  .msheet,.sidebar,.tabbar-ink{transition:none}
+  .msheet-tile{opacity:1;transform:none}
+}

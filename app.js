@@ -146,12 +146,7 @@ nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{
   syncMenuState(false);
   if(a.hash)setActiveNav(a.hash.slice(1));
 }));
-if(tabbarMenuBtn){
-  tabbarMenuBtn.addEventListener('click',(e)=>{
-    e.preventDefault();
-    menu.click();
-  });
-}
+// The tab bar's Menu button opens the bottom sheet (mobile-nav.js)
 
 /* ─── Theme toggle with GPU-accelerated circular warp reveal ─── */
 const themeBtn = document.getElementById('theme-toggle');
@@ -244,8 +239,7 @@ function setActiveNav(id){
   activeNavId = id;
   navLinks.forEach(a => a.classList.toggle('active', a.hash === '#' + id));
   tabbarItems.forEach(item => {
-    const target = item.dataset.nav;
-    const isMatch = target === id || (id === 'overview' && target === 'overview');
+    const isMatch = (item.dataset.nav || '').split(' ').includes(id);
     item.classList.toggle('active', isMatch);
   });
 }

@@ -166,10 +166,24 @@ nav a:hover span,nav a.active span{transform:translateX(2px) scale(1.08)}
 @keyframes rv-aura{to{transform:translate(-160px,140px) scale(1.25)}}
 .contact h2 em,.contact h2 span{text-shadow:0 0 36px rgba(var(--lime-rgb),.3)}
 
-/* Footer wordmark */
-.rv-wordmark{margin:70px 0 -12px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(56px,13.5vw,220px);line-height:.8;letter-spacing:-.07em;white-space:nowrap;
-  color:transparent;-webkit-text-stroke:1px var(--line);text-align:center;user-select:none;overflow:hidden;
-  background:linear-gradient(90deg,transparent,rgba(var(--lime-rgb),.9),transparent) no-repeat;background-size:30% 100%;background-position:var(--rv-wm,-40%) 0;-webkit-background-clip:text;background-clip:text}
+/* Footer wordmark: outlined name with a travelling shine + twinkling sparkles */
+.rv-wordmark{position:relative;margin:70px 0 -12px;padding:.04em 0;text-align:center;user-select:none;overflow:hidden;line-height:.8}
+.rv-wm-text{display:inline-block;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(56px,13.5vw,220px);line-height:.86;letter-spacing:-.07em;white-space:nowrap;
+  color:transparent;-webkit-text-stroke:1px rgba(var(--lime-rgb),.34);
+  background-image:
+    linear-gradient(105deg,transparent 40%,rgba(var(--lime-rgb),.75) 46.5%,rgba(255,255,255,.98) 50%,rgba(var(--lime-rgb),.75) 53.5%,transparent 60%),
+    linear-gradient(180deg,rgba(var(--lime-rgb),.2),rgba(var(--lime-rgb),.03) 90%);
+  background-size:300% 100%,100% 100%;background-repeat:no-repeat;background-position:85% 0,0 0;
+  -webkit-background-clip:text;background-clip:text;
+  transition:-webkit-text-stroke-color .4s}
+.rv-wordmark.rv-live .rv-wm-text{animation:rv-wm-sweep 5.5s cubic-bezier(.45,0,.2,1) infinite}
+.rv-wordmark:hover .rv-wm-text{-webkit-text-stroke-color:rgba(var(--lime-rgb),.8);animation-duration:2.2s}
+@keyframes rv-wm-sweep{0%{background-position:85% 0,0 0}55%,100%{background-position:15% 0,0 0}}
+.rv-spark{position:absolute;left:var(--x);top:var(--y);width:var(--s);height:var(--s);margin:calc(var(--s) / -2) 0 0 calc(var(--s) / -2);pointer-events:none;opacity:0;
+  background:radial-gradient(circle,#fff 0 22%,var(--lime) 48%,transparent 72%);
+  clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%)}
+.rv-wordmark.rv-live .rv-spark{animation:rv-twinkle var(--d) ease-in-out var(--delay) infinite}
+@keyframes rv-twinkle{0%,100%{opacity:0;transform:scale(.2) rotate(0deg)}40%{opacity:1;transform:scale(1) rotate(45deg)}70%{opacity:0;transform:scale(.35) rotate(110deg)}}
 footer{position:relative}
 
 /* Focus polish */
@@ -184,7 +198,8 @@ footer{position:relative}
   .rv-wordmark{margin-top:48px}
 }
 @media(prefers-reduced-motion:reduce){
-  body::after,.rv-scan,.button.primary::before,.contact::before,.timeline .current::before{animation:none}
+  body::after,.rv-scan,.button.primary::before,.contact::before,.timeline .current::before,.rv-wordmark .rv-wm-text{animation:none!important}
+  .rv-spark{display:none}
   .rv-scan{display:none}
   .reveal{filter:none}
   .rv-words .rv-w>span{transform:none;transition:none}
