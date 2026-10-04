@@ -2,7 +2,7 @@
    REVAMP v2 — motion layer
    Scroll progress · word reveals · mono scramble · section index
    parallax · card spotlight · magnetic buttons · portrait tilt ·
-   cursor follower · sliding nav pill · reveal stagger
+   sliding nav pill · reveal stagger
    ═══════════════════════════════════════════════════════════════════ */
 
 (function () {
@@ -234,37 +234,6 @@
       portrait.classList.remove('rv-tilting');
       portrait.style.setProperty('--rv-ra', '0deg');
     });
-  }
-
-  /* ─── Cursor follower ring ─── */
-  if (!reduce) {
-    const ring = document.createElement('div');
-    ring.className = 'rv-cursor';
-    ring.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(ring);
-    let x = -100, y = -100, cx = -100, cy = -100, raf = 0, last = null;
-    const HOT = 'a,button,[role="button"],.cert-card,.badge-card,.field-photo,.cc-stage,input,label,summary';
-    const loop = () => {
-      cx += (x - cx) * 0.2;
-      cy += (y - cy) * 0.2;
-      ring.style.transform = `translate3d(${cx.toFixed(1)}px,${cy.toFixed(1)}px,0)`;
-      raf = Math.abs(x - cx) + Math.abs(y - cy) > 0.3 ? requestAnimationFrame(loop) : 0;
-    };
-    document.addEventListener('pointermove', e => {
-      if (e.pointerType !== 'mouse') return;
-      x = e.clientX; y = e.clientY;
-      if (e.target !== last) {
-        last = e.target;
-        // Stay out of the way inside games, dialogs and canvases
-        const quiet = e.target.closest && e.target.closest('dialog,canvas,[class*="-overlay"],[class*="modal"],.fe-topbar,.tr-topbar');
-        ring.classList.toggle('on', !quiet);
-        ring.classList.toggle('hot', !quiet && !!(e.target.closest && e.target.closest(HOT)));
-      }
-      if (!raf) raf = requestAnimationFrame(loop);
-    }, { passive: true });
-    document.addEventListener('pointerdown', () => ring.classList.add('press'));
-    document.addEventListener('pointerup', () => ring.classList.remove('press'));
-    document.documentElement.addEventListener('pointerleave', () => ring.classList.remove('on'));
   }
 
   initNavPill();

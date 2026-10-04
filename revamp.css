@@ -27,14 +27,6 @@ body::after{content:'';position:fixed;inset:-50%;z-index:2147483000;pointer-even
 .rv-progress{position:fixed;top:0;left:0;right:0;height:2px;z-index:60;pointer-events:none;transform-origin:0 50%;transform:scaleX(var(--rv-p,0));
   background:linear-gradient(90deg,transparent,var(--lime) 30%,var(--lime));box-shadow:0 0 12px rgba(var(--lime-rgb),.6)}
 
-/* ─── Cursor follower (fine pointers only; native cursor stays) ─── */
-.rv-cursor{position:fixed;left:0;top:0;width:34px;height:34px;margin:-17px 0 0 -17px;border:1px solid rgba(var(--lime-rgb),.55);border-radius:50%;
-  pointer-events:none;z-index:2147483001;opacity:0;transition:opacity .3s,width .35s var(--ease-out),height .35s var(--ease-out),margin .35s var(--ease-out),background .3s,border-color .3s;will-change:transform}
-.rv-cursor.on{opacity:1}
-.rv-cursor.hot{width:58px;height:58px;margin:-29px 0 0 -29px;background:rgba(var(--lime-rgb),.08);border-color:rgba(var(--lime-rgb),.9)}
-.rv-cursor.press{width:26px;height:26px;margin:-13px 0 0 -13px}
-@media (hover:none),(pointer:coarse){.rv-cursor{display:none}}
-
 /* ─── Sidebar: sliding active pill ─── */
 .rv-nav-pill{position:absolute;left:0;top:0;width:0;height:38px;border-radius:8px;background:#23271d;pointer-events:none;z-index:0;
   transition:transform .5s var(--ease-spring),height .3s var(--ease-out),width .3s var(--ease-out),opacity .3s;opacity:0}
