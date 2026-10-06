@@ -70,7 +70,7 @@
       keys: ['hi', 'hello', 'hey', 'yo', 'kumusta', 'kamusta', 'musta', 'good morning', 'good afternoon', 'good evening', 'magandang', 'sup', 'hola', 'uy', 'oy'],
       reply: () => ({
         text: `${greetWord()}! 👋 Ako si <strong>C1</strong>, assistant ni Cyper. Ask me about his work, skills, projects, or kahit IT problem mo — I'll do my best.`,
-        actions: [ask('Who is Cyper?'), ask('Show me his projects'), ask('Is he available for hire?')]
+        actions: [ask('Who is Cyper?'), ask('Show me his projects'), ask('Is he available for sidelines?')]
       })
     },
     {
@@ -78,7 +78,7 @@
       keys: ['who', 'sino', 'about', 'yourself', 'cyper', 'ivan', 'introduce', 'tell me about', 'background', 'profile', 'siya'],
       reply: () => ({
         text: `<p><strong>Cyper Ivan Pelina</strong> is a <strong>Field Service Engineer</strong> based in Cavite, Philippines. 🇵🇭</p>
-<p>He diagnoses, repairs, and keeps technology working — from the laptop on your desk to the network behind it. Currently at <strong>Lenovo / IPVCYX</strong>, and finishing his B.S. Information Technology at LPU–Cavite — graduating soon. 🎓</p>
+<p>He diagnoses, repairs, and keeps technology working — from the laptop on your desk to the network behind it. Currently at <strong>IPVCYX</strong>, a Lenovo field service center, and finishing his B.S. Information Technology at LPU–Cavite — graduating soon. 🎓</p>
 <p>Hands-on sa hardware, networking, CCTV, and he also builds web & Android apps on the side.</p>`,
         actions: [go('experience', 'See the journey →'), ask('What are his skills?'), open(LINKS.resume, 'Open résumé ↗')]
       })
@@ -106,7 +106,7 @@
       keys: ['experience', 'work', 'job', 'trabaho', 'career', 'journey', 'history', 'worked', 'employment', 'company', 'role', 'position'],
       reply: () => ({
         text: `<p>Career route so far:</p>
-<ul><li><strong>Aug 2026 — Present</strong> · Field Service Engineer, <em>Lenovo / IPVCYX</em> — hardware diagnostics, laptop repairs, B2B technical support.</li>
+<ul><li><strong>Aug 2026 — Present</strong> · Field Service Engineer, <em>IPVCYX (Lenovo field service center)</em> — hardware diagnostics, laptop repairs, B2B technical support.</li>
 <li><strong>Jan — May 2026</strong> · IT Support Intern, <em>Paramount Life & General Insurance</em> — laptops, printers, IP, DNS & connectivity.</li>
 <li><strong>Field work</strong> · CCTV infrastructure at Tri-Phil International, cabling & electrical documentation at MEC.</li></ul>`,
         actions: [go('career-city', 'Explore Career City →'), ask('Where did he study?'), open(LINKS.resume, 'Full résumé ↗')]
@@ -116,7 +116,7 @@
       id: 'current',
       keys: ['lenovo', 'ipvcyx', 'currently', 'current', 'field service engineer', 'fse'],
       reply: () => ({
-        text: `He's currently a <strong>Field Service Engineer at Lenovo / IPVCYX</strong> (General Trias, Cavite) since Aug 2026 — on-site laptop diagnostics, FRU replacement, warranty service, and B2B support. He's also earned Lenovo's <strong>Rising Star</strong> and <strong>Advanced Qualification</strong>. ⭐`,
+        text: `He's currently a <strong>Field Service Engineer at IPVCYX</strong>, a Lenovo field service center (General Trias, Cavite) since Aug 2026 — on-site laptop diagnostics, FRU replacement, warranty service, and B2B support. He's also earned Lenovo's <strong>Rising Star</strong> and <strong>Advanced Qualification</strong>. ⭐`,
         actions: [go('credentials', 'See credentials →')]
       })
     },
@@ -249,10 +249,28 @@
     { id: 'quiz', w: 2, keys: ['quiz', 'trivia', 'code quiz'], reply: () => ({ text: '🧠 Code Quiz — JavaScript, web layout, SQL and debugging scenarios.', actions: [open('code-quiz.html', 'Take the Code Quiz ↗')] }) },
     {
       id: 'hire',
-      keys: ['hire', 'hiring', 'available', 'availability', 'opportunity', 'opportunities', 'freelance', 'commission', 'open to', 'recruit', 'job offer', 'collab', 'collaborate', 'pwede', 'raket'],
+      keys: ['hire', 'hiring', 'available', 'availability', 'opportunity', 'opportunities', 'freelance', 'commission', 'open to', 'recruit', 'job offer', 'full time', 'full-time', 'collab', 'collaborate', 'pwede', 'raket', 'sideline', 'sidelines', 'part time', 'part-time'],
       reply: () => ({
-        text: `✅ Yes — Cyper is <strong>open to opportunities</strong> in IT / Field Service, Networking & Infrastructure, Hardware Troubleshooting, Web Development, and Technical Projects. Best way to reach him is email.`,
-        actions: [open(`mailto:${EMAIL}?subject=Opportunity%20for%20Cyper`, '✉️ Email him'), { label: '⧉ Copy email', run: copyEmail }, open(LINKS.resume, 'Résumé ↗')]
+        text: `<p>Not available for full-time hire right now. He's working as a Field Service Engineer at IPVCYX, a Lenovo field service center. 🙏</p>
+<p>But he's <strong>open for sidelines</strong>:</p>
+<ul><li>💻 Project builds: websites, web apps, systems</li><li>🎓 <strong>Capstone projects</strong>, any kind</li><li>📹 <strong>Big quotations</strong>, like enterprise CCTV installs</li></ul><p>Message him the details!</p>`,
+        actions: [open(`mailto:${EMAIL}?subject=Sideline%20project%20inquiry`, '✉️ Inquire about a project'), ask('Capstone project', '🎓 Capstone'), ask('CCTV quotation for enterprise', '📹 CCTV quote'), { label: '⧉ Copy email', run: copyEmail }]
+      })
+    },
+    {
+      id: 'capstone', w: 2,
+      keys: ['capstone', 'thesis', 'school project', 'system project', 'final project', 'website project', 'web project', 'project build', 'magpagawa', 'pagawa', 'pagawa ng'],
+      reply: () => ({
+        text: `<p>🎓 Yes, he takes <strong>capstone and project builds</strong>, any kind: web systems, mobile apps, databases, network setups.</p><p>Send him your title, scope, deadline, and budget so he can give you a quote.</p>`,
+        actions: [open(`mailto:${EMAIL}?subject=Capstone%20%2F%20project%20inquiry`, '✉️ Send project details'), open(LINKS.facebook, 'Message on Facebook ↗')]
+      })
+    },
+    {
+      id: 'cctvquote', w: 3,
+      keys: ['enterprise', 'quotation', 'cctv quote', 'cctv quotation', 'cctv install', 'cctv installation', 'installation', 'bidding', 'company cctv', 'warehouse', 'factory', 'building'],
+      reply: () => ({
+        text: `<p>📹 Open for <strong>big quotations</strong>, including <strong>enterprise CCTV</strong>: site inspection, camera layout & coverage planning, NVR/IP camera setup, cabling, and documentation.</p><p>Send the site location, rough number of cameras, and timeline.</p>`,
+        actions: [open(`mailto:${EMAIL}?subject=CCTV%20quotation%20request`, '✉️ Request CCTV quotation'), go('work', 'See his CCTV work →')]
       })
     },
     {
@@ -380,7 +398,7 @@
     {
       id: 'bye',
       keys: ['bye', 'goodbye', 'see you', 'paalam', 'ingat', 'later', 'sige'],
-      reply: () => ({ text: 'Ingat! 👋 Kung may opportunity ka for Cyper, don\'t be shy — <a href="mailto:' + EMAIL + '">' + EMAIL + '</a>.' })
+      reply: () => ({ text: 'Ingat! 👋 Kung may project ka for Cyper, don\'t be shy — <a href="mailto:' + EMAIL + '">' + EMAIL + '</a>.' })
     },
     {
       id: 'love',
@@ -391,13 +409,13 @@
       id: 'salary', w: 2,
       keys: ['salary', 'rate', 'price', 'magkano', 'how much', 'sweldo', 'bayad', 'cost', 'quote'],
       reply: () => ({
-        text: '💬 Rates depend on the scope (on-site support, CCTV, web project, etc.). Send Cyper the details and he\'ll get back with a quote.',
+        text: '💬 Rates depend on the scope: capstone, project builds, or enterprise CCTV. Send Cyper the details and he\'ll get back with a quote.',
         actions: [open(`mailto:${EMAIL}?subject=Quote%20request`, '✉️ Request a quote')]
       })
     }
   ];
 
-  const SUGGESTIONS = ['Who is Cyper?', 'Projects', 'Skills', 'Available for hire?', 'Play a game', 'Fix slow wifi', 'Contact', 'Tell me a joke'];
+  const SUGGESTIONS = ['Who is Cyper?', 'Projects', 'Skills', 'Sidelines?', 'Capstone', 'CCTV quote', 'Play a game', 'Fix slow wifi', 'Contact', 'Tell me a joke'];
 
   /* ── Matching ── */
   function match(raw) {
@@ -575,7 +593,7 @@
     log.appendChild(stamp);
     addBot({
       text: `<p>${greetWord()}! 👋 I'm <strong>C1</strong>, Cyper's assistant.</p><p>Ask me about his experience, projects, skills — or bring me an IT problem. Pwede rin Taglish!</p>`,
-      actions: [ask('Who is Cyper?'), ask('Show me his projects', 'Projects'), ask('Is he available for hire?', 'Hire Cyper')]
+      actions: [ask('Who is Cyper?'), ask('Show me his projects', 'Projects'), ask('Is he available for sidelines?', 'Sidelines & quotes')]
     });
   }
 
