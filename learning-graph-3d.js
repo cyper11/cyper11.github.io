@@ -48,6 +48,17 @@
   /* Skill-level bridges: a leaf that reaches into another topic */
   const BRIDGES = [['cctv', 'IP cameras', 'net'], ['cctv', 'Cabling', 'net'], ['ai', 'Ollama', 'sys'], ['web', 'APIs', 'cloud'], ['sys', 'Virtualization', 'cloud']];
 
+  const ICON = d => `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+  const ICONS = {
+    net: ICON('<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/>'),
+    ai: ICON('<rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/>'),
+    sys: ICON('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'),
+    web: ICON('<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>'),
+    cloud: ICON('<path d="M18 10h-1.3A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>'),
+    cctv: ICON('<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>'),
+    core: ICON('<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>')
+  };
+
   const idx = id => TOPICS.findIndex(t => t.id === id);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -108,7 +119,7 @@
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'cc-label shown';
-    b.innerHTML = `<b>${i + 1}</b><span class="cc-label-name"></span>`;
+    b.innerHTML = `<b>${i + 1}</b><span class="lg-ico">${ICONS[t.id] || ''}</span><span class="cc-label-name"></span>`;
     b.querySelector('.cc-label-name').textContent = t.short;
     b.setAttribute('aria-label', `${t.name}: show connections`);
     b.addEventListener('click', () => select(selected === i ? -1 : i, true));
@@ -161,9 +172,10 @@
      SCENE
      ═══════════════════════════════════════════════════════════════ */
   function boot(THREE) {
-    const isLight = () => document.documentElement.dataset.theme === 'light';
+    // the stage is always deep-space dark, so the graph keeps its dark palette in both themes
+    const isLight = () => false;
     const PAL = {
-      dark: { lime: '#d5fb78', node: '#f0f1e9', dim: '#3a4133', line: '#d5fb78', leaf: '#a0a598', bg: '#111310', additive: true, lineO: 0.55 },
+      dark: { lime: '#d5fb78', node: '#f0f1e9', dim: '#3a4133', line: '#d5fb78', leaf: '#a0a598', bg: '#07090a', additive: true, lineO: 0.55 },
       light: { lime: '#4a8a14', node: '#1a1d17', dim: '#cfcabe', line: '#4a8a14', leaf: '#5f6258', bg: '#efede7', additive: false, lineO: 0.6 }
     };
     let pal = PAL[isLight() ? 'light' : 'dark'];
@@ -175,10 +187,10 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(pal.bg, 16, 30);
+    scene.fog = new THREE.Fog(pal.bg, 24, 46);
     const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
     camera.position.set(0, 2.2, 18);
-    camera.lookAt(0, 0, 0);
+    camera.lookAt(0, 0.9, 0);
 
     const graph = new THREE.Group();
     scene.add(graph);
@@ -200,23 +212,22 @@
     };
 
     /* ─── Layout ─── */
-    const R = 5.6;
+    const R = 6.1;
     const hubPos = TOPICS.map((_, i) => {
       const a = (i / TOPICS.length) * Math.PI * 2;
-      return new THREE.Vector3(Math.cos(a) * R, (i % 2 ? 1 : -1) * 1.5, Math.sin(a) * R);
+      return new THREE.Vector3(Math.cos(a) * R, (i % 2 ? 1 : -1) * 2.7, Math.sin(a) * R);
     });
     const leafPos = TOPICS.map((t, i) => {
       const hub = hubPos[i];
-      const dir = hub.clone().normalize();
-      const up = new THREE.Vector3(0, 1, 0);
-      const t1 = new THREE.Vector3().crossVectors(dir, up).normalize();
-      const t2 = new THREE.Vector3().crossVectors(t1, dir).normalize();
+      const dir = new THREE.Vector3(hub.x, 0, hub.z).normalize();
+      const tan = new THREE.Vector3(-dir.z, 0, dir.x);
+      const n = t.leaves.length;
       return t.leaves.map((_, k) => {
-        const th = (k / t.leaves.length) * Math.PI * 2 + i * 0.7;
+        const s = k - (n - 1) / 2;   // fan: a slight arc bowing away from the hub
         return hub.clone()
-          .addScaledVector(dir, 1.5)
-          .addScaledVector(t1, Math.cos(th) * 1.55)
-          .addScaledVector(t2, Math.sin(th) * 1.55);
+          .addScaledVector(dir, 2.15 - Math.abs(s) * 0.2)
+          .addScaledVector(tan, s * 0.16)
+          .add(new THREE.Vector3(0, s * 0.62, 0));
       });
     });
 
@@ -263,9 +274,12 @@
         const lh = new THREE.Mesh(leafHitGeo, hitMat);
         lh.position.copy(p);
         lh.userData = { hub: i, leaf: k };
-        graph.add(leaf, lh);
+        const lg = new THREE.Sprite(glowMat(0.5));
+        lg.position.copy(p);
+        lg.scale.setScalar(0.55);
+        graph.add(leaf, lh, lg);
         hitTargets.push(lh);
-        leafMeshes.push({ mesh: leaf, mat: lm, hub: i, k });
+        leafMeshes.push({ mesh: leaf, mat: lm, glow: lg, hub: i, k });
       });
     });
 
@@ -285,6 +299,7 @@
       return e;
     }
     const ORIGIN = new THREE.Vector3();
+    const CORE_TOP = new THREE.Vector3(0, 1.15, 0);
     TOPICS.forEach((t, i) => {
       addEdge(new THREE.LineCurve3(ORIGIN, hubPos[i]), 'spoke', -1, i, 1);
       leafPos[i].forEach(p => addEdge(new THREE.LineCurve3(hubPos[i], p), 'leaf', i, i, 1));
@@ -323,13 +338,20 @@
     /* ─── Dust ─── */
     const dustGeo = new THREE.BufferGeometry();
     const dust = [];
-    for (let i = 0; i < 260; i++) {
+    for (let i = 0; i < 420; i++) {
       const r = 6 + Math.random() * 12, th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
       dust.push(r * Math.sin(ph) * Math.cos(th), r * Math.cos(ph) * 0.6, r * Math.sin(ph) * Math.sin(th));
     }
     dustGeo.setAttribute('position', new THREE.Float32BufferAttribute(dust, 3));
     const dustMat = new THREE.PointsMaterial({ size: 0.06, transparent: true, opacity: 0.5, depthWrite: false });
     graph.add(new THREE.Points(dustGeo, dustMat));
+
+    /* ─── Core label ─── */
+    const coreLabel = document.createElement('span');
+    coreLabel.className = 'lg-core';
+    coreLabel.innerHTML = `${ICONS.core}<span>Knowledge</span>`;
+    coreLabel.setAttribute('aria-hidden', 'true');
+    labelsEl.appendChild(coreLabel);
 
     /* ─── Leaf labels (HTML) ─── */
     const leafLabels = leafMeshes.map(l => {
@@ -378,20 +400,21 @@
     }
 
     /* ─── Sizing ─── */
-    let W = 1, H = 1;
+    let W = 1, H = 1, baseZ = 18, zoom = 1, zoomT = 1, engaged = false;
     function resize() {
       const r = stage.getBoundingClientRect();
       W = Math.max(1, r.width); H = Math.max(1, r.height);
       renderer.setSize(W, H, false);
       camera.aspect = W / H;
-      camera.position.z = W / H < 1.1 ? 24 : 18;
+      baseZ = Math.min(34, Math.max(19, 12.6 / (Math.tan(camera.fov * Math.PI / 360) * camera.aspect)));
+      camera.position.z = baseZ * zoom;
       camera.updateProjectionMatrix();
       requestFrame();
     }
     new ResizeObserver(resize).observe(stage);
 
     /* ─── Rotation + interaction ─── */
-    let yaw = 0.4, pitch = 0.18, yawVel = 0, targetYaw = null, lastInteract = 0;
+    let yaw = 0.4, pitch = 0.3, yawVel = 0, targetYaw = null, lastInteract = 0;
     const raycaster = new THREE.Raycaster();
     const ndc = new THREE.Vector2();
     function pick(x, y) {
@@ -411,6 +434,15 @@
     onChange = fromUser => { if (fromUser) { lastInteract = performance.now(); focusYaw(selected); } requestFrame(); };
 
     let down = null;
+    // Wheel zooms only after the graph is clicked, so page scrolling is never hijacked
+    stage.addEventListener('wheel', e => {
+      if (!engaged) return;
+      e.preventDefault();
+      zoomT = Math.min(1.35, Math.max(0.55, zoomT * (e.deltaY > 0 ? 1.08 : 0.92)));
+      requestFrame();
+    }, { passive: false });
+    stage.addEventListener('pointerdown', () => { engaged = true; stage.classList.add('engaged'); });
+    stage.addEventListener('pointerleave', () => { engaged = false; stage.classList.remove('engaged'); });
     stage.addEventListener('pointerdown', e => {
       if (e.target.closest('.cc-label')) return;
       down = { x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY, drag: false, id: e.pointerId };
@@ -468,11 +500,20 @@
         labels[i].style.opacity = f < 0 || hubLevel[i] > 0.5 ? '' : '0.35';
         labels[i].style.zIndex = String(Math.round((1 - q.z) * 1000));
       });
+      const c = project(CORE_TOP);
+      coreLabel.style.transform = `translate3d(${c.x.toFixed(1)}px,${(c.y - 26).toFixed(1)}px,0) translate(-50%,-100%)`;
+      const wide = W >= 700;
       leafMeshes.forEach((l, n) => {
         const q = project(l.mesh.position);
-        leafLabels[n].style.transform = `translate3d(${(q.x + 8).toFixed(1)}px,${(q.y - 6).toFixed(1)}px,0)`;
-        leafLabels[n].classList.toggle('shown', f === l.hub);
-        leafLabels[n].classList.toggle('hot', f === l.hub && selected === l.hub);
+        const h = project(hubPos[l.hub]);
+        const right = q.x >= h.x;   // put the text on the outer side of the fan
+        const lab = leafLabels[n];
+        lab.style.transform = `translate3d(${(q.x + (right ? 12 : -12)).toFixed(1)}px,${q.y.toFixed(1)}px,0) translate(${right ? '0' : '-100%'},-50%)`;
+        // back of the sphere fades; other topics dim while one is focused
+        const depth = Math.min(1, Math.max(0.5, (0.985 - q.z) * 22));
+        const show = wide ? (f < 0 || f === l.hub) : f === l.hub;
+        lab.style.opacity = show ? (f === l.hub ? 1 : depth * 0.9).toFixed(2) : (wide ? '0.12' : '0');
+        lab.classList.toggle('hot', f === l.hub);
       });
     }
 
@@ -504,6 +545,11 @@
         }
       }
       graph.rotation.set(pitch, yaw, 0);
+      if (Math.abs(zoomT - zoom) > 0.001) {
+        zoom += (zoomT - zoom) * Math.min(1, dt * 8);
+        camera.position.z = baseZ * zoom;
+        settling = true;
+      }
 
       // Nodes
       const breathe = reducedMotion ? 0 : Math.sin(t * 1.6);
@@ -523,6 +569,7 @@
         const L = edgeLevel[leafEdgeOf[l.hub]];
         l.mat.color.set(L > 0.9 ? pal.lime : pal.leaf);
         l.mat.opacity = Math.min(1, 0.2 + L);
+        l.glow.material.opacity = Math.min(0.8, L * 0.7);
       });
       edges.forEach((e, i) => { e.mat.opacity = edgeLevel[i] * pal.lineO * (e.kind === 'link' ? 1.25 : 1); });
 

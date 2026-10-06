@@ -122,16 +122,77 @@
         return b;
       });
       carousel.before(rail);
+
+      // Scanner wipe that sweeps the stage on every change
+      const sweep = make('div', 'mx-sweep');
+      sweep.setAttribute('aria-hidden', 'true');
+      carousel.appendChild(sweep);
+
+      // Slideshow: auto-advance with a progress bar in the active chip.
+      // Pauses on hover/focus, off-screen, hidden tab; off by default for reduced motion.
+      const DUR = 6500;
+      let cur = -1, elapsed = 0, prev = 0, playing = !reduce, held = false, visible = false, raf = 0;
+      const play = make('button', 'mx-play');
+      play.type = 'button';
+      const nav = $('.carousel-nav', work);
+      if (nav && counter) counter.before(play);
+      else rail.after(play);
+      const drawPlay = () => {
+        play.innerHTML = playing ? '<i></i><i></i> AUTO' : '<b>▶</b> PLAY';
+        play.setAttribute('aria-label', playing ? 'Pause project slideshow' : 'Play project slideshow');
+        play.setAttribute('aria-pressed', String(playing));
+        work.classList.toggle('mx-autoplay', playing);
+      };
+      play.addEventListener('click', () => { playing = !playing; elapsed = 0; drawPlay(); });
+      drawPlay();
+
+      const tick = now => {
+        raf = 0;
+        if (!visible) return;
+        const dt = prev ? Math.min(1000, now - prev) : 0;
+        prev = now;
+        if (playing && !held && !document.hidden) elapsed += dt;
+        const p = clamp(elapsed / DUR);
+        if (btns[cur]) btns[cur].style.setProperty('--rp', p.toFixed(4));
+        if (p >= 1 && typeof carousel.mxGoTo === 'function') {
+          elapsed = 0;
+          carousel.mxGoTo((cur + 1) % btns.length);
+        }
+        raf = requestAnimationFrame(tick);
+      };
+      new IntersectionObserver(([e]) => {
+        visible = e.isIntersecting;
+        prev = 0;
+        if (visible && !raf) raf = requestAnimationFrame(tick);
+      }, { threshold: 0.15 }).observe(carousel);
+      const hold = v => () => { held = v; };
+      [carousel, rail].forEach(el => {
+        el.addEventListener('pointerenter', hold(true));
+        el.addEventListener('pointerleave', hold(false));
+      });
+      work.addEventListener('focusin', e => { if (e.target !== play) held = true; });
+      work.addEventListener('focusout', () => { held = false; });
+
       const sync = () => {
         const m = counter && counter.textContent.match(/(\d+)/);
-        const cur = m ? +m[1] - 1 : 0;
+        const next = m ? +m[1] - 1 : 0;
+        if (next === cur) return;
+        const first = cur < 0;
+        cur = next;
+        elapsed = 0;
         btns.forEach((b, i) => {
           b.classList.toggle('on', i === cur);
           b.setAttribute('aria-current', i === cur ? 'true' : 'false');
+          b.style.setProperty('--rp', 0);
         });
         const on = btns[cur];
         if (on && rail.scrollWidth > rail.clientWidth) {
           rail.scrollTo({ left: on.offsetLeft - 20, behavior: reduce ? 'auto' : 'smooth' });
+        }
+        if (!first && !reduce) {
+          sweep.classList.remove('go');
+          void sweep.offsetWidth;
+          sweep.classList.add('go');
         }
       };
       if (counter) new MutationObserver(sync).observe(counter, { childList: true, characterData: true, subtree: true });
