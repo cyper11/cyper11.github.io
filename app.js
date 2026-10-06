@@ -853,7 +853,8 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
 })();
 
 /* ═══════════════════════════════════════════════
-   "CLICK THIS" EASTER EGG (ephemeral, browser-side)
+   ??? — "SOMEONE'S WATCHING" (ephemeral, browser-side)
+   Everything is read inside this tab and dropped on close.
    ═══════════════════════════════════════════════ */
 (function(){
   const triggerBtn=document.getElementById('click-this-btn');
@@ -883,7 +884,7 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
     if(max>0)session.maxScroll=Math.max(session.maxScroll,scrollY/max);
   },{passive:true});
   new MutationObserver(()=>session.themeFlips++).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
-  const SECTION_NAMES={overview:'THE HERO',work:'FIELD WORK',experience:'EXPERIENCE',credentials:'CREDENTIALS',stack:'TOOLKIT',lab:'THE LAB',activity:'ACTIVITY',learning:'CURRENTLY LEARNING',contact:'CONTACT'};
+  const SECTION_NAMES={overview:'the intro',work:'field work',experience:'experience',credentials:'credentials',stack:'the toolkit',lab:'the lab',activity:'activity',learning:'currently learning',contact:'contact'};
   if('IntersectionObserver' in window){
     const since={};
     const dwellObs=new IntersectionObserver(entries=>{
@@ -898,10 +899,6 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
     session.flushDwell=()=>{const now=performance.now();for(const id in since){session.dwell[id]=(session.dwell[id]||0)+(now-since[id]);since[id]=now}};
   }
 
-  /* Click / Space inside the terminal fast-forwards the typing */
-  let speed=1;
-  let facts=0;
-
   const logEl=document.getElementById('ee-log');
   const bodyEl=document.getElementById('ee-body');
   const terminalEl=document.getElementById('ee-terminal');
@@ -912,138 +909,201 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
   const closeTopBtn=document.getElementById('ee-close-top');
   const replayBtn=document.getElementById('ee-replay-btn');
   const closeBtn=document.getElementById('ee-close-btn');
+  const clockEl=document.getElementById('ee-clock');
+  const soundBtn=document.getElementById('ee-sound');
+  const cross=document.getElementById('ee-cross');
+  const crossTag=cross&&cross.querySelector('.ee-ctag');
 
+  /* Click / Space inside the overlay fast-forwards the typing */
+  let speed=1;
+  let facts=0;
   let runId=0;
   let activeCursor=null;
   let abortCtrl=null;
+  let clockTimer=0;
+  let seen=false;
 
-  function isReducedMotion(){
-    return window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-  }
+  const reduced=()=>matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const alive=id=>id===runId;
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  async function wait(ms,id){await sleep((reduced()?Math.min(ms,80):ms)*speed);return alive(id)}
 
-  function wait(ms,id){
-    const d=(isReducedMotion()?Math.min(ms,80):ms)*speed;
-    return new Promise(resolve=>{
-      setTimeout(()=>resolve(id===runId),d);
-    });
-  }
-
-  function triggerFlicker(){
-    if(isReducedMotion())return;
+  function flicker(){
+    if(reduced())return;
     overlay.classList.remove('ee-flicker');
     void overlay.offsetWidth;
     overlay.classList.add('ee-flicker');
     setTimeout(()=>overlay.classList.remove('ee-flicker'),240);
   }
 
-  function attachCursor(el){
-    if(activeCursor&&activeCursor.parentNode){
-      activeCursor.parentNode.removeChild(activeCursor);
-    }
-    const c=document.createElement('span');
-    c.className='ee-cursor';
-    c.setAttribute('aria-hidden','true');
-    el.appendChild(c);
-    activeCursor=c;
+  /* ─── Sound: a low drone, key ticks and a thud on reveals. WebAudio only,
+     started by the visitor's own click, toggle remembered per browser ─── */
+  const snd={ctx:null,master:null,drone:null,noise:null,on:true};
+  try{snd.on=localStorage.getItem('c1_ee_sound')!=='off'}catch(e){}
+  function audio(){
+    if(snd.ctx)return snd.ctx;
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC)return null;
+    try{
+      const ctx=new AC();
+      const master=ctx.createGain();
+      master.gain.value=snd.on?1:0;
+      master.connect(ctx.destination);
+      const len=Math.floor(ctx.sampleRate*0.018);
+      const buf=ctx.createBuffer(1,len,ctx.sampleRate),d=buf.getChannelData(0);
+      for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,3);
+      Object.assign(snd,{ctx,master,noise:buf});
+      return ctx;
+    }catch(e){return null}
   }
-
-  function scrollToBottom(){
-    if(bodyEl)bodyEl.scrollTop=bodyEl.scrollHeight;
+  function droneStart(){
+    const ctx=audio();
+    if(!ctx||snd.drone)return;
+    if(ctx.state==='suspended')ctx.resume();
+    const g=ctx.createGain();g.gain.value=0;
+    const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=150;lp.Q.value=7;
+    const oscs=[[41.2,'sawtooth'],[41.7,'sawtooth'],[82.1,'sine']].map(([f,t])=>{
+      const o=ctx.createOscillator();o.type=t;o.frequency.value=f;o.connect(lp);o.start();return o;
+    });
+    const lfo=ctx.createOscillator(),lfoG=ctx.createGain();
+    lfo.frequency.value=0.07;lfoG.gain.value=80;
+    lfo.connect(lfoG);lfoG.connect(lp.frequency);lfo.start();
+    lp.connect(g);g.connect(snd.master);
+    g.gain.setTargetAtTime(0.08,ctx.currentTime,1.4);
+    snd.drone={g,nodes:[...oscs,lfo]};
   }
+  function droneStop(fade=0.3){
+    const d=snd.drone;
+    if(!d||!snd.ctx)return;
+    snd.drone=null;
+    const t=snd.ctx.currentTime;
+    d.g.gain.cancelScheduledValues(t);
+    d.g.gain.setTargetAtTime(0,t,fade);
+    setTimeout(()=>d.nodes.forEach(n=>{try{n.stop()}catch(e){}}),fade*6000+100);
+  }
+  function tick(){
+    const ctx=snd.ctx;
+    if(!ctx||!snd.on||!snd.noise)return;
+    const s=ctx.createBufferSource(),hp=ctx.createBiquadFilter(),g=ctx.createGain();
+    s.buffer=snd.noise;
+    hp.type='highpass';hp.frequency.value=1800+Math.random()*1600;
+    g.gain.value=0.05;
+    s.connect(hp);hp.connect(g);g.connect(snd.master);s.start();
+  }
+  function thud(){
+    const ctx=snd.ctx;
+    if(!ctx||!snd.on)return;
+    const t=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();
+    o.type='sine';
+    o.frequency.setValueAtTime(120,t);o.frequency.exponentialRampToValueAtTime(30,t+0.55);
+    g.gain.setValueAtTime(0.4,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.75);
+    o.connect(g);g.connect(snd.master);o.start(t);o.stop(t+0.8);
+  }
+  function setSound(on){
+    snd.on=on;
+    try{localStorage.setItem('c1_ee_sound',on?'on':'off')}catch(e){}
+    if(snd.master)snd.master.gain.setTargetAtTime(on?1:0,snd.ctx.currentTime,0.05);
+    if(soundBtn){soundBtn.setAttribute('aria-pressed',String(on));soundBtn.textContent=on?'SOUND ON':'SOUND OFF'}
+  }
+  setSound(snd.on);
 
-  async function typeLine(text,id,cls='',charSpeed=22){
-    if(id!==runId)return false;
+  /* ─── Typing ─── */
+  function placeCursor(el){
+    if(activeCursor)activeCursor.remove();
+    activeCursor=document.createElement('span');
+    activeCursor.className='ee-cursor';
+    activeCursor.setAttribute('aria-hidden','true');
+    el.appendChild(activeCursor);
+  }
+  function newLine(cls){
     const p=document.createElement('p');
     p.className='ee-line'+(cls?' '+cls:'');
     const span=document.createElement('span');
     p.appendChild(span);
     logEl.appendChild(p);
-    attachCursor(p);
-    scrollToBottom();
-
-    if(isReducedMotion()||charSpeed<=0){
-      span.textContent=text;
-      scrollToBottom();
-      return true;
-    }
-
-    for(let i=1;i<=text.length;i++){
-      if(id!==runId)return false;
-      span.textContent=text.slice(0,i);
-      scrollToBottom();
-      await new Promise(r=>setTimeout(r,charSpeed*speed));
-    }
-    return id===runId;
+    placeCursor(p);
+    bodyEl.scrollTop=bodyEl.scrollHeight;
+    return span;
+  }
+  function keyDelay(ch){
+    let d=26+Math.random()*48;
+    if(/[.,?!:]/.test(ch))d+=170;
+    return d*speed;
   }
 
-  async function typeKeyValue(key,val,id){
-    if(id!==runId)return false;
-    const p=document.createElement('p');
-    p.className='ee-line ee-bright';
-    const kSpan=document.createElement('span');
-    kSpan.className='ee-key';
-    const vSpan=document.createElement('span');
-    vSpan.className='ee-val';
-    p.appendChild(kSpan);
-    p.appendChild(vSpan);
-    logEl.appendChild(p);
-    attachCursor(p);
-    scrollToBottom();
+  /* Types like a person: uneven rhythm, pauses at punctuation, the odd correction.
+     typo = [index, wrongText] — wrongText is typed at index, then erased. */
+  async function say(text,id,cls='',typo=null){
+    if(!alive(id))return false;
+    const span=newLine(cls);
+    if(reduced()){span.textContent=text;return true}
+    let typed='';
+    for(let i=0;i<text.length;i++){
+      if(typo&&i===typo[0]){
+        for(const ch of typo[1]){
+          if(!alive(id))return false;
+          typed+=ch;span.textContent=typed;tick();
+          await sleep(keyDelay(ch));
+        }
+        await sleep(420*speed);
+        for(let k=0;k<typo[1].length;k++){
+          if(!alive(id))return false;
+          typed=typed.slice(0,-1);span.textContent=typed;
+          await sleep(60*speed);
+        }
+        await sleep(220*speed);
+      }
+      if(!alive(id))return false;
+      typed+=text[i];span.textContent=typed;
+      if(text[i]!==' ')tick();
+      await sleep(keyDelay(text[i]));
+    }
+    return alive(id);
+  }
 
+  /* Big reveal: characters scramble, then lock into the real value */
+  async function reveal(text,id){
+    if(!alive(id))return false;
     facts++;
-    const prefix='> '+key+': ';
-    if(isReducedMotion()){
-      kSpan.textContent=prefix;
-      vSpan.textContent=val;
-      scrollToBottom();
-      return true;
+    const span=newLine('ee-data');
+    thud();
+    if(reduced()){span.textContent=text;return true}
+    const G='0123456789ABCDEF#%&@$';
+    const frames=16;
+    for(let f=0;f<=frames;f++){
+      if(!alive(id))return false;
+      const lock=Math.floor(text.length*f/frames);
+      span.textContent=text.split('').map((ch,i)=>i<lock||/[\s.,:\-]/.test(ch)?ch:G[(Math.random()*G.length)|0]).join('');
+      await sleep(40*speed);
     }
-    for(let i=1;i<=prefix.length;i++){
-      if(id!==runId)return false;
-      kSpan.textContent=prefix.slice(0,i);
-      await new Promise(r=>setTimeout(r,14*speed));
-    }
-    for(let i=1;i<=val.length;i++){
-      if(id!==runId)return false;
-      vSpan.textContent=val.slice(0,i);
-      scrollToBottom();
-      await new Promise(r=>setTimeout(r,18*speed));
-    }
-    return id===runId;
+    span.textContent=text;
+    return alive(id);
   }
 
-  function addSpacer(){
-    const div=document.createElement('div');
-    div.className='ee-line ee-spacer';
-    logEl.appendChild(div);
-  }
-
+  /* ─── What the browser hands over ─── */
   function detectBrowserEnv(){
     const ua=navigator.userAgent||'';
-    let os='UNKNOWN OS';
-    if(/Windows/i.test(ua))os='WINDOWS';
-    else if(/Android/i.test(ua))os='ANDROID';
-    else if(/iPhone|iPad|iPod/i.test(ua))os='IOS';
-    else if(/Mac OS X|Macintosh/i.test(ua))os='MACOS';
-    else if(/Linux/i.test(ua))os='LINUX';
+    let os='an unknown os';
+    if(/Windows/i.test(ua))os='windows';
+    else if(/Android/i.test(ua))os='android';
+    else if(/iPhone|iPad|iPod/i.test(ua))os='ios';
+    else if(/Mac OS X|Macintosh/i.test(ua))os='macos';
+    else if(/Linux/i.test(ua))os='linux';
 
-    let browser='BROWSER';
-    if(/Edg\//i.test(ua))browser='EDGE';
-    else if(/OPR\/|Opera/i.test(ua))browser='OPERA';
-    else if(/Chrome\//i.test(ua)&&!/Edg\//i.test(ua))browser='CHROME';
-    else if(/Firefox\//i.test(ua))browser='FIREFOX';
-    else if(/Safari\//i.test(ua)&&!/Chrome\//i.test(ua))browser='SAFARI';
+    let browser='some browser';
+    if(/Edg\//i.test(ua))browser='edge';
+    else if(/OPR\/|Opera/i.test(ua))browser='opera';
+    else if(/Chrome\//i.test(ua))browser='chrome';
+    else if(/Firefox\//i.test(ua))browser='firefox';
+    else if(/Safari\//i.test(ua))browser='safari';
 
     const lang=(navigator.language||'EN-US').toUpperCase();
     const threads=navigator.hardwareConcurrency?String(navigator.hardwareConcurrency):null;
     const memory=navigator.deviceMemory?String(navigator.deviceMemory)+' GB':null;
-    const display=(window.screen&&window.screen.width&&window.screen.height)?`${window.screen.width} × ${window.screen.height}`:`${window.innerWidth} × ${window.innerHeight}`;
+    const display=(window.screen&&window.screen.width&&window.screen.height)?`${window.screen.width}×${window.screen.height}`:`${window.innerWidth}×${window.innerHeight}`;
     let tz='UTC';
-    try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone.toUpperCase()}catch(e){}
-    const conn=(navigator.connection&&navigator.connection.effectiveType)?String(navigator.connection.effectiveType).toUpperCase():null;
-    const status=navigator.onLine?'ONLINE':'OFFLINE';
-
-    return{os,browser,lang,threads,memory,display,tz,conn,status};
+    try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone}catch(e){}
+    return{os,browser,lang,threads,memory,display,tz};
   }
 
   async function fetchEphemeralNetInfo(signal){
@@ -1089,128 +1149,28 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
     return null;
   }
 
-  const statusLabel=overlay.querySelector('.ee-status span');
-
-  async function typeStatusLine(prefix,badge,id,badgeCls='ee-accent'){
-    if(id!==runId)return null;
-    const p=document.createElement('p');
-    p.className='ee-line ee-bright';
-    const preSpan=document.createElement('span');
-    preSpan.className='ee-key';
-    const bSpan=document.createElement('span');
-    bSpan.className='ee-val '+badgeCls;
-    p.appendChild(preSpan);
-    p.appendChild(bSpan);
-    logEl.appendChild(p);
-    attachCursor(p);
-    scrollToBottom();
-
-    if(isReducedMotion()){
-      preSpan.textContent=prefix;
-      bSpan.textContent=badge;
-      scrollToBottom();
-      return bSpan;
-    }
-    for(let i=1;i<=prefix.length;i++){
-      if(id!==runId)return null;
-      preSpan.textContent=prefix.slice(0,i);
-      await new Promise(r=>setTimeout(r,15*speed));
-    }
-    if(!(await wait(140,id)))return null;
-    bSpan.textContent=badge;
-    scrollToBottom();
-    return bSpan;
-  }
-
-  async function typeScanProgress(id){
-    if(id!==runId)return false;
-    const p=document.createElement('p');
-    p.className='ee-line ee-bright';
-    const preSpan=document.createElement('span');
-    preSpan.className='ee-key';
-    const barSpan=document.createElement('span');
-    barSpan.className='ee-val';
-    p.appendChild(preSpan);
-    p.appendChild(barSpan);
-    logEl.appendChild(p);
-    attachCursor(p);
-    scrollToBottom();
-
-    const prefix='> scanning browser environment... ';
-    if(isReducedMotion()){
-      preSpan.textContent=prefix;
-      barSpan.textContent='[██████████████░░] 87%';
-      await wait(80,id);
-      barSpan.textContent='[████████████████] 100%';
-      return id===runId;
-    }
-    for(let i=1;i<=prefix.length;i++){
-      if(id!==runId)return false;
-      preSpan.textContent=prefix.slice(0,i);
-      await new Promise(r=>setTimeout(r,14*speed));
-    }
-    const steps=[
-      ['[███░░░░░░░░░░░░░] 19%',90],
-      ['[███████░░░░░░░░░] 44%',95],
-      ['[███████████░░░░░] 68%',100],
-      ['[██████████████░░] 87%',240],
-      ['[████████████████] 100%',140]
-    ];
-    for(const [txt,delay] of steps){
-      if(id!==runId)return false;
-      barSpan.textContent=txt;
-      scrollToBottom();
-      await new Promise(r=>setTimeout(r,delay*speed));
-    }
-    return id===runId;
-  }
-
-  function corruptFewChars(container,degBadge){
-    if(isReducedMotion())return()=>{};
-    const saved=[];
-    if(degBadge){
-      saved.push({el:degBadge,txt:degBadge.textContent});
-      degBadge.textContent='DΞGRΔD░D';
-    }
-    const keys=container.querySelectorAll('.ee-key');
-    if(keys.length>=2){
-      const t=keys[keys.length-2];
-      saved.push({el:t,txt:t.textContent});
-      t.textContent=t.textContent.replace('local data','l0c░l d∆ta');
-    }
-    return()=>{
-      saved.forEach(item=>{item.el.textContent=item.txt});
-    };
-  }
-
-  function deepEnv(){
-    const out={};
+  function gpuName(){
     try{
       const gl=document.createElement('canvas').getContext('webgl');
       const ext=gl&&gl.getExtension('WEBGL_debug_renderer_info');
-      if(ext){
-        let r=String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)||'');
-        const m=r.match(/ANGLE \(([^,]+),\s*([^,]+?)(\s*\(0x[0-9a-f]+\))?\s*(Direct3D|OpenGL|Vulkan|Metal|,)/i);
-        if(m)r=m[2];
-        out.gpu=r.replace(/\s+/g,' ').trim().toUpperCase().slice(0,48)||null;
-      }
-    }catch(e){}
-    out.dark=window.matchMedia('(prefers-color-scheme: dark)').matches?'DARK':'LIGHT';
-    out.input=(navigator.maxTouchPoints||0)>0&&matchMedia('(pointer: coarse)').matches?'TOUCHSCREEN':'MOUSE / TRACKPAD';
-    out.dpr=String(window.devicePixelRatio||1);
-    return out;
+      if(!ext)return null;
+      let r=String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)||'');
+      const m=r.match(/ANGLE \(([^,]+),\s*([^,]+?)(\s*\(0x[0-9a-f]+\))?\s*(Direct3D|OpenGL|Vulkan|Metal|,)/i);
+      if(m)r=m[2];
+      return r.replace(/\s+/g,' ').trim().slice(0,48)||null;
+    }catch(e){return null}
   }
 
   async function batteryInfo(){
     try{
       if(!navigator.getBattery)return null;
       const b=await navigator.getBattery();
-      return Math.round(b.level*100)+'%'+(b.charging?' · CHARGING':' · ON BATTERY');
+      return{level:Math.round(b.level*100),charging:b.charging};
     }catch(e){return null}
   }
 
-  async function fingerprint(env,deep){
-    let raw=[env.os,env.browser,env.lang,env.threads,env.memory,env.display,env.tz,deep.gpu,deep.dpr,navigator.userAgent].join('|');
+  async function fingerprint(env,gpu){
+    let raw=[env.os,env.browser,env.lang,env.threads,env.memory,env.display,env.tz,gpu,window.devicePixelRatio,navigator.userAgent].join('|');
     try{
       const c=document.createElement('canvas');c.width=240;c.height=60;
       const x=c.getContext('2d');
@@ -1232,13 +1192,13 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
 
   function referrerLabel(){
     const r=document.referrer;
-    if(!r)return 'A DIRECT LINK (OR AN APP THAT HIDES IT)';
+    if(!r)return null;
     let host='';
     try{host=new URL(r).hostname.replace(/^www\./,'')}catch(e){return null}
     if(host===location.hostname)return null;
-    const map=[[/facebook|fb\.|messenger/,'FACEBOOK'],[/linkedin|lnkd/,'LINKEDIN'],[/google\./,'GOOGLE SEARCH'],[/tiktok/,'TIKTOK'],[/github/,'GITHUB'],[/^t\.co$|twitter|x\.com/,'X / TWITTER'],[/bing/,'BING'],[/instagram/,'INSTAGRAM']];
+    const map=[[/facebook|fb\.|messenger/,'facebook'],[/linkedin|lnkd/,'linkedin'],[/google\./,'a google search'],[/tiktok/,'tiktok'],[/github/,'github'],[/^t\.co$|twitter|x\.com/,'x'],[/bing/,'bing'],[/instagram/,'instagram']];
     for(const [re,label] of map)if(re.test(host))return label;
-    return host.toUpperCase();
+    return host;
   }
 
   function fmtDuration(ms){
@@ -1246,102 +1206,96 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
     const m=Math.floor(t/60),sec=t%60;
     return m?`${m}m ${String(sec).padStart(2,'0')}s`:`${sec}s`;
   }
-
+  function fmtClock(ms){
+    const t=Math.floor(ms/1000);
+    return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0');
+  }
   function ago(ts){
     const d=Date.now()-ts;
-    if(d<90e3)return 'moments ago';
+    if(d<90e3)return 'a minute ago';
     if(d<3600e3)return Math.round(d/60e3)+' minutes ago';
     if(d<86400e3)return Math.round(d/3600e3)+' hours ago';
     const days=Math.round(d/86400e3);
     return days===1?'yesterday':days+' days ago';
   }
-
   function ordinal(n){
     const v=n%100;
     if(v>=11&&v<=13)return n+'th';
     return n+({1:'st',2:'nd',3:'rd'}[n%10]||'th');
   }
 
-  /* Digits spin like a lock before settling on the real value */
-  async function typeLock(text,id,cls='ee-accent'){
-    if(id!==runId)return false;
-    const p=document.createElement('p');
-    p.className='ee-line '+cls;
-    const span=document.createElement('span');
-    p.appendChild(span);
-    logEl.appendChild(p);
-    attachCursor(p);
-    scrollToBottom();
-    const full='> '+text;
-    if(isReducedMotion()){span.textContent=full;return true}
-    const frames=18;
-    for(let f=0;f<=frames;f++){
-      if(id!==runId)return false;
-      const lock=Math.floor(full.length*f/frames);
-      span.textContent=full.split('').map((ch,i)=>i<lock||!/[0-9A-F]/i.test(ch)?ch:'0123456789ABCDEF'[(Math.random()*16)|0]).join('');
-      await new Promise(r=>setTimeout(r,45*speed));
-    }
-    span.textContent=full;
-    return id===runId;
-  }
-
-  /* Live readout: follows the visitor's pointer for a few seconds */
+  /* Red crosshair locks onto the visitor's pointer */
   async function watchPointer(id){
-    if(id!==runId)return false;
+    if(!alive(id))return false;
     const touch=matchMedia('(pointer: coarse)').matches;
-    if(!(await typeLine(touch?'> tap anywhere.':'> move your mouse.',id,'ee-bright',30)))return false;
-    const p=document.createElement('p');
-    p.className='ee-line ee-accent ee-live';
-    const span=document.createElement('span');
-    span.textContent=touch?'> waiting for your finger...':'> waiting for your hand...';
-    p.appendChild(span);
-    logEl.appendChild(p);
-    attachCursor(p);
-    scrollToBottom();
+    if(!(await say(touch?'touch the screen.':'move your mouse.',id,'ee-bright')))return false;
     let moved=0,last=null,got=false;
     const onMove=e=>{
       got=true;
       if(last)moved+=Math.hypot(e.clientX-last[0],e.clientY-last[1]);
       last=[e.clientX,e.clientY];
-      span.textContent=`> x ${String(Math.round(e.clientX)).padStart(4,'0')} · y ${String(Math.round(e.clientY)).padStart(4,'0')}`;
+      if(!cross)return;
+      cross.style.setProperty('--x',e.clientX+'px');
+      cross.style.setProperty('--y',e.clientY+'px');
+      cross.classList.add('on');
+      if(crossTag)crossTag.textContent=`X ${String(Math.round(e.clientX)).padStart(4,'0')}  Y ${String(Math.round(e.clientY)).padStart(4,'0')}`;
     };
-    window.addEventListener('pointermove',onMove);
-    window.addEventListener('pointerdown',onMove);
+    addEventListener('pointermove',onMove);
+    addEventListener('pointerdown',onMove);
     const t0=performance.now();
-    while(id===runId&&performance.now()-t0<4200&&moved<900){
-      await new Promise(r=>setTimeout(r,60));
-    }
-    window.removeEventListener('pointermove',onMove);
-    window.removeEventListener('pointerdown',onMove);
-    if(id!==runId)return false;
-    if(!got)return typeLine('> ...still there? i can wait.',id,'ee-note',22);
-    triggerFlicker();
+    while(alive(id)&&performance.now()-t0<5200&&moved<1200)await sleep(60);
+    removeEventListener('pointermove',onMove);
+    removeEventListener('pointerdown',onMove);
+    const clear=()=>{if(cross)cross.classList.remove('on','lock')};
+    if(!alive(id)){clear();return false}
+    if(!got)return say("fine. stay still. i'll wait.",id,'ee-dim');
+    if(cross)cross.classList.add('lock');
+    thud();
     facts++;
-    return typeLine('> i see you.',id,'ee-bright',60);
+    const ok=await say('there you are.',id,'ee-red');
+    await wait(1000,id);
+    clear();
+    return ok&&alive(id);
   }
 
-  async function startPromptStage(){
-    const id=++runId;
+  function resetStage(){
     if(abortCtrl){try{abortCtrl.abort()}catch(e){}abortCtrl=null}
-    overlay.classList.remove('ee-anomaly');
-    if(statusLabel)statusLabel.textContent='SESSION // UNKNOWN';
+    overlay.classList.remove('ee-black','ee-run');
+    if(cross)cross.classList.remove('on','lock');
     logEl.innerHTML='';
     promptActions.hidden=true;
     finalEl.hidden=true;
     terminalEl.hidden=false;
+    placeCursor(logEl);
+  }
 
-    if(!(await wait(180,id)))return;
-    if(!(await typeLine('> ???',id,'ee-bright',32)))return;
-    if(!(await wait(420,id)))return;
+  async function startPromptStage(){
+    const id=++runId;
+    resetStage();
+    if(!(await wait(1300,id)))return; // nothing but a cursor, for a while
+    if(!(await say('oh.',id,'ee-bright')))return;
+    if(!(await wait(800,id)))return;
+    if(!(await say('hi.',id,'ee-bright')))return;
     if(session.hovers>=2){
-      if(!(await typeLine(`> you hesitated. ${session.hovers} times.`,id,'ee-warn',30)))return;
-      if(!(await wait(500,id)))return;
+      if(!(await wait(600,id)))return;
+      if(!(await say(`you hovered over that button ${session.hovers} times before clicking.`,id,'ee-dim')))return;
     }
-    if(!(await typeLine('> are you sure?',id,'ee-accent',28)))return;
-    if(!(await wait(220,id)))return;
-
+    if(!(await wait(700,id)))return;
+    if(!(await say('want to see what i see?',id,'ee-bright',[17,'kn'])))return;
+    if(!(await wait(300,id)))return;
     promptActions.hidden=false;
     continueBtn.focus();
+  }
+
+  async function decline(){
+    const id=++runId;
+    promptActions.hidden=true;
+    if(!(await say('okay.',id,'ee-dim')))return;
+    if(!(await wait(600,id)))return;
+    if(!(await say("i'll still be here.",id,'ee-dim')))return;
+    if(!(await wait(1100,id)))return;
+    seen=true;
+    closeOverlay();
   }
 
   async function runSequence(){
@@ -1349,248 +1303,161 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
     speed=1;
     facts=0;
     const runStart=performance.now();
-    if(abortCtrl){try{abortCtrl.abort()}catch(e){}}
+    resetStage();
     abortCtrl=new AbortController();
-    const timeoutId=setTimeout(()=>{try{abortCtrl.abort()}catch(e){}},4000);
-
+    const timeoutId=setTimeout(()=>{try{abortCtrl&&abortCtrl.abort()}catch(e){}},4000);
     /* Ephemeral in-memory lookup — never saved anywhere */
     let netPromise=fetchEphemeralNetInfo(abortCtrl.signal).finally(()=>clearTimeout(timeoutId));
+    droneStart();
+    overlay.classList.add('ee-run');
 
-    overlay.classList.remove('ee-anomaly');
-    if(statusLabel)statusLabel.textContent='SESSION // UNKNOWN';
-    promptActions.hidden=true;
-    finalEl.hidden=true;
-    terminalEl.hidden=false;
-    logEl.innerHTML='';
+    if(!(await wait(500,id)))return;
+    if(!(await say('okay.',id,'ee-bright')))return;
+    if(!(await wait(800,id)))return;
 
-    if(!(await typeLine('> click registered.',id,'ee-bright',18)))return;
-    if(!(await wait(240,id)))return;
-    if(!(await typeLine('> initializing session...',id,'',18)))return;
-    if(!(await wait(240,id)))return;
-    if(!(await typeLine('> reading browser environment...',id,'',18)))return;
-    if(!(await wait(260,id)))return;
-
-    if(!(await typeScanProgress(id)))return;
-    if(!(await wait(220,id)))return;
-    if(!(await typeStatusLine('> checking session integrity... ','[OK]',id,'ee-accent')))return;
-    if(!(await wait(220,id)))return;
-    if(!(await typeStatusLine('> checking local data... ','[NONE]',id,'ee-accent')))return;
-    if(!(await wait(420,id)))return;
-
-    /* Subtle system anomaly (680ms) */
-    addSpacer();
-    if(!(await typeLine('> unusual response detected.',id,'ee-warn',20)))return;
-    if(!(await wait(180,id)))return;
-    const degBadge=await typeStatusLine('> session integrity: ','DEGRADED',id,'ee-warn');
-    if(!degBadge)return;
-
-    overlay.classList.add('ee-anomaly');
-    if(statusLabel)statusLabel.textContent='SESSION // INTEGRITY DEGRADED';
-    const restoreCorrupted=corruptFewChars(logEl,degBadge);
-    if(!(await wait(680,id))){
-      restoreCorrupted();
-      overlay.classList.remove('ee-anomaly');
-      return;
-    }
-
-    /* Recovery */
-    if(!(await typeLine('> attempting recovery...',id,'',18)))return;
-    if(!(await wait(380,id))){
-      restoreCorrupted();
-      overlay.classList.remove('ee-anomaly');
-      return;
-    }
-    restoreCorrupted();
-    overlay.classList.remove('ee-anomaly');
-    if(statusLabel)statusLabel.textContent='SESSION // UNKNOWN';
-    triggerFlicker();
-    if(!(await typeLine('> recovery complete.',id,'ee-accent',18)))return;
-    if(!(await wait(240,id)))return;
-    if(!(await typeLine('> restoring interface...',id,'',18)))return;
-    if(!(await wait(550,id)))return;
-
-    triggerFlicker();
-    logEl.innerHTML='';
-
-    if(!(await typeLine("> here's what your browser revealed",id,'ee-bright',22)))return;
-    if(!(await typeLine('> the moment you opened this site.',id,'ee-bright',20)))return;
-    if(!(await wait(600,id)))return;
-
-    addSpacer();
+    /* The machine */
     const env=detectBrowserEnv();
-    if(!(await typeKeyValue('operating system',env.os,id)))return;
-    if(!(await wait(140,id)))return;
-    if(!(await typeKeyValue('browser',env.browser,id)))return;
-    if(!(await wait(140,id)))return;
-    if(!(await typeKeyValue('language',env.lang,id)))return;
-    if(!(await wait(140,id)))return;
-    if(env.threads){
-      if(!(await typeKeyValue('processor threads',env.threads,id)))return;
-      if(!(await wait(140,id)))return;
+    const gpu=gpuName();
+    facts+=2;
+    if(!(await say(`you're on ${env.os}, using ${env.browser}.`,id)))return;
+    if(env.threads||env.memory){
+      facts++;
+      const hw=[env.threads&&env.threads+' cpu threads',env.memory&&'about '+env.memory.toLowerCase()+' of ram'].filter(Boolean).join(', ');
+      if(!(await say(hw+'.',id,'ee-dim')))return;
     }
-    if(env.memory){
-      if(!(await typeKeyValue('memory estimate',env.memory,id)))return;
-      if(!(await wait(140,id)))return;
-    }
-    if(!(await typeKeyValue('display',env.display,id)))return;
-    if(!(await wait(140,id)))return;
-    if(!(await typeKeyValue('timezone',env.tz,id)))return;
-    if(!(await wait(140,id)))return;
-    if(env.conn){
-      if(!(await typeKeyValue('connection',env.conn,id)))return;
-      if(!(await wait(140,id)))return;
-    }
-    if(!(await typeKeyValue('status',env.status,id)))return;
-    if(!(await wait(140,id)))return;
-    const deep=deepEnv();
-    if(deep.gpu){
-      if(!(await typeKeyValue('graphics card',deep.gpu,id)))return;
-      if(!(await wait(140,id)))return;
+    if(gpu){
+      facts++;
+      if(!(await say(`graphics: ${gpu.toLowerCase()}.`,id,'ee-dim')))return;
     }
     const batt=await batteryInfo();
     if(batt){
-      if(!(await typeKeyValue('battery',batt,id)))return;
-      if(!(await wait(140,id)))return;
-    }
-    if(!(await typeKeyValue('input',deep.input,id)))return;
-    if(!(await wait(140,id)))return;
-    if(!(await typeKeyValue('you prefer',deep.dark+' MODE',id)))return;
-    if(!(await wait(520,id)))return;
-
-    let net=await netPromise;
-    if(id!==runId){net=null;return}
-
-    if(net&&net.ip){
-      addSpacer();
-      if(!(await typeLine('> your public ip address is',id,'',18)))return;
       facts++;
-      if(!(await typeLock(net.ip,id)))return;
-      if(!(await wait(480,id)))return;
-
-      if(net.isp){
-        if(!(await typeLine('> you are connected through',id,'',18)))return;
-        facts++;
-        if(!(await typeLine('> '+String(net.isp).toUpperCase(),id,'ee-bright',18)))return;
-        if(!(await wait(460,id)))return;
-      }
-
-      if(net.lat!==null&&net.lon!==null){
-        if(!(await typeLine('> your approximate coordinates are around',id,'',18)))return;
-        if(!(await typeLine('> triangulating...',id,'ee-note',18)))return;
-        facts++;
-        if(!(await typeLock(`${Number(net.lat).toFixed(4)}, ${Number(net.lon).toFixed(4)}`,id)))return;
-        if(!(await wait(460,id)))return;
-      }
-
-      if(net.region||net.country){
-        const locStr=[net.region,net.country].filter(Boolean).join(', ').toUpperCase();
-        if(!(await typeLine('> your approximate region is',id,'',18)))return;
-        facts++;
-        if(!(await typeLine('> '+locStr,id,'ee-bright',20)))return;
-        if(!(await typeLine('> location is approximate and network-derived.',id,'ee-note',12)))return;
-        if(!(await wait(480,id)))return;
-      }
+      const note=batt.charging?' plugged in.':batt.level<=20?' you should charge that.':'';
+      if(!(await say(`${batt.level}% battery.${note}`,id,'ee-dim')))return;
     }
 
-    addSpacer();
-    if(!(await typeLine('> your timezone is',id,'',18)))return;
-    if(!(await typeLine('> '+env.tz,id,'ee-bright',18)))return;
-    const localTimeStr=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-    if(!(await typeLine('> local time is',id,'',18)))return;
-    if(!(await typeLine('> '+localTimeStr,id,'ee-bright',18)))return;
+    /* The hour */
+    if(!(await wait(700,id)))return;
+    const now=new Date(),h=now.getHours();
+    facts++;
+    if(!(await say(`it's ${now.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}).toLowerCase()} where you are.`,id)))return;
+    if(h<5){
+      if(!(await say('you should be asleep.',id,'ee-red')))return;
+    }else if(h>=22){
+      if(!(await say('late night, huh.',id,'ee-dim')))return;
+    }
 
-    /* Wipe ephemeral network info from memory immediately after display */
+    /* The place */
+    let net=await netPromise;
+    if(!alive(id))return;
+    if(!(await wait(700,id)))return;
+    if(net&&net.ip){
+      if(!(await say('your address:',id,'ee-dim')))return;
+      if(!(await reveal(net.ip,id)))return;
+      if(net.isp){
+        facts++;
+        if(!(await say(`through ${String(net.isp).toLowerCase().replace(/\.+$/,'')}.`,id,'ee-dim')))return;
+      }
+      if(net.region||net.country){
+        if(!(await wait(600,id)))return;
+        if(!(await say('somewhere near',id,'ee-dim')))return;
+        if(!(await reveal([net.region,net.country].filter(Boolean).join(', ').toUpperCase(),id)))return;
+        if(net.lat!==null&&net.lon!==null){
+          facts++;
+          if(!(await say(`${Number(net.lat).toFixed(2)}, ${Number(net.lon).toFixed(2)}. give or take a few kilometers.`,id,'ee-dim')))return;
+        }
+      }
+    }else{
+      if(!(await say("can't see your ip. something's hiding it. smart.",id,'ee-dim')))return;
+    }
+    /* Drop the network info from memory as soon as it's shown */
     net=null;
 
-    /* What you did here — observed silently since the page loaded */
-    if(!(await wait(700,id)))return;
-    triggerFlicker();
-    addSpacer();
-    if(!(await typeLine("> and here's what you did on this site.",id,'ee-bright',24)))return;
-    if(!(await wait(500,id)))return;
+    /* What they did here — watched quietly since the page loaded */
+    if(!(await wait(1000,id)))return;
+    flicker();
     facts++;
-    if(!(await typeLine(`> you were here for ${fmtDuration(session.clickAt-pageStart)} before clicking.`,id,'',18)))return;
+    if(!(await say(`you've been here ${fmtDuration(session.clickAt-pageStart)}.`,id,'ee-bright')))return;
     const top=Object.entries(session.snap).sort((a,b)=>b[1]-a[1])[0];
     if(top&&top[1]>2500){
       facts++;
-      if(!(await typeLine(`> you lingered longest on ${SECTION_NAMES[top[0]]||top[0].toUpperCase()} (${fmtDuration(top[1])}).`,id,'ee-accent',18)))return;
+      if(!(await say(`most of it on ${SECTION_NAMES[top[0]]||top[0]}.`,id)))return;
     }
     if(session.maxScroll>0.02){
       facts++;
-      if(!(await typeLine(`> you scrolled through ${Math.round(session.maxScroll*100)}% of the page.`,id,'',18)))return;
+      if(!(await say(`you scrolled through ${Math.round(session.maxScroll*100)}% of the page.`,id,'ee-dim')))return;
     }
     if(session.mouseM>0.05){
       facts++;
-      if(!(await typeLine(`> your mouse traveled ${session.mouseM>=1?session.mouseM.toFixed(1)+' meters':Math.round(session.mouseM*100)+' cm'}.`,id,'',18)))return;
+      if(!(await say(`your mouse traveled ${session.mouseM>=1?session.mouseM.toFixed(1)+' meters':Math.round(session.mouseM*100)+' cm'}.`,id,'ee-dim')))return;
     }
     if(session.clicks>0){
       facts++;
-      if(!(await typeLine(`> you clicked ${session.clicks} time${session.clicks===1?'':'s'}.`,id,'',18)))return;
+      if(!(await say(`${session.clicks} click${session.clicks===1?'':'s'}.`,id,'ee-dim')))return;
     }
     if(session.themeFlips>0){
       facts++;
-      if(!(await typeLine(`> you switched the theme ${session.themeFlips===1?'once':session.themeFlips+' times'}.`,id,'',18)))return;
+      if(!(await say(`you flipped the theme ${session.themeFlips===1?'once':session.themeFlips+' times'}. couldn't decide?`,id,'ee-dim')))return;
     }
     const ref=referrerLabel();
     if(ref){
       facts++;
-      if(!(await typeLine('> you came here from '+ref+'.',id,'ee-bright',18)))return;
+      if(!(await say(`you came here from ${ref}.`,id)))return;
     }
     facts++;
+    if(!(await wait(500,id)))return;
     if(visit.n>1&&visit.prevLast){
-      if(!(await typeLine(`> welcome back. this is your ${ordinal(visit.n)} visit.`,id,'ee-accent',24)))return;
-      if(!(await typeLine(`> last time you were here: ${ago(visit.prevLast)}.`,id,'',18)))return;
+      if(!(await say(`you came back. ${ordinal(visit.n)} time.`,id,'ee-red')))return;
+      if(!(await say(`last time was ${ago(visit.prevLast)}.`,id,'ee-dim')))return;
     }else{
-      if(!(await typeLine('> first visit. this browser will remember that.',id,'ee-accent',24)))return;
+      if(!(await say("first time here. i'll remember.",id,'ee-red')))return;
     }
-    if(!(await wait(700,id)))return;
 
-    /* Fingerprint: recognizable without cookies or login */
-    addSpacer();
-    if(!(await typeLine('> generating your browser fingerprint...',id,'',18)))return;
-    const fp=await fingerprint(env,deep);
-    facts++;
-    if(!(await typeLock(fp,id,'ee-accent')))return;
-    if(!(await typeLine('> no cookies. no login. no permission asked.',id,'ee-note',16)))return;
-    if(!(await typeLine('> sites can recognize you with this alone.',id,'ee-bright',20)))return;
-    if(!(await wait(800,id)))return;
+    /* Recognisable without cookies or login */
+    if(!(await wait(900,id)))return;
+    if(!(await say("no cookies. no login. i'd still know you again:",id,'ee-dim')))return;
+    if(!(await reveal(await fingerprint(env,gpu),id)))return;
 
-    addSpacer();
+    if(!(await wait(1000,id)))return;
     if(!(await watchPointer(id)))return;
 
-    if(!(await wait(850,id)))return;
-    triggerFlicker();
-    addSpacer();
+    /* Cut to black. Silence. */
+    if(!(await wait(500,id)))return;
+    droneStop(0.04);
+    overlay.classList.add('ee-black');
+    if(!(await wait(1800,id)))return;
+    logEl.innerHTML='';
+    overlay.classList.remove('ee-black');
+    if(!(await wait(300,id)))return;
+    if(!(await say('relax.',id,'ee-big')))return;
+    if(!(await wait(900,id)))return;
+    if(!(await say("it's just a website.",id,'ee-big')))return;
+    if(!(await wait(1100,id)))return;
+    if(!(await say('but so is every other one.',id,'ee-big ee-red')))return;
+    if(!(await wait(1800,id)))return;
 
-    if(!(await typeLine('> wait.',id,'ee-bright',30)))return;
-    if(!(await wait(800,id)))return;
-    if(!(await typeLine('> you clicked it.',id,'ee-bright',28)))return;
-    if(!(await wait(800,id)))return;
-    if(!(await typeLine("> that's exactly the point.",id,'ee-accent',26)))return;
-    if(!(await wait(1050,id)))return;
-
-    triggerFlicker();
+    flicker();
     terminalEl.hidden=true;
     logEl.innerHTML='';
+    overlay.classList.remove('ee-run');
     const tally=document.getElementById('ee-tally');
-    if(tally)tally.textContent=`IN ${fmtDuration(performance.now()-runStart).toUpperCase()}, THIS PAGE LEARNED ${facts} THINGS ABOUT YOU.`;
+    if(tally)tally.textContent=`${facts} THINGS · ${fmtDuration(performance.now()-runStart).toUpperCase()} · 0 PERMISSIONS ASKED`;
     seen=true;
     if(!triggerBtn.querySelector('.owner-pill'))triggerBtn.textContent='!!!';
     finalEl.hidden=false;
-    if(bodyEl)bodyEl.scrollTop=0;
+    bodyEl.scrollTop=0;
     replayBtn.focus();
   }
 
-  let seen=false;
   const pageTitle=document.title;
   document.addEventListener('visibilitychange',()=>{
     if(!seen)return;
-    document.title=document.hidden?'\u{1F441} still watching...':pageTitle;
+    document.title=document.hidden?'still here.':pageTitle;
   });
 
-  /* The whole site "breaks" for a beat before the terminal takes over */
+  /* The whole site "breaks" for a beat before the overlay takes over */
   function takeover(done){
-    if(isReducedMotion()){done();return}
+    if(reduced()){done();return}
     const root=document.documentElement;
     const nodes=[];
     document.querySelectorAll('.sidebar nav a, main h1, main h2, main h3, main .eyebrow, main p').forEach(el=>{
@@ -1602,7 +1469,7 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
     const G='!<>-_\\/[]{}=+*^?#01░▒▓';
     root.classList.add('ee-takeover');
     const t0=performance.now();
-    const tick=()=>{
+    const step=()=>{
       const p=(performance.now()-t0)/950;
       if(p>=1){
         nodes.forEach(([n,t])=>{n.textContent=t});
@@ -1613,9 +1480,16 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
       nodes.forEach(([n,t])=>{
         n.textContent=t.split('').map(ch=>ch===' '||Math.random()>p*0.9?ch:G[(Math.random()*G.length)|0]).join('');
       });
-      requestAnimationFrame(tick);
+      requestAnimationFrame(step);
     };
-    requestAnimationFrame(tick);
+    requestAnimationFrame(step);
+  }
+
+  function startClock(){
+    clearInterval(clockTimer);
+    const upd=()=>{if(clockEl)clockEl.textContent=fmtClock(performance.now()-pageStart)};
+    upd();
+    clockTimer=setInterval(upd,500);
   }
 
   function openOverlay(){
@@ -1629,9 +1503,11 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
       nav.classList.remove('open');
       if(menu){menu.setAttribute('aria-expanded','false');menu.textContent='Menu +'}
     }
+    audio(); // unlock audio inside the click gesture
     takeover(()=>{
       overlay.hidden=false;
       document.body.style.overflow='hidden';
+      startClock();
       requestAnimationFrame(()=>{
         overlay.classList.add('open');
         startPromptStage();
@@ -1642,8 +1518,10 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
   function closeOverlay(){
     runId++;
     if(abortCtrl){try{abortCtrl.abort()}catch(e){}abortCtrl=null}
-    overlay.classList.remove('open','ee-anomaly','ee-flicker');
-    if(statusLabel)statusLabel.textContent='SESSION // UNKNOWN';
+    droneStop(0.15);
+    clearInterval(clockTimer);
+    overlay.classList.remove('open','ee-flicker','ee-black','ee-run');
+    if(cross)cross.classList.remove('on','lock');
     document.body.style.overflow='';
     setTimeout(()=>{
       overlay.hidden=true;
@@ -1651,24 +1529,22 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
       promptActions.hidden=true;
       finalEl.hidden=true;
       triggerBtn.focus();
-    },300);
+    },400);
   }
 
   triggerBtn.addEventListener('click',openOverlay);
   bodyEl.addEventListener('click',e=>{if(!e.target.closest('button'))speed=0.2});
   continueBtn.addEventListener('click',runSequence);
   replayBtn.addEventListener('click',runSequence);
-  cancelBtn.addEventListener('click',closeOverlay);
+  cancelBtn.addEventListener('click',decline);
   closeBtn.addEventListener('click',closeOverlay);
   closeTopBtn.addEventListener('click',closeOverlay);
-
-  overlay.addEventListener('click',e=>{
-    if(e.target===overlay)closeOverlay();
-  });
+  if(soundBtn)soundBtn.addEventListener('click',()=>{audio();setSound(!snd.on)});
 
   document.addEventListener('keydown',e=>{
-    if(e.key===' '&&!overlay.hidden&&!terminalEl.hidden&&promptActions.hidden&&!(e.target.closest&&e.target.closest('button'))){e.preventDefault();speed=0.2;return}
-    if(e.key==='Escape'&&!overlay.hidden){
+    if(overlay.hidden)return;
+    if(e.key===' '&&!terminalEl.hidden&&promptActions.hidden&&!(e.target.closest&&e.target.closest('button'))){e.preventDefault();speed=0.2;return}
+    if(e.key==='Escape'){
       e.preventDefault();
       closeOverlay();
     }
