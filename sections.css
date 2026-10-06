@@ -17,8 +17,6 @@
 [data-theme="light"] .section-head .eyebrow,[data-theme="light"] .contact-copy>.eyebrow{color:#fff}
 .section-head>.section-note,.section-head>.text-link,.section-head>.tabs{justify-self:end;margin-bottom:8px}
 .section-head>.section-note{display:block;max-width:240px;text-align:right;font:500 10px/1.7 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.section-head:has(.text-link,.section-note,.tabs) .rv-num{left:auto;right:0}
-.rv-num{font-family:var(--mx-display)!important;font-weight:400!important;letter-spacing:0!important}
 .rv-wordmark{container-type:inline-size}
 .rv-wordmark .rv-wm-text{font-family:var(--mx-display);font-weight:400;font-size:min(21cqw,240px);letter-spacing:.01em;line-height:.9}
 .mx-js .section-head::after{content:'';position:absolute;left:0;bottom:-18px;height:1px;width:100%;background:linear-gradient(90deg,var(--lime),var(--lime) 30%,var(--line) 30%);transform:scaleX(0);transform-origin:left;transition:transform 1.2s var(--mx-ease) .15s}
@@ -139,7 +137,6 @@
 .mx-shelf .eyebrow{font-size:9px;letter-spacing:.14em;color:var(--muted)}
 .mx-shelf small,.mx-shelf .badge-card div>span:last-child{font:500 10px var(--mono);letter-spacing:.1em;color:var(--lime)}
 .mx-shelf .cert-card-arrow{position:absolute;right:14px;bottom:16px}
-.mx-shelf-idx{position:absolute;top:10px;left:12px;z-index:2;padding:3px 6px;background:var(--mx-ink);color:#d5fb78;font:500 9px var(--mono);letter-spacing:.14em}
 .mx-shelf .badge-card::after{content:'VERIFIED ✓';position:absolute;top:12px;right:12px;padding:4px 8px;border:2px solid #d5fb78;color:#d5fb78;font:600 9px var(--mono);letter-spacing:.18em;transform:rotate(-8deg);pointer-events:none}
 .mx-shelf .badge-card.visible::after{animation:mx-stamp .45s cubic-bezier(.2,1.6,.4,1) .5s both}
 @keyframes mx-stamp{0%{opacity:0;transform:rotate(-20deg) scale(2.2)}100%{opacity:1;transform:rotate(-8deg) scale(1)}}
@@ -162,7 +159,6 @@
 :root #stack .toolkit-card:hover,#stack .toolkit-mini:hover{transform:translateX(8px);box-shadow:-8px 0 0 var(--lime)}
 #stack .toolkit-card-head,#stack .toolkit-mini>div:first-child{display:flex;align-items:center;gap:14px;margin:0;min-width:0}
 #stack .toolkit-card h3,#stack .toolkit-mini h3{font:400 clamp(20px,1.8vw,26px)/1 var(--mx-display);text-transform:uppercase;letter-spacing:.02em;white-space:normal}
-#stack .toolkit-card h3::before,#stack .toolkit-mini h3::before{content:counter(mx-tk,decimal-leading-zero) ' ';color:var(--lime);font-family:var(--mono);font-size:.5em;vertical-align:.5em;letter-spacing:.1em}
 #stack .toolkit-icon{border-radius:0!important}
 #stack .toolkit-card ul,#stack .toolkit-mini .toolkit-tags{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0}
 #stack .toolkit-card li,#stack .toolkit-tags span{padding:6px 10px;border:1px solid var(--line);font:500 11px var(--mono);letter-spacing:.02em;color:var(--muted);background:transparent;transition:color .2s,border-color .2s,background .2s,transform .3s var(--mx-ease)}
@@ -197,8 +193,6 @@
 #lab .lab-btn{background:transparent;border-color:var(--line)}
 #lab .lab-btn:hover,#lab .lab-card:hover .lab-btn{background:var(--lime);color:var(--mx-ink);border-color:var(--lime)}
 #lab .lab-card:hover .lab-btn .arrow{color:var(--mx-ink)}
-.mx-lab-idx{position:absolute!important;z-index:0!important;right:14px;bottom:62px;font:400 88px/1 var(--mx-display);color:transparent;-webkit-text-stroke:1px color-mix(in srgb,var(--lime) 35%,transparent);pointer-events:none;user-select:none;transition:color .4s,-webkit-text-stroke-color .4s,transform .6s var(--mx-ease)}
-#lab .lab-card:hover .mx-lab-idx{color:color-mix(in srgb,var(--lime) 14%,transparent);-webkit-text-stroke-color:var(--lime);transform:translateY(-4px) scale(1.06)}
 @keyframes mx-glitch{
   0%{transform:translateX(-4px);text-shadow:3px 0 var(--mx-hot),-3px 0 #2ee6ff;clip-path:inset(0 0 45% 0)}
   25%{transform:translateX(4px);clip-path:inset(40% 0 0 0)}
@@ -234,10 +228,9 @@
 /* ═══ 08 LEARNING — topic feed rows ═══════════════════════════════ */
 #learning .learn-grid{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line);counter-reset:mx-ln;margin-top:28px}
 :root #learning .learn-card{counter-increment:mx-ln;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:center;gap:28px;
-  padding:26px 64px 26px 92px;border:0;border-bottom:1px solid var(--line);border-radius:0;position:relative;overflow:hidden;cursor:pointer;
+  padding:26px 64px 26px 26px;border:0;border-bottom:1px solid var(--line);border-radius:0;position:relative;overflow:hidden;cursor:pointer;
   background:linear-gradient(var(--lime),var(--lime)) left/0% 100% no-repeat;transition:background-size .55s var(--mx-ease),color .3s}
 :root #learning .learn-card:hover,:root #learning .learn-card.lg-active{transform:none;box-shadow:none;background-size:100% 100%}
-#learning .learn-card::after{content:counter(mx-ln,decimal-leading-zero);position:absolute;left:14px;top:50%;transform:translateY(-50%);font:400 50px/1 var(--mx-display);color:transparent;-webkit-text-stroke:1px var(--muted);transition:-webkit-text-stroke-color .3s,color .3s}
 #learning .learn-card::before{content:'\2197\FE0E';position:absolute;right:22px;top:50%;transform:translate(-8px,-50%);font:400 26px/1 var(--mono);color:var(--muted);transition:transform .4s var(--mx-ease),color .3s}
 #learning .learn-head{display:flex;align-items:center;gap:16px;margin:0}
 #learning .learn-card h3{font:400 clamp(24px,2.4vw,40px)/.95 var(--mx-display);text-transform:uppercase;letter-spacing:.01em;margin:0 0 6px;transition:color .3s}
@@ -287,7 +280,6 @@
 #contact .contact-btn{counter-increment:mx-ct;display:flex;justify-content:flex-start;align-items:center;gap:18px;width:100%;min-height:0;padding:20px 8px;border:0;border-bottom:1px solid var(--line);border-radius:0;
   font:400 clamp(30px,4.4vw,64px)/1 var(--mx-display);letter-spacing:.01em;text-transform:uppercase;color:var(--text);
   background:linear-gradient(var(--lime),var(--lime)) left bottom/100% 0% no-repeat;transition:background-size .45s var(--mx-ease),color .25s,padding .35s var(--mx-ease)}
-#contact .contact-btn::before{content:counter(mx-ct,decimal-leading-zero);font:500 11px var(--mono);letter-spacing:.14em;color:var(--muted);min-width:24px}
 #contact .contact-btn svg{width:.55em;height:.55em}
 #contact .contact-btn .arrow{margin-left:auto;font-size:.6em}
 #contact .contact-btn .arrow svg{width:1em;height:1em}
@@ -320,8 +312,7 @@
   #lab .lab-carousel-slide{flex:0 0 84%;scroll-snap-align:start}
   #lab .lab-card{border:1px solid var(--line);min-height:400px}
   .mx-lab-hint{display:flex!important}
-  :root #learning .learn-card{grid-template-columns:1fr;gap:10px;padding:22px 44px 22px 64px}
-  #learning .learn-card::after{font-size:36px;left:8px}
+  :root #learning .learn-card{grid-template-columns:1fr;gap:10px;padding:22px 44px 22px 22px}
   #learning .learn-card::before{right:12px;font-size:20px}
   #contact .contact-meta{margin-left:0}
   .gh-heatmap-wrap{padding:18px 16px}

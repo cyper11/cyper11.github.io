@@ -42,13 +42,8 @@ nav a:hover span,nav a.active span{transform:translateX(2px) scale(1.08)}
 .identity img{transition:transform .5s var(--ease-spring),box-shadow .4s}
 .identity-avatar-btn:hover img{transform:rotate(-4deg) scale(1.06);box-shadow:0 0 0 2px var(--lime)}
 
-/* ─── Section heads: giant outlined index number + word reveal ─── */
+/* ─── Section heads: word reveal ─── */
 .section-head{position:relative;isolation:isolate}
-.rv-num{position:absolute;right:0;top:-46px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(90px,12vw,170px);line-height:1;letter-spacing:-.06em;
-  color:transparent;-webkit-text-stroke:1px rgba(var(--lime-rgb),.13);pointer-events:none;user-select:none;z-index:-1;
-  transform:translate3d(0,var(--rv-par,0px),0);transition:-webkit-text-stroke-color .6s}
-.section:hover .rv-num{-webkit-text-stroke-color:rgba(var(--lime-rgb),.24)}
-.section-head:has(.text-link,.section-note,.tabs) .rv-num{right:auto;left:42%}
 .rv-words .rv-w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.08em;margin-bottom:-.08em}
 .rv-words .rv-w>span{display:inline-block;transform:translateY(105%);transition:transform .9s var(--ease-out);transition-delay:calc(var(--i,0) * 55ms + 80ms)}
 .rv-words.rv-in .rv-w>span{transform:none}
@@ -181,10 +176,6 @@ footer{position:relative}
 /* Focus polish */
 .cert-card:focus-visible,.badge-card:focus-visible,.field-photo:focus-visible,.portrait:focus-visible{outline:2px solid var(--lime);outline-offset:4px}
 
-@media(max-width:850px){
-  .rv-num{top:-30px;font-size:96px}
-  .section-head:has(.text-link,.section-note,.tabs) .rv-num{left:auto;right:0}
-}
 @media(max-width:540px){
   .hero::before{inset:-20px -16px 0}
   .rv-wordmark{margin-top:48px}

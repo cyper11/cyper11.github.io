@@ -104,15 +104,6 @@
   $$('.section-head, .contact-copy').forEach(head => {
     const eyebrow = head.querySelector('.eyebrow');
     const h2 = head.querySelector('h2');
-    const m = eyebrow && eyebrow.textContent.match(/^\s*(\d{2})\s*\//);
-    if (m && head.classList.contains('section-head')) {
-      const n = document.createElement('span');
-      n.className = 'rv-num';
-      n.setAttribute('aria-hidden', 'true');
-      n.textContent = m[1];
-      head.prepend(n);
-      nums.push({ el: n, host: head });
-    }
     if (reduce) return;
     if (h2) {
       h2.setAttribute('aria-label', h2.textContent.replace(/\s+/g, ' ').trim());

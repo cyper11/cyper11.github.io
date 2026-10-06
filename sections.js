@@ -210,9 +210,6 @@
     bar.setAttribute('aria-hidden', 'true');
     const track = make('div', 'mx-shelf-track');
     plates.forEach((p, i) => {
-      const idx = make('span', 'mx-shelf-idx', 'C/' + pad(i + 1));
-      idx.setAttribute('aria-hidden', 'true');
-      p.prepend(idx);
       track.appendChild(p);
     });
     const end = make('div', 'mx-shelf-end', `${pad(plates.length)} certs<br><em>and counting.</em>`);
@@ -298,14 +295,6 @@
   const lab = $('#lab-carousel');
   if (lab) {
     $$('.lab-carousel-slide', lab).forEach(s => s.removeAttribute('aria-hidden'));
-    $$('.lab-card', lab).forEach(card => {
-      const m = ($('.lab-eyebrow', card) || {}).textContent;
-      const n = m && m.match(/^\s*(\d{2})/);
-      if (!n) return;
-      const idx = make('span', 'mx-lab-idx', n[1]);
-      idx.setAttribute('aria-hidden', 'true');
-      card.prepend(idx);
-    });
     const total = $$('.lab-carousel-slide', lab).length;
     const hint = make('p', 'mx-lab-hint', `<i></i> SWIPE · ${pad(total)} EXPERIMENTS`);
     hint.setAttribute('aria-hidden', 'true');
