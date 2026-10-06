@@ -66,16 +66,16 @@
     <div class="msheet-profile">
       <img src="${avatar ? avatar.getAttribute('src') : 'profile.jpg'}" alt="">
       <div><strong>${name ? name.textContent.trim() : 'Cyper Ivan Pelina'}</strong><small>${role ? role.textContent : ''} · Cavite, PH</small></div>
-      ${resume ? `<a href="${resume.getAttribute('href')}" target="_blank" rel="noopener">RÉSUMÉ ↗</a>` : ''}
+      ${resume ? `<a href="${resume.getAttribute('href')}" target="_blank" rel="noopener">RÉSUMÉ ↗︎</a>` : ''}
     </div>
     <p class="msheet-label">SHORTCUTS</p>
     <div class="msheet-grid">${tiles}</div>
     <p class="msheet-label">SETTINGS &amp; LINKS</p>
     <div class="msheet-list">
       <button type="button" class="msheet-row" data-act="theme"><span class="ico"></span><span>Appearance</span><em></em></button>
-      ${mailLink ? `<a class="msheet-row" href="${mailLink.getAttribute('href')}"><span class="ico">${ICONS.mail}</span><span>Email me</span><em>↗</em></a>` : ''}
-      <a class="msheet-row" href="https://github.com/cyper11" target="_blank" rel="noreferrer"><span class="ico">${ICONS.gh}</span><span>GitHub</span><em>↗</em></a>
-      <a class="msheet-row" href="https://www.linkedin.com/in/cyper-ivan-peli%C3%B1a-118131351/" target="_blank" rel="noreferrer"><span class="ico">${ICONS.li}</span><span>LinkedIn</span><em>↗</em></a>
+      ${mailLink ? `<a class="msheet-row" href="${mailLink.getAttribute('href')}"><span class="ico">${ICONS.mail}</span><span>Email me</span><em>↗︎</em></a>` : ''}
+      <a class="msheet-row" href="https://github.com/cyper11" target="_blank" rel="noreferrer"><span class="ico">${ICONS.gh}</span><span>GitHub</span><em>↗︎</em></a>
+      <a class="msheet-row" href="https://www.linkedin.com/in/cyper-ivan-peli%C3%B1a-118131351/" target="_blank" rel="noreferrer"><span class="ico">${ICONS.li}</span><span>LinkedIn</span><em>↗︎</em></a>
       <button type="button" class="msheet-row secret" data-act="secret"><span class="ico">?</span><span>???</span><em>don't.</em></button>
     </div>
     <p class="msheet-foot">BASED IN CAVITE, PH · BUILT BY HAND</p>`;

@@ -1,0 +1,7 @@
+name = "cyper-chat"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+# The DeepSeek key is a secret, never committed:
+#   npx wrangler secret put DEEPSEEK_API_KEY

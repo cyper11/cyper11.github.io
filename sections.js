@@ -138,7 +138,7 @@
       if (nav && counter) counter.before(play);
       else rail.after(play);
       const drawPlay = () => {
-        play.innerHTML = playing ? '<i></i><i></i> AUTO' : '<b>▶</b> PLAY';
+        play.innerHTML = playing ? '<i></i><i></i> AUTO' : '<b class="mx-tri"></b> PLAY';
         play.setAttribute('aria-label', playing ? 'Pause project slideshow' : 'Play project slideshow');
         play.setAttribute('aria-pressed', String(playing));
         work.classList.toggle('mx-autoplay', playing);

@@ -219,7 +219,7 @@
 
           <footer class="fl-post-footer">
             <button type="button" class="fl-action-btn fl-like-btn ${isLiked ? 'liked' : ''}" data-like-id="${post.id}" aria-label="${isLiked ? 'Unlike post' : 'Like post'}">
-              <span class="fl-like-icon" aria-hidden="true">${isLiked ? '♥' : '♡'}</span>
+              <span class="fl-like-icon" aria-hidden="true">${isLiked ? '♥︎' : '♡'}</span>
               <span class="fl-action-text">${isLiked ? 'Liked' : 'Like'}</span>
               <span class="fl-like-count">${post.likes_count || 0}</span>
             </button>
@@ -228,7 +228,7 @@
               <span class="fl-action-text">Details</span>
             </button>
             <button type="button" class="fl-action-btn fl-share-btn" data-share-id="${post.id}" aria-label="Share this field log entry">
-              <span class="fl-action-icon" aria-hidden="true">↗</span>
+              <span class="fl-action-icon" aria-hidden="true">↗︎</span>
               <span class="fl-action-text">Share</span>
             </button>
           </footer>
@@ -306,7 +306,7 @@
     const text = btn.querySelector('.fl-action-text');
     const countEl = btn.querySelector('.fl-like-count');
 
-    if (icon) icon.textContent = isLiked ? '♥' : '♡';
+    if (icon) icon.textContent = isLiked ? '♥︎' : '♡';
     if (text) text.textContent = isLiked ? 'Liked' : 'Like';
     if (countEl) countEl.textContent = count;
   }
@@ -417,12 +417,12 @@
 
         <footer class="fl-dialog-footer">
           <button type="button" class="fl-action-btn fl-like-btn ${isLiked ? 'liked' : ''}" data-like-id="${post.id}" aria-label="${isLiked ? 'Unlike post' : 'Like post'}">
-            <span class="fl-like-icon" aria-hidden="true">${isLiked ? '♥' : '♡'}</span>
+            <span class="fl-like-icon" aria-hidden="true">${isLiked ? '♥︎' : '♡'}</span>
             <span class="fl-action-text">${isLiked ? 'Liked' : 'Like'}</span>
             <span class="fl-like-count">${post.likes_count || 0}</span>
           </button>
           <button type="button" class="fl-action-btn fl-share-btn" data-share-id="${post.id}" aria-label="Share post">
-            <span class="fl-action-icon" aria-hidden="true">↗</span>
+            <span class="fl-action-icon" aria-hidden="true">↗︎</span>
             <span class="fl-action-text">Share</span>
           </button>
         </footer>

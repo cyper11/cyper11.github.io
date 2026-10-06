@@ -19,3 +19,7 @@ Thumbs.db
 .agents/
 .claude/
 skills-lock.json
+
+# Cloudflare Wrangler local state
+.wrangler/
+.dev.vars

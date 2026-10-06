@@ -179,7 +179,7 @@
 .lg-links{list-style:none;padding:0;margin:16px 0 0;display:grid;gap:8px}
 .lg-links:empty{display:none}
 .lg-links li{font-size:12px;line-height:1.5;color:var(--muted);padding-left:14px;position:relative}
-.lg-links li::before{content:'↔';position:absolute;left:0;color:var(--lime);font-size:11px}
+.lg-links li::before{content:'\2194\FE0E';position:absolute;left:0;color:var(--lime);font-size:11px}
 .lg-links b{color:var(--text);font-weight:500}
 .lg-links button{all:unset;cursor:pointer;color:var(--text);font-weight:500;border-bottom:1px dashed rgba(213,251,120,.5)}
 .lg-links button:hover,.lg-links button:focus-visible{color:var(--lime)}

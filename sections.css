@@ -69,6 +69,7 @@
 .mx-play i{width:3px;height:10px;background:currentColor}
 .mx-play i+i{margin-right:4px}
 .mx-play b{font-size:9px}
+.mx-tri{width:0;height:0;border-style:solid;border-width:5px 0 5px 8px;border-color:transparent transparent transparent currentColor}
 #work .carousel-nav{gap:12px}
 #work .carousel{position:relative}
 .mx-sweep{position:absolute;top:-8px;bottom:-8px;left:0;width:22%;z-index:6;pointer-events:none;opacity:0;
@@ -237,7 +238,7 @@
   background:linear-gradient(var(--lime),var(--lime)) left/0% 100% no-repeat;transition:background-size .55s var(--mx-ease),color .3s}
 :root #learning .learn-card:hover,:root #learning .learn-card.lg-active{transform:none;box-shadow:none;background-size:100% 100%}
 #learning .learn-card::after{content:counter(mx-ln,decimal-leading-zero);position:absolute;left:14px;top:50%;transform:translateY(-50%);font:400 50px/1 var(--mx-display);color:transparent;-webkit-text-stroke:1px var(--muted);transition:-webkit-text-stroke-color .3s,color .3s}
-#learning .learn-card::before{content:'↗';position:absolute;right:22px;top:50%;transform:translate(-8px,-50%);font:400 26px/1 var(--mono);color:var(--muted);transition:transform .4s var(--mx-ease),color .3s}
+#learning .learn-card::before{content:'\2197\FE0E';position:absolute;right:22px;top:50%;transform:translate(-8px,-50%);font:400 26px/1 var(--mono);color:var(--muted);transition:transform .4s var(--mx-ease),color .3s}
 #learning .learn-head{display:flex;align-items:center;gap:16px;margin:0}
 #learning .learn-card h3{font:400 clamp(24px,2.4vw,40px)/.95 var(--mx-display);text-transform:uppercase;letter-spacing:.01em;margin:0 0 6px;transition:color .3s}
 #learning .learn-icon{border-radius:0!important;flex-shrink:0}
@@ -578,3 +579,10 @@
   #work .carousel-counter{white-space:nowrap;font-size:24px}
   .mx-play{order:5;flex-basis:100%;justify-content:center}
 }
+
+/* ??? overlay: no visible ESC (the key still works); a small × only where there is no keyboard */
+.ee-x{font-size:18px;line-height:1;padding:4px 10px}
+@media (hover:hover) and (pointer:fine){#ee-close-top{display:none}}
+
+.theme-toggle svg{width:15px;height:15px;display:block}
+.learn-icon svg{width:16px;height:16px;display:block}

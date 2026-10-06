@@ -79,3 +79,46 @@
   .cb-input{font-size:16px}
 }
 @media (prefers-reduced-motion:reduce){.cb-fab,.cb-panel,.cb-msg,.cb-typing i{transition:none;animation:none}}
+
+/* ═══ C1 Assistant — HUD skin (matches the Field Ops // Signal redesign) ═══ */
+.cb-fab{border-radius:16px;clip-path:polygon(0 0,100% 0,100% 72%,72% 100%,0 100%);box-shadow:0 14px 34px -10px rgba(0,0,0,.6)}
+.cb-fab::before{content:'';position:absolute;inset:-6px;border:1px solid rgba(var(--lime-rgb,213,251,120),.5);border-radius:20px;animation:cb-ping 2.6s var(--mx-ease,ease) infinite;pointer-events:none}
+@keyframes cb-ping{0%{opacity:.8;transform:scale(.9)}70%,100%{opacity:0;transform:scale(1.25)}}
+.cb-open .cb-fab::before{display:none}
+.cb-fab-tip{border-radius:0;font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+
+.cb-panel{border-radius:0;background:
+  linear-gradient(var(--lime),var(--lime)) 0 0/16px 2px no-repeat,linear-gradient(var(--lime),var(--lime)) 0 0/2px 16px no-repeat,
+  linear-gradient(var(--lime),var(--lime)) 100% 100%/16px 2px no-repeat,linear-gradient(var(--lime),var(--lime)) 100% 100%/2px 16px no-repeat,
+  var(--bg)}
+.cb-head{position:relative;background:linear-gradient(120deg,color-mix(in srgb,var(--lime) 10%,var(--panel)),var(--panel) 60%);padding:14px 12px 14px 14px}
+.cb-head::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:1px;background:linear-gradient(90deg,var(--lime),transparent 70%)}
+.cb-avatar{border-radius:0;clip-path:polygon(0 0,100% 0,100% 70%,70% 100%,0 100%);font:400 18px/1 var(--mx-display,'Space Grotesk');letter-spacing:.02em}
+.cb-avatar::after{display:none}
+.cb-title strong{font:400 21px/1 var(--mx-display,'Space Grotesk');letter-spacing:.03em;text-transform:uppercase}
+.cb-title span{display:flex;align-items:center;gap:6px;margin-top:5px;font-size:9.5px;letter-spacing:.14em}
+.cb-live{width:6px;height:6px;border-radius:50%;background:#3ddc84;box-shadow:0 0 8px #3ddc84;animation:cb-blink 1.6s steps(1) infinite}
+@keyframes cb-blink{50%{opacity:.35}}
+.cb-hbtn{border-radius:0;border-color:var(--line)}
+
+.cb-log{background:
+  linear-gradient(90deg,color-mix(in srgb,var(--text) 4%,transparent) 1px,transparent 1px) 0 0/32px 32px,
+  linear-gradient(color-mix(in srgb,var(--text) 4%,transparent) 1px,transparent 1px) 0 0/32px 32px}
+.cb-msg{border-radius:0;font-size:14px}
+.cb-bot{border:1px solid var(--line);border-left:2px solid var(--lime);background:color-mix(in srgb,var(--panel) 92%,transparent)}
+.cb-user{clip-path:polygon(0 0,100% 0,100% 100%,10px 100%,0 calc(100% - 10px));font-weight:500}
+.cb-msg strong{color:var(--lime)}
+.cb-user strong{color:inherit}
+.cb-act{border-radius:0;font:500 11px var(--mono);letter-spacing:.04em}
+.cb-stamp{padding:3px 8px;border:1px solid var(--line);background:var(--bg);font-size:9.5px;letter-spacing:.14em}
+.cb-typing i{border-radius:0;background:var(--lime)}
+
+.cb-chips{background:var(--bg)}
+.cb-chip{border-radius:0;font:500 11px var(--mono);letter-spacing:.04em}
+.cb-chip:hover{background:color-mix(in srgb,var(--lime) 10%,transparent)}
+.cb-form{background:var(--panel)}
+.cb-input{border-radius:0;font-family:var(--mono);font-size:13px}
+.cb-send{border-radius:0;clip-path:polygon(0 0,100% 0,100% 70%,70% 100%,0 100%)}
+[data-theme="light"] .cb-user,[data-theme="light"] .cb-send,[data-theme="light"] .cb-avatar,[data-theme="light"] .cb-fab{color:#fff}
+@media (max-width:850px){.cb-input{font-size:16px}}
+@media (prefers-reduced-motion:reduce){.cb-fab::before,.cb-live{animation:none}}

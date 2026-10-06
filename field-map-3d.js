@@ -27,32 +27,32 @@
   const STOPS = [
     { id: 'lpu', short: 'LPU Cavite', period: '2022 — 2026', role: 'B.S. Information Technology', org: 'Lyceum of the Philippines University — Cavite',
       desc: 'Where it started. Programming, databases, networking, and IT systems — the fundamentals behind everything after.',
-      tags: ['Programming', 'Databases', 'Networking', 'IT systems'], x: -7.5, z: 4, ext: [3.6, 2.8] },
+      tags: ['Programming', 'Databases', 'Networking', 'IT systems'], x: -9.9, z: 5.3, ext: [3.6, 2.8] },
     { id: 'paramount', short: 'Paramount Life', period: 'JAN — MAY 2026', role: 'IT Support Intern', org: 'Paramount Life & General Insurance Corporation',
       desc: 'First deployment in a real office. Device troubleshooting and support for day-to-day connectivity.',
-      tags: ['Device troubleshooting', 'Connectivity', 'End-user support'], x: -1.5, z: -4, ext: [1.9, 1.9] },
+      tags: ['Device troubleshooting', 'Connectivity', 'End-user support'], x: -9.9, z: -5.0, ext: [1.9, 1.9] },
     { id: 'lenovo', short: 'Lenovo / IPVCYX', period: 'AUG 2026 — PRESENT', role: 'Field Service Engineer', org: 'Lenovo / IPVCYX',
       desc: 'Current base of operations. Hardware diagnostics, laptop repairs, FRU replacement, and B2B technical support.',
-      tags: ['Hardware diagnostics', 'FRU replacement', 'B2B support'], x: 5, z: 2.5, ext: [3.4, 2.3], current: true },
+      tags: ['Hardware diagnostics', 'FRU replacement', 'B2B support'], x: 0, z: 0, ext: [3.4, 2.3], current: true },
     { id: 'mec', short: 'MEC Building', period: 'FIELD DEPLOYMENT', role: 'Cabling & Electrical', org: 'MEC Building — with IPVCYX',
       desc: 'Structured cabling audits and equipment inspections. Electrical and network diagrams, cable quality checks, and documentation for client handover.',
-      tags: ['Structured cabling', 'Quality inspection', 'Network diagrams'], x: 11.3, z: 5.2, ext: [2.3, 2.6] },
+      tags: ['Structured cabling', 'Quality inspection', 'Network diagrams'], x: 0, z: -6.6, ext: [2.3, 2.6] },
     { id: 'triphil', short: 'Tri-Phil Site', period: 'FIELD DEPLOYMENT', role: 'Site Assessment', org: 'Tri-Phil International',
       desc: 'Out on the ground. Site assessment, equipment inspection, and coordination with the field team at the facility.',
-      tags: ['Site survey', 'Equipment inspection', 'Field team'], x: 9.5, z: -4.5, ext: [3.6, 2.7] },
+      tags: ['Site survey', 'Equipment inspection', 'Field team'], x: 9.9, z: -5.0, ext: [3.6, 2.7] },
     { id: 'biofuel', short: 'Cavite Biofuel', period: 'CCTV · PRE-BIDDING', role: 'CCTV Pre-bid Site Visit', org: 'Cavite Biofuel — Magallanes, Cavite',
       desc: 'Pre-bid site visit for a proposed CCTV system: walked the plant, warehouse, and tank farm to plan camera coverage, mounting points, and cable routes before the bid.',
-      tags: ['CCTV', 'Pre-bidding', 'Site survey', 'Camera coverage'], x: -9.2, z: -4.6, ext: [3.1, 2.7] }
+      tags: ['CCTV', 'Pre-bidding', 'Site survey', 'Camera coverage'], x: 9.9, z: 5.2, ext: [3.1, 2.7] }
   ];
 
   /* Career route: L-shaped cable runs between consecutive stops (x, z) */
   const ROUTES = [
-    [[-7.5, 4], [-7.5, 0.35], [-1.5, 0.35], [-1.5, -4]],
-    [[-1.1, -4], [-1.1, -0.35], [4.6, -0.35], [4.6, 2.5]],
-    [[5.4, 2.5], [5.4, 6.9], [10.6, 6.9], [10.6, 5.2]],
-    [[12.4, 5.2], [12.4, -1.1], [9.5, -1.1], [9.5, -4.5]],
-    // long fibre backbone along the back edge, out west to Magallanes
-    [[9.9, -4.5], [9.9, -8.6], [-9.2, -8.6], [-9.2, -4.6]]
+    [[-9.9, 5.3], [-9.9, -5.0]],
+    [[-9.9, -5.0], [-7.2, -5.0], [-7.2, -0.4], [0, -0.4]],
+    // IPVCYX is the hub: every field deployment is cabled back to it
+    [[0.4, 0.4], [9.9, 0.4], [9.9, 5.2]],
+    [[0.4, -0.4], [7.4, -0.4], [7.4, -5.0], [9.9, -5.0]],
+    [[-0.4, -1.0], [-0.4, -6.6]]
   ];
 
   const PALETTE = {
@@ -334,7 +334,8 @@
     gridGeo.setAttribute('position', new THREE.Float32BufferAttribute(gridPts, 3));
     city.add(new THREE.LineSegments(gridGeo, gridMat));
 
-    /* Roads: main avenue (z = 0) and cross street (x = 1.6) */
+    /* Roads: two cross streets (x = ±STREET) frame the IPVCYX block; the avenue (z = 0) runs outside it */
+    const STREET = 5.6;
     const ROAD_W = 1.5;
     function road(w, d, x, z) {
       const r = new THREE.Mesh(new THREE.BoxGeometry(w, 0.04, d), M.road);
@@ -342,19 +343,24 @@
       r.receiveShadow = true;
       city.add(r);
     }
-    road(BW, ROAD_W, 0, 0);
-    road(ROAD_W, BD, 1.6, 0);
+    const AVE = BW / 2 - STREET;
+    road(AVE, ROAD_W, -(STREET + AVE / 2), 0);
+    road(AVE, ROAD_W, STREET + AVE / 2, 0);
+    road(ROAD_W, BD, -STREET, 0);
+    road(ROAD_W, BD, STREET, 0);
     for (let x = -BW / 2 + 0.6; x < BW / 2; x += 1.4) {
-      if (Math.abs(x - 1.6) < 1) continue;
+      if (Math.abs(x) < STREET + 1) continue;
       const dash = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.01, 0.07), roadLineMat);
       dash.position.set(x, 0.045, 0);
       city.add(dash);
     }
-    for (let z = -BD / 2 + 0.6; z < BD / 2; z += 1.4) {
-      if (Math.abs(z) < 1) continue;
-      const dash = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.01, 0.6), roadLineMat);
-      dash.position.set(1.6, 0.045, z);
-      city.add(dash);
+    for (const sx of [-STREET, STREET]) {
+      for (let z = -BD / 2 + 0.6; z < BD / 2; z += 1.4) {
+        if (Math.abs(z) < 1) continue;
+        const dash = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.01, 0.6), roadLineMat);
+        dash.position.set(sx, 0.045, z);
+        city.add(dash);
+      }
     }
 
     /* ─── Hero buildings (one per career stop) ─── */
@@ -432,6 +438,7 @@
       dish.rotation.set(-0.9, 0.6, 0);
       dish.castShadow = true;
       g.add(dish);
+      sign(g, 'IPVCYX', 2.2, 0.55, 0.9, 2.95, 2.05);
       beacon = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 12), new THREE.MeshBasicMaterial({ color: '#d5fb78' }));
       beacon.position.set(-2.3, 4.8, -0.7);
       g.add(beacon);
@@ -557,9 +564,20 @@
 
     /* ─── Filler city blocks + trees ─── */
     const blocked = (x, z, pad) => {
-      if (Math.abs(z) < ROAD_W / 2 + pad || Math.abs(x - 1.6) < ROAD_W / 2 + pad) return true;
+      if (Math.abs(Math.abs(x) - STREET) < ROAD_W / 2 + pad) return true;
+      if (Math.abs(z) < ROAD_W / 2 + pad && Math.abs(x) > STREET - pad) return true;
+      if (Math.abs(x) < PLAZA[0] / 2 + pad && Math.abs(z - PLAZA[2]) < PLAZA[1] / 2 + pad) return true;
       return STOPS.some(s => Math.abs(x - s.x) < s.ext[0] + pad && Math.abs(z - s.z) < s.ext[1] + pad);
     };
+    // HQ plaza in front of IPVCYX: lawn, a path to the door, a lime flag
+    const PLAZA = [6.4, 4.8, 6.3]; // width, depth, centre z
+    const plazaLawn = new THREE.Mesh(new THREE.BoxGeometry(PLAZA[0], 0.05, PLAZA[1]), M.lawn);
+    plazaLawn.position.set(0, 0.03, PLAZA[2]);
+    plazaLawn.receiveShadow = true;
+    city.add(plazaLawn);
+    box(city, 1.1, 0.07, PLAZA[1] + 0.6, 0, 0.02, PLAZA[2] - 0.6, { material: M.heroRoof, castShadow: false });
+    cyl(city, 0.035, 2.2, 1.4, 0, 4.6, { material: M.heroRoof, seg: 6 });
+    box(city, 0.7, 0.42, 0.03, 1.77, 1.7, 4.6, { material: M.lime, castShadow: false });
     const treeSpots = [];
     for (let x = -13.2; x <= 13.3; x += 2.2) {
       for (let z = -8.8; z <= 8.9; z += 2.2) {
@@ -577,8 +595,10 @@
       }
     }
     // Trees around the LPU lawn and along the avenue
-    [[-9.8, 6.4], [-5.2, 6.4], [-9.8, 2.2], [-5.2, 2.2], [-11.5, 1.6], [-12.6, 3.2], [0.1, 1.5], [3.1, -1.5], [12.5, 1.6], [7.6, 6.2]]
-      .forEach(p => { if (!blocked(p[0], p[1], 0.15) || Math.abs(p[1]) > 1) treeSpots.push(p); });
+    // plaza trees, then a few along the streets
+    [[-2.5, 4.4], [2.5, 4.4], [-2.6, 6.3], [2.6, 6.3], [-2.5, 8.2], [2.5, 8.2]].forEach(p => treeSpots.push(p));
+    [[-12.8, 1.7], [12.8, -1.7], [-7.2, 8.6], [7.2, -8.6], [-4.4, -3.4], [4.4, -3.4]]
+      .forEach(p => { if (!blocked(p[0], p[1], 0.15)) treeSpots.push(p); });
     const treeGeo = new THREE.ConeGeometry(0.42, 1.1, 6);
     treeGeo.translate(0, 0.75, 0);
     const trees = new THREE.InstancedMesh(treeGeo, M.tree, treeSpots.length);
@@ -633,7 +653,7 @@
     /* ─── Street lamps along the avenue ─── */
     const lampGlowMat = new THREE.SpriteMaterial({ map: glowTex, color: '#ffcf7a', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
     const bulbMat = new THREE.MeshBasicMaterial({ color: '#ffe2a8' });
-    [[-12.5, 1.05], [-4.6, -1.05], [-0.2, 1.05], [6.2, -1.05], [9.4, 1.05], [13, -1.05], [2.65, 5.5], [0.55, -6.5], [2.65, -3.2], [0.55, 7.8]].forEach(([x, z]) => {
+    [[-12.6, 1.05], [-7.8, -1.05], [7.8, 1.05], [12.6, -1.05], [-4.6, 2.6], [4.6, -2.6], [-6.6, -2.4], [6.6, 2.4], [-4.6, 8.2], [4.6, 8.2], [-6.6, -8.4], [6.6, -8.4]].forEach(([x, z]) => {
       if (STOPS.some(s => Math.abs(x - s.x) < s.ext[0] && Math.abs(z - s.z) < s.ext[1])) return;
       cyl(city, 0.035, 1.05, x, 0, z, { material: M.heroRoof, seg: 6 });
       const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 6), bulbMat);
@@ -652,12 +672,11 @@
     const tailGeo = new THREE.BoxGeometry(0.03, 0.06, 0.24);
     const tailMat = new THREE.MeshBasicMaterial({ color: '#ff4d4d' });
     [
-      { axis: 'x', lane: 0.38, dir: 1, speed: 1.5, off: 0, mat: M.hero },
-      { axis: 'x', lane: 0.38, dir: 1, speed: 1.5, off: 0.45, mat: M.lime },
-      { axis: 'x', lane: -0.38, dir: -1, speed: 1.2, off: 0.2, mat: M.filler },
-      { axis: 'x', lane: -0.38, dir: -1, speed: 1.2, off: 0.72, mat: M.hero },
-      { axis: 'z', lane: 0.38, dir: -1, speed: 1.1, off: 0.1, mat: M.hero },
-      { axis: 'z', lane: -0.38, dir: 1, speed: 1.3, off: 0.6, mat: M.filler }
+      { axis: 'z', x: -STREET, lane: 0.38, dir: -1, speed: 1.1, off: 0.1, mat: M.hero },
+      { axis: 'z', x: -STREET, lane: -0.38, dir: 1, speed: 1.3, off: 0.55, mat: M.lime },
+      { axis: 'z', x: STREET, lane: 0.38, dir: -1, speed: 1.2, off: 0.35, mat: M.filler },
+      { axis: 'z', x: STREET, lane: -0.38, dir: 1, speed: 1.4, off: 0.8, mat: M.hero },
+      { axis: 'z', x: STREET, lane: -0.38, dir: 1, speed: 1.4, off: 0.3, mat: M.filler }
     ].forEach(c => {
       const car = new THREE.Group();
       const body = new THREE.Mesh(carBody, c.mat);
@@ -679,7 +698,7 @@
         // shrink in/out at the board edge instead of popping
         const fade = Math.min(1, (0.5 - Math.abs(u - 0.5)) * c.len / 1.2);
         if (c.axis === 'x') c.obj.position.set(along, 0.04, c.lane);
-        else c.obj.position.set(1.6 + c.lane, 0.04, along);
+        else c.obj.position.set(c.x + c.lane, 0.04, along);
         c.obj.scale.setScalar(Math.max(0.001, fade));
       }
     }
@@ -771,7 +790,8 @@
 
     function focusYaw(i) {
       const s = STOPS[i];
-      const want = Math.PI / 4 - Math.atan2(s.x, s.z);
+      // the centre stop has no direction of its own: frame it with the home view
+      const want = s.x || s.z ? Math.PI / 4 - Math.atan2(s.x, s.z) : HOME_YAW;
       let diff = want - yaw;
       diff = Math.atan2(Math.sin(diff), Math.cos(diff));
       targetYaw = yaw + diff;

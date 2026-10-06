@@ -129,7 +129,7 @@
     return b;
   });
 
-  /* Cards below ↔ graph */
+  /* Cards below ↔︎ graph */
   cards.forEach((card, i) => {
     if (!TOPICS[i]) return;
     card.dataset.topic = TOPICS[i].id;
