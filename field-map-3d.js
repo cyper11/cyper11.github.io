@@ -19,6 +19,9 @@
   const loadingEl = document.getElementById('cc-loading');
   const hintEl = document.getElementById('cc-hint');
   const el = id => document.getElementById(id);
+  const routeEl = el('cc-route');
+  const rotateEl = el('cc-rotate');
+  const resetEl = el('cc-reset');
   const panel = { step: el('cc-step'), period: el('cc-period'), role: el('cc-role'), org: el('cc-org'), desc: el('cc-desc'), tags: el('cc-tags') };
 
   const STOPS = [
@@ -61,6 +64,9 @@
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let selected = STOPS.findIndex(s => s.current);
   let selectHandler = null;
+  let resetHandler = null;
+  let rotationHandler = null;
+  let autoRotate = false;
 
   /* ─── Panel + labels work even before WebGL is ready ─── */
   function renderPanel(i, animate) {
@@ -80,6 +86,11 @@
       b.classList.toggle('active', j === i);
       b.setAttribute('aria-pressed', String(j === i));
     });
+    routeButtons.forEach((b, j) => {
+      b.classList.toggle('active', j === i);
+      b.setAttribute('aria-pressed', String(j === i));
+    });
+    root.dataset.stop = s.id;
   }
 
   function select(i, fromUser) {
@@ -99,6 +110,31 @@
     labelsEl.appendChild(b);
     return b;
   });
+  const routeButtons = STOPS.map((s, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'cc-route-stop';
+    b.innerHTML = `<span class="cc-route-dot">${String(i + 1).padStart(2, '0')}</span><span class="cc-route-copy"><strong></strong><small></small></span>`;
+    b.querySelector('strong').textContent = s.short;
+    b.querySelector('small').textContent = s.current ? 'Aug 2026 — Present' : s.period;
+    b.setAttribute('aria-label', `Explore ${s.short}, ${s.period}`);
+    b.addEventListener('click', () => select(i, true));
+    routeEl.appendChild(b);
+    return b;
+  });
+  function setRotation(enabled) {
+    autoRotate = enabled && !reducedMotion;
+    rotateEl.setAttribute('aria-pressed', String(autoRotate));
+    rotateEl.textContent = autoRotate ? 'Pause rotation' : 'Auto-rotate';
+    if (rotationHandler) rotationHandler();
+  }
+  rotateEl.addEventListener('click', () => setRotation(!autoRotate));
+  resetEl.addEventListener('click', () => {
+    setRotation(false);
+    select(STOPS.findIndex(s => s.current), false);
+    if (resetHandler) resetHandler();
+  });
+  if (reducedMotion) { rotateEl.disabled = true; rotateEl.title = 'Rotation disabled by your reduced-motion preference'; }
   el('cc-prev').addEventListener('click', () => select(selected - 1, true));
   el('cc-next').addEventListener('click', () => select(selected + 1, true));
   renderPanel(selected, false);
@@ -112,6 +148,7 @@
 
   function unsupported() {
     root.classList.add('cc-unsupported');
+    rotateEl.disabled = resetEl.disabled = true;
   }
 
   if (!hasWebGL()) { unsupported(); return; }
@@ -275,7 +312,7 @@
     }
 
     /* ─── Ground board ─── */
-    const BW = 30, BD = 21;
+    const BW = 28, BD = 19;
     const slab = new THREE.Mesh(new THREE.BoxGeometry(BW, 0.7, BD), [M.groundSide, M.groundSide, M.ground, M.groundSide, M.groundSide, M.groundSide]);
     slab.position.y = -0.35;
     slab.receiveShadow = true;
@@ -346,33 +383,49 @@
       lawn.position.set(0, 0.03, 1.5);
       lawn.receiveShadow = true;
       g.add(lawn);
+      // An open courtyard, colonnade and broad entrance distinguish the campus.
+      box(g, 3.5, 0.12, 0.65, 0, 0.02, 2.9, { material: M.heroRoof, edges: edge });
+      for (const x of [-1.35, -0.45, 0.45, 1.35]) {
+        cyl(g, 0.11, 1.3, x, 0.1, 2.9, { edges: edge, seg: 8 });
+      }
+      box(g, 3.6, 0.22, 0.7, 0, 1.4, 2.9, { material: M.heroRoof, edges: edge });
+      box(g, 1.2, 0.08, 2.3, 0, 0.06, 1.6, { material: M.heroRoof });
       return 5.6;
     }
     function BUILDERS_PARAMOUNT(g, edge) {
-      box(g, 3.4, 1.2, 3.4, 0, 0, 0, { facade: 'grid', edges: edge });
-      box(g, 2.4, 5, 2.4, 0, 1.2, 0, { facade: 'bands', edges: edge });
-      box(g, 1.8, 0.8, 1.8, 0, 6.2, 0, { material: M.heroRoof, edges: edge });
-      box(g, 2.44, 0.12, 2.44, 0, 3.8, 0, { material: M.lime, castShadow: false });
-      cyl(g, 0.05, 1.2, 0, 7, 0, { material: M.heroRoof, seg: 6 });
+      box(g, 3.4, 0.7, 3.4, 0, 0, 0, { material: M.heroRoof, edges: edge });
+      box(g, 2.8, 3.1, 2.8, 0, 0.7, 0, { facade: 'bands', edges: edge });
+      box(g, 2.15, 2.2, 2.15, -0.2, 3.8, -0.2, { facade: 'bands', edges: edge });
+      box(g, 1.45, 1.2, 1.45, -0.4, 6, -0.4, { facade: 'bands', edges: edge });
+      for (const x of [-1.05, 0, 1.05]) box(g, 0.07, 3.1, 2.84, x, 0.7, 0, { material: M.heroRoof });
+      box(g, 1.5, 0.15, 1.5, -0.4, 7.2, -0.4, { material: M.heroRoof, edges: edge });
+      box(g, 1.7, 0.12, 0.8, 0, 0.9, 1.8, { material: M.heroRoof, edges: edge });
+      cyl(g, 0.04, 0.7, -0.4, 7.35, -0.4, { material: M.heroRoof, seg: 6 });
       return 8.3;
     }
     function BUILDERS_LENOVO(g, edge) {
-      box(g, 5, 2.4, 3.2, 0.5, 0, 0.4, { facade: 'grid', edges: edge });
-      box(g, 2.1, 4.6, 2.2, -2.3, 0, -0.7, { facade: 'grid', edges: edge });
-      box(g, 5.04, 0.28, 3.24, 0.5, 2.1, 0.4, { material: M.lime, castShadow: false });
-      for (let k = 0; k < 3; k++) box(g, 1, 1.4, 0.06, -0.8 + k * 1.35, 0, 2.02, { material: M.dark, castShadow: false });
-      box(g, 0.7, 0.4, 0.7, 1.3, 2.4, 0, { material: M.heroRoof, edges: edge });
-      box(g, 0.7, 0.4, 0.7, 2.3, 2.4, 0, { material: M.heroRoof, edges: edge });
-      cyl(g, 0.06, 2.1, -2.3, 4.6, -0.7, { material: M.heroRoof, seg: 6 });
+      box(g, 5, 2.4, 3.2, 0.5, 0, 0.4, { material: M.hero, edges: edge });
+      box(g, 1.9, 3.2, 2.2, -2.3, 0, -0.7, { facade: 'bands', edges: edge });
+      box(g, 5.3, 0.16, 3.4, 0.5, 2.4, 0.4, { material: M.heroRoof, edges: edge });
+      box(g, 5.32, 0.12, 0.14, 0.5, 2.45, 2.1, { material: M.lime, castShadow: false });
+      for (let k = 0; k < 3; k++) {
+        const x = -0.8 + k * 1.35;
+        box(g, 1, 1.7, 0.06, x, 0.08, 2.02, { material: M.dark, castShadow: false });
+        for (let j = 1; j < 5; j++) box(g, 0.94, 0.035, 0.07, x, 0.08 + j * 0.31, 2.06, { material: M.heroRoof, castShadow: false });
+      }
+      box(g, 0.7, 0.35, 0.7, 1.3, 2.56, 0, { material: M.heroRoof, edges: edge });
+      box(g, 0.7, 0.35, 0.7, 2.3, 2.56, 0, { material: M.heroRoof, edges: edge });
+      box(g, 0.8, 0.06, 1.4, 1.8, 0.04, 3, { material: M.lime, castShadow: false });
+      cyl(g, 0.05, 1.5, -2.3, 3.2, -0.7, { material: M.heroRoof, seg: 6 });
       const dish = new THREE.Mesh(new THREE.SphereGeometry(0.5, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2.4), M.heroRoof);
-      dish.position.set(-1.7, 5.1, -0.2);
+      dish.position.set(-1.7, 3.7, -0.2);
       dish.rotation.set(-0.9, 0.6, 0);
       dish.castShadow = true;
       g.add(dish);
       beacon = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 12), new THREE.MeshBasicMaterial({ color: '#d5fb78' }));
-      beacon.position.set(-2.3, 6.8, -0.7);
+      beacon.position.set(-2.3, 4.8, -0.7);
       g.add(beacon);
-      return 7.5;
+      return 5.4;
     }
     function BUILDERS_TRIPHIL(g, edge) {
       box(g, 4.6, 2, 3.2, 0.4, 0, 0, { facade: 'sparse', edges: edge });
@@ -390,6 +443,8 @@
       cyl(g, 0.3, 0.3, 2, 4.4, -2.1, { rTop: 0.29, material: M.lime });
       cyl(g, 0.6, 1.6, -2.9, 0, -0.7, { edges: edge });
       cyl(g, 0.6, 1.6, -2.9, 0, 0.8, { edges: edge });
+      for (let k = 0; k < 3; k++) box(g, 0.85, 1.1, 0.06, -0.8 + k * 1.3, 0.15, 1.63, { material: M.dark });
+      box(g, 3.8, 0.12, 0.65, 0.4, 1.5, 1.95, { material: M.heroRoof, edges: edge });
       return 5.8;
     }
 
@@ -404,9 +459,9 @@
         const jx = x + (rand() - 0.5) * 0.4, jz = z + (rand() - 0.5) * 0.4;
         if (blocked(jx, jz, 1.0)) continue;
         const r = rand();
-        if (r < 0.28) { treeSpots.push([jx, jz]); continue; }
-        if (r < 0.36) continue;
-        const w = 1 + rand() * 0.7, d = 1 + rand() * 0.7, h = 0.6 + Math.pow(rand(), 1.7) * 2.6;
+        if (r < 0.35) { treeSpots.push([jx, jz]); continue; }
+        if (r < 0.7) continue;
+        const w = 0.85 + rand() * 0.6, d = 0.85 + rand() * 0.6, h = 0.4 + Math.pow(rand(), 1.7) * 1.25;
         const b = new THREE.Group();
         b.position.set(jx, 0, jz);
         box(b, w, h, d, 0, 0, 0, { filler: true, edges: edgeFillerMat });
@@ -525,7 +580,7 @@
       W = Math.max(1, r.width); H = Math.max(1, r.height);
       renderer.setSize(W, H, false);
       const aspect = W / H;
-      const needW = aspect < 1.2 ? 23 : 29, needH = 17.5;
+      const needW = 33, needH = 22;
       const viewH = Math.max(needH, needW / aspect);
       camera.left = -viewH * aspect / 2;
       camera.right = viewH * aspect / 2;
@@ -537,7 +592,8 @@
     new ResizeObserver(resize).observe(stage);
 
     /* ─── Rotation: drag, inertia, idle auto-rotate, focus on select ─── */
-    let yaw = 0.35, yawVel = 0, targetYaw = null, lastInteract = 0;
+    const HOME_YAW = 0.18;
+    let yaw = HOME_YAW, yawVel = 0, targetYaw = null, lastInteract = 0;
     const AUTO_SPEED = 0.05; // rad/s
 
     function focusYaw(i) {
@@ -546,11 +602,19 @@
       let diff = want - yaw;
       diff = Math.atan2(Math.sin(diff), Math.cos(diff));
       targetYaw = yaw + diff;
+      if (reducedMotion) { yaw = targetYaw; targetYaw = null; }
     }
 
     selectHandler = (i, fromUser) => {
       highlight();
-      if (fromUser) { lastInteract = performance.now(); focusYaw(i); }
+      if (fromUser) { setRotation(false); lastInteract = performance.now(); focusYaw(i); }
+      requestRender();
+    };
+    rotationHandler = requestRender;
+    resetHandler = () => {
+      yawVel = 0;
+      targetYaw = HOME_YAW + Math.round((yaw - HOME_YAW) / (2 * Math.PI)) * 2 * Math.PI;
+      if (reducedMotion) { yaw = targetYaw; targetYaw = null; }
       requestRender();
     };
 
@@ -566,7 +630,7 @@
 
     let down = null;
     stage.addEventListener('pointerdown', e => {
-      if (e.target.closest('.cc-label')) return;
+      if (e.target.closest('button')) return;
       down = { x: e.clientX, y: e.clientY, lastX: e.clientX, t: performance.now(), drag: false, id: e.pointerId };
       yawVel = 0; targetYaw = null;
     });
@@ -575,6 +639,7 @@
         const dx = e.clientX - down.lastX;
         if (!down.drag && Math.abs(e.clientX - down.x) > 5 && Math.abs(e.clientX - down.x) > Math.abs(e.clientY - down.y)) {
           down.drag = true;
+          setRotation(false);
           stage.classList.add('dragging');
           try { stage.setPointerCapture(e.pointerId); } catch (_) {}
           if (hintEl) hintEl.style.opacity = '0';
@@ -608,12 +673,13 @@
     /* ─── Labels follow their buildings ─── */
     const v = new THREE.Vector3();
     function placeLabels(showProgress) {
-      heroes.forEach((h, i) => {
-        v.set(0, h.top * h.group.scale.y + 0.4, 0);
+      const projected = heroes.map((h, i) => {
+        v.set(0, h.top + 0.4, 0);
         h.group.localToWorld(v);
         v.project(camera);
-        const x = Math.min(W - 60, Math.max(60, (v.x * 0.5 + 0.5) * W));
-        const y = Math.min(H - 10, Math.max(70, (-v.y * 0.5 + 0.5) * H));
+        return { x: (v.x * 0.5 + 0.5) * W, y: (-v.y * 0.5 + 0.5) * H, width: labels[i].offsetWidth, height: labels[i].offsetHeight, priority: i === selected };
+      });
+      window.CareerCityLayout(projected, W, H).forEach(({ x, y }, i) => {
         labels[i].style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0) translate(-50%,-100%)`;
         labels[i].classList.toggle('shown', showProgress > 0.85);
       });
@@ -656,7 +722,7 @@
         } else if (Math.abs(yawVel) > 0.01) {
           yaw += yawVel * dt;
           yawVel *= Math.pow(0.04, dt);
-        } else if (!reducedMotion && now - lastInteract > 5000) {
+        } else if (autoRotate && !reducedMotion && now - lastInteract > 1000) {
           yaw += AUTO_SPEED * dt;
         }
       }
