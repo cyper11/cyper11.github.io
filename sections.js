@@ -262,6 +262,8 @@
     // plate images arrive lazily and change the track width
     $$('img', track).forEach(img => { if (!img.complete) img.addEventListener('load', layout, { once: true }); });
     layout();
+    // plates sit off-screen inside the pinned frame; reveal them all once the shelf arrives
+    once([stick], () => plates.forEach(p => p.classList.add('visible')), 0.05);
   }
 
   /* ═══ 05 TOOLKIT — server rack ══════════════════════════════════ */
@@ -387,6 +389,84 @@
     const mq = make('div', 'mx-contact-mq', '<span>LET’S BUILD SOMETHING —</span>'.repeat(4));
     mq.setAttribute('aria-hidden', 'true');
     contact.prepend(mq);
+  }
+
+  /* ═══ FIELD LOG — transmission timeline ═════════════════════════ */
+  const flFeed = document.getElementById('field-log-feed');
+  const flHead = $('.field-log-header');
+  if (flFeed && flHead) {
+    const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    const title = make('h2', 'mx-fl-title', 'Latest from <em>the field.</em>');
+    const eyebrow = $('.note-eyebrow', flHead);
+    (eyebrow || flHead.firstChild).after(title);
+    const live = make('div', 'mx-fl-live', '<i></i> LIVE FEED · <b>00</b> ENTRIES');
+    live.setAttribute('aria-hidden', 'true');
+    flHead.appendChild(live);
+    const filters = make('div', 'mx-fl-filters');
+    filters.setAttribute('role', 'toolbar');
+    filters.setAttribute('aria-label', 'Filter field log entries');
+    flHead.appendChild(filters);
+    let filter = 'ALL';
+
+    const applyFilter = () => {
+      $$('.field-log-post', flFeed).forEach(a => a.classList.toggle('mx-off', filter !== 'ALL' && a.dataset.type !== filter));
+      $$('button', filters).forEach(b => {
+        b.classList.toggle('on', b.dataset.f === filter);
+        b.setAttribute('aria-pressed', String(b.dataset.f === filter));
+      });
+    };
+
+    const decorate = () => {
+      const posts = $$('.field-log-post', flFeed);
+      if (!posts.length) return;
+      posts.forEach((post, i) => {
+        post.style.setProperty('--n', i);
+        if ($('.mx-fl-stamp', post)) return;
+        const t = $('time', post);
+        const d = t ? new Date(t.getAttribute('datetime')) : null;
+        const id = post.dataset.id || String(posts.length - i);
+        const stamp = make('div', 'mx-fl-stamp', d && !isNaN(d)
+          ? `<b>${pad(d.getDate())}</b><span>${MONTHS[d.getMonth()]}</span><small>${d.getFullYear()}</small><i>LOG #${pad(id)}</i>`
+          : `<i>LOG #${pad(id)}</i>`);
+        stamp.setAttribute('aria-hidden', 'true');
+        post.prepend(stamp);
+      });
+      $('b', live).textContent = pad(posts.length);
+      // filter chips with counts, rebuilt only when the set of types changes
+      const counts = {};
+      posts.forEach(p => { counts[p.dataset.type] = (counts[p.dataset.type] || 0) + 1; });
+      const types = ['ALL', ...Object.keys(counts)];
+      if (filters.dataset.types !== types.join('|')) {
+        filters.dataset.types = types.join('|');
+        filters.textContent = '';
+        types.forEach(ty => {
+          const b = make('button', '', `${ty} <b>${pad(ty === 'ALL' ? posts.length : counts[ty])}</b>`);
+          b.type = 'button';
+          b.dataset.f = ty;
+          b.addEventListener('click', () => { filter = ty; applyFilter(); flFeed.scrollTop = 0; });
+          filters.appendChild(b);
+        });
+        if (!types.includes(filter)) filter = 'ALL';
+      }
+      applyFilter();
+    };
+    new MutationObserver(decorate).observe(flFeed, { childList: true });
+    decorate();
+    if (reduce) flFeed.classList.add('mx-fl-in');
+    else once([flFeed], el => el.classList.add('mx-fl-in'), 0.1);
+  }
+
+  /* ─── Sidebar: right edge works as a page-scroll meter ───────── */
+  const sidebar = $('.sidebar');
+  if (sidebar) {
+    let q = false;
+    const meter = () => {
+      q = false;
+      const max = document.documentElement.scrollHeight - innerHeight;
+      sidebar.style.setProperty('--mx-page', max > 0 ? (scrollY / max).toFixed(4) : 0);
+    };
+    addEventListener('scroll', () => { if (!q) { q = true; requestAnimationFrame(meter); } }, { passive: true });
+    meter();
   }
 
   // registered last so the shelf and other built blocks exist

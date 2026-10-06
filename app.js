@@ -375,7 +375,7 @@ if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches && !('ontouchs
 document.querySelectorAll('[data-case]').forEach(btn=>{
   btn.addEventListener('click',e=>{
     e.preventDefault();
-    const map={mec:'case-dialog',triphil:'triphil-dialog',ganap:'ganap-dialog',codex:'codex-dialog',c1p:'c1p-dialog',c1convert:'c1convert-dialog',typing:'typing-dialog'};
+    const map={mec:'case-dialog',triphil:'triphil-dialog',ganap:'ganap-dialog',codex:'codex-dialog',c1p:'c1p-dialog',c1convert:'c1convert-dialog',biofuel:'biofuel-dialog',sweldo:'sweldo-dialog',typing:'typing-dialog'};
     const id=map[btn.dataset.case]||'case-dialog';
     document.getElementById(id).showModal();
   });

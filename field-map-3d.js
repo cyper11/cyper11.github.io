@@ -40,9 +40,9 @@
     { id: 'triphil', short: 'Tri-Phil Site', period: 'FIELD DEPLOYMENT', role: 'Site Assessment', org: 'Tri-Phil International',
       desc: 'Out on the ground. Site assessment, equipment inspection, and coordination with the field team at the facility.',
       tags: ['Site survey', 'Equipment inspection', 'Field team'], x: 9.5, z: -4.5, ext: [3.6, 2.7] },
-    { id: 'biofuel', short: 'Cavite Biofuel', period: 'SITE VISIT · PRE-BIDDING', role: 'Pre-bid Site Visit', org: 'Cavite Biofuel — Magallanes, Cavite',
-      desc: 'Walked the biofuel plant in Magallanes ahead of the bid: site conditions, existing equipment, and cable routes, so the proposal is built on what is actually on the ground.',
-      tags: ['Site visit', 'Pre-bidding', 'Site survey', 'Industrial'], x: -9.2, z: -4.6, ext: [3.1, 2.7] }
+    { id: 'biofuel', short: 'Cavite Biofuel', period: 'CCTV · PRE-BIDDING', role: 'CCTV Pre-bid Site Visit', org: 'Cavite Biofuel — Magallanes, Cavite',
+      desc: 'Pre-bid site visit for a proposed CCTV system: walked the plant, warehouse, and tank farm to plan camera coverage, mounting points, and cable routes before the bid.',
+      tags: ['CCTV', 'Pre-bidding', 'Site survey', 'Camera coverage'], x: -9.2, z: -4.6, ext: [3.1, 2.7] }
   ];
 
   /* Career route: L-shaped cable runs between consecutive stops (x, z) */
