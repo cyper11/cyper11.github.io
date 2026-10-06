@@ -519,6 +519,7 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
 
   function next(){goTo((current+1)%total,'next')}
   function prev(){goTo((current-1+total)%total,'prev')}
+  carouselEl.mxGoTo=i=>goTo(i); // used by the project rail in sections.js
 
   prevBtn.addEventListener('click',prev);
   nextBtn.addEventListener('click',next);

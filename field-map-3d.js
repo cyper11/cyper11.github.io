@@ -34,16 +34,25 @@
     { id: 'lenovo', short: 'Lenovo / IPVCYX', period: 'AUG 2026 — PRESENT', role: 'Field Service Engineer', org: 'Lenovo / IPVCYX',
       desc: 'Current base of operations. Hardware diagnostics, laptop repairs, FRU replacement, and B2B technical support.',
       tags: ['Hardware diagnostics', 'FRU replacement', 'B2B support'], x: 5, z: 2.5, ext: [3.4, 2.3], current: true },
+    { id: 'mec', short: 'MEC Building', period: 'FIELD DEPLOYMENT', role: 'Cabling & Electrical', org: 'MEC Building — with IPVCYX',
+      desc: 'Structured cabling audits and equipment inspections. Electrical and network diagrams, cable quality checks, and documentation for client handover.',
+      tags: ['Structured cabling', 'Quality inspection', 'Network diagrams'], x: 11.3, z: 5.2, ext: [2.3, 2.6] },
     { id: 'triphil', short: 'Tri-Phil Site', period: 'FIELD DEPLOYMENT', role: 'Site Assessment', org: 'Tri-Phil International',
       desc: 'Out on the ground. Site assessment, equipment inspection, and coordination with the field team at the facility.',
-      tags: ['Site survey', 'Equipment inspection', 'Field team'], x: 9.5, z: -4.5, ext: [3.6, 2.7] }
+      tags: ['Site survey', 'Equipment inspection', 'Field team'], x: 9.5, z: -4.5, ext: [3.6, 2.7] },
+    { id: 'biofuel', short: 'Cavite Biofuel', period: 'SITE VISIT · PRE-BIDDING', role: 'Pre-bid Site Visit', org: 'Cavite Biofuel — Magallanes, Cavite',
+      desc: 'Walked the biofuel plant in Magallanes ahead of the bid: site conditions, existing equipment, and cable routes, so the proposal is built on what is actually on the ground.',
+      tags: ['Site visit', 'Pre-bidding', 'Site survey', 'Industrial'], x: -9.2, z: -4.6, ext: [3.1, 2.7] }
   ];
 
   /* Career route: L-shaped cable runs between consecutive stops (x, z) */
   const ROUTES = [
     [[-7.5, 4], [-7.5, 0.35], [-1.5, 0.35], [-1.5, -4]],
     [[-1.1, -4], [-1.1, -0.35], [4.6, -0.35], [4.6, 2.5]],
-    [[5.4, 2.5], [5.4, -1.0], [9.5, -1.0], [9.5, -4.5]]
+    [[5.4, 2.5], [5.4, 6.9], [10.6, 6.9], [10.6, 5.2]],
+    [[12.4, 5.2], [12.4, -1.1], [9.5, -1.1], [9.5, -4.5]],
+    // long fibre backbone along the back edge, out west to Magallanes
+    [[9.9, -4.5], [9.9, -8.6], [-9.2, -8.6], [-9.2, -4.6]]
   ];
 
   const PALETTE = {
@@ -199,7 +208,7 @@
     const sun = new THREE.DirectionalLight('#ffffff', pal.sunI);
     sun.position.set(-10, 22, 12);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(1024, 1024);
+    sun.shadow.mapSize.set(2048, 2048);
     Object.assign(sun.shadow.camera, { left: -18, right: 18, top: 18, bottom: -18, near: 1, far: 60 });
     sun.shadow.bias = -0.0008;
     sun.shadow.normalBias = 0.02;
@@ -351,7 +360,8 @@
     /* ─── Hero buildings (one per career stop) ─── */
     const growers = [];
     let beacon = null;
-    const BUILDERS = { lpu: BUILDERS_LPU, paramount: BUILDERS_PARAMOUNT, lenovo: BUILDERS_LENOVO, triphil: BUILDERS_TRIPHIL };
+    let flare = null;
+    const BUILDERS = { lpu: BUILDERS_LPU, paramount: BUILDERS_PARAMOUNT, lenovo: BUILDERS_LENOVO, mec: BUILDERS_MEC, triphil: BUILDERS_TRIPHIL, biofuel: BUILDERS_BIOFUEL };
     const heroes = STOPS.map((s, i) => {
       const g = new THREE.Group();
       g.position.set(s.x, 0, s.z);
@@ -448,6 +458,103 @@
       return 5.8;
     }
 
+    /* A straight cylinder between two points (pipes, rails) */
+    function pipe(parent, a, b, r, material) {
+      const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b);
+      const len = A.distanceTo(B);
+      const mesh = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len, 8), material);
+      mesh.position.copy(A).add(B).multiplyScalar(0.5);
+      mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), B.sub(A).normalize());
+      mesh.castShadow = true;
+      parent.add(mesh);
+      return mesh;
+    }
+
+    /* Rooftop sign: lime text on a dark plate, readable from both sides */
+    function sign(parent, text, w, h, x, y, z) {
+      const c = document.createElement('canvas');
+      c.width = 256; c.height = Math.round(256 * h / w);
+      const g2 = c.getContext('2d');
+      g2.fillStyle = '#11140f'; g2.fillRect(0, 0, c.width, c.height);
+      g2.fillStyle = '#d5fb78';
+      g2.font = '700 ' + Math.round(c.height * 0.62) + 'px "Space Grotesk", Arial, sans-serif';
+      g2.textAlign = 'center'; g2.textBaseline = 'middle';
+      g2.fillText(text, c.width / 2, c.height / 2 + 2);
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      const plate = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide }));
+      plate.position.set(x, y, z);
+      parent.add(plate);
+      return plate;
+    }
+
+    function BUILDERS_MEC(g, edge) {
+      // podium + glass tower
+      box(g, 3.4, 0.9, 3.3, -0.4, 0, -0.5, { material: M.heroRoof, edges: edge });
+      box(g, 2.5, 5.2, 2.5, -0.5, 0.9, -0.7, { facade: 'bands', edges: edge });
+      box(g, 2.7, 0.22, 2.7, -0.5, 6.1, -0.7, { material: M.heroRoof, edges: edge });
+      box(g, 1.2, 0.5, 1.0, -0.9, 6.32, -1.0, { material: M.heroRoof, edges: edge });
+      // vertical cable tray riser running up the facade
+      box(g, 0.12, 5.2, 0.12, 0.8, 0.9, 0.58, { material: M.lime, castShadow: false });
+      for (let k = 0; k < 9; k++) box(g, 0.3, 0.03, 0.18, 0.8, 1.2 + k * 0.55, 0.6, { material: M.heroRoof, castShadow: false });
+      sign(g, 'MEC', 1.7, 0.5, -0.5, 6.85, 0.62);
+      // electrical yard: pad, two transformers, fence rail, cable spool
+      box(g, 1.7, 0.05, 2.3, 1.15, 0, 1.75, { material: M.road, castShadow: false });
+      for (const z of [1.2, 2.25]) {
+        box(g, 0.75, 0.75, 0.6, 1.15, 0.05, z, { material: M.hero, edges: edge });
+        for (let f = 0; f < 4; f++) box(g, 0.04, 0.55, 0.66, 0.84 + f * 0.2, 0.12, z, { material: M.heroRoof, castShadow: false });
+        cyl(g, 0.06, 0.25, 1.15, 0.8, z, { material: M.lime, seg: 8 });
+      }
+      for (const [a, b] of [[[0.3, 0.45, 0.6], [2.0, 0.45, 0.6]], [[2.0, 0.45, 0.6], [2.0, 0.45, 2.9]], [[2.0, 0.45, 2.9], [0.3, 0.45, 2.9]]]) {
+        pipe(g, a, b, 0.025, M.heroRoof);
+      }
+      const spool = cyl(g, 0.32, 0.26, -1.4, 0, 1.9, { material: M.lime, seg: 18 });
+      spool.rotation.z = Math.PI / 2;
+      spool.position.y = 0.33;
+      return 7.4;
+    }
+
+    function BUILDERS_BIOFUEL(g, edge) {
+      // storage tanks with domed roofs and lime hazard bands
+      const tanks = [[-1.9, -1.2, 0.85, 1.9], [0, -1.3, 0.85, 1.9], [1.75, -1.4, 0.6, 1.4]];
+      for (const [x, z, r, h] of tanks) {
+        cyl(g, r, h, x, 0, z, { edges: edge, seg: 24 });
+        const dome = new THREE.Mesh(new THREE.SphereGeometry(r, 24, 8, 0, Math.PI * 2, 0, Math.PI / 2), M.heroRoof);
+        dome.scale.y = 0.35;
+        dome.position.set(x, h, z);
+        dome.castShadow = true;
+        g.add(dome);
+        cyl(g, r + 0.02, 0.12, x, h * 0.72, z, { material: M.lime, seg: 24 });
+        pipe(g, [x + r * 0.7, 0.2, z + r * 0.7], [x + r * 0.7, h, z + r * 0.7], 0.03, M.heroRoof);
+      }
+      // processing shed with a saw-tooth roof
+      box(g, 3, 1.25, 1.6, -0.3, 0, 1.3, { facade: 'sparse', edges: edge });
+      for (let k = 0; k < 3; k++) {
+        const roof = box(g, 1, 0.1, 1.62, -1.3 + k * 1, 1.25, 1.3, { material: M.heroRoof });
+        roof.rotation.z = 0.32;
+        roof.position.y += 0.16;
+      }
+      // distillation column with service platforms
+      cyl(g, 0.3, 4.4, 2.2, 0, 1.2, { edges: edge, seg: 16 });
+      for (let k = 1; k <= 3; k++) cyl(g, 0.52, 0.05, 2.2, k * 1.1, 1.2, { material: M.heroRoof, seg: 16 });
+      cyl(g, 0.31, 0.12, 2.2, 3.6, 1.2, { material: M.lime, seg: 16 });
+      // pipe rack linking tanks → shed → column
+      for (const x of [-1.9, -0.2, 1.4]) box(g, 0.06, 1.6, 0.06, x, 0, 0.25, { material: M.heroRoof });
+      pipe(g, [-2.2, 1.6, 0.25], [2.2, 1.6, 0.25], 0.07, M.hero);
+      pipe(g, [-2.2, 1.45, 0.35], [2.2, 1.45, 0.35], 0.05, M.lime);
+      pipe(g, [2.2, 1.6, 0.25], [2.2, 1.6, 0.9], 0.07, M.hero);
+      // flare stack
+      cyl(g, 0.1, 4.8, -2.7, 0, 1.9, { rTop: 0.07, edges: edge, seg: 8 });
+      flare = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: '#ffb347', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+      flare.position.set(-2.7, 5.05, 1.9);
+      flare.scale.setScalar(0.9);
+      g.add(flare);
+      // pre-bid survey marker flag
+      cyl(g, 0.03, 1.4, 2.6, 0, -2.3, { material: M.heroRoof, seg: 6 });
+      box(g, 0.55, 0.32, 0.03, 2.88, 1.05, -2.3, { material: M.lime, castShadow: false });
+      return 6;
+    }
+
     /* ─── Filler city blocks + trees ─── */
     const blocked = (x, z, pad) => {
       if (Math.abs(z) < ROAD_W / 2 + pad || Math.abs(x - 1.6) < ROAD_W / 2 + pad) return true;
@@ -489,14 +596,16 @@
 
     /* ─── Network cables + data packets along the career route ─── */
     const cableMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.9 });
-    const glowTex = (() => {
+    const glowTex = glowTexture();
+    function glowTexture() {
+      if (glowTexture.t) return glowTexture.t;
       const c = document.createElement('canvas'); c.width = c.height = 64;
       const x = c.getContext('2d');
       const gr = x.createRadialGradient(32, 32, 0, 32, 32, 32);
       gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.25, 'rgba(255,255,255,.7)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
       x.fillStyle = gr; x.fillRect(0, 0, 64, 64);
-      return new THREE.CanvasTexture(c);
-    })();
+      return (glowTexture.t = new THREE.CanvasTexture(c));
+    }
     const packetMat = new THREE.SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false });
     const packets = [];
     const routePaths = ROUTES.map((pts, ri) => {
@@ -521,6 +630,61 @@
     ring.rotation.x = -Math.PI / 2;
     ring.position.y = 0.06;
     city.add(ring);
+    /* ─── Street lamps along the avenue ─── */
+    const lampGlowMat = new THREE.SpriteMaterial({ map: glowTex, color: '#ffcf7a', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+    const bulbMat = new THREE.MeshBasicMaterial({ color: '#ffe2a8' });
+    [[-12.5, 1.05], [-4.6, -1.05], [-0.2, 1.05], [6.2, -1.05], [9.4, 1.05], [13, -1.05], [2.65, 5.5], [0.55, -6.5], [2.65, -3.2], [0.55, 7.8]].forEach(([x, z]) => {
+      if (STOPS.some(s => Math.abs(x - s.x) < s.ext[0] && Math.abs(z - s.z) < s.ext[1])) return;
+      cyl(city, 0.035, 1.05, x, 0, z, { material: M.heroRoof, seg: 6 });
+      const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 6), bulbMat);
+      bulb.position.set(x, 1.1, z);
+      city.add(bulb);
+      const glow = new THREE.Sprite(lampGlowMat);
+      glow.position.set(x, 1.1, z);
+      glow.scale.setScalar(0.9);
+      city.add(glow);
+    });
+
+    /* ─── Traffic: little cars looping the avenue and the cross street ─── */
+    const cars = [];
+    const carBody = new THREE.BoxGeometry(0.62, 0.2, 0.3);
+    const carCab = new THREE.BoxGeometry(0.32, 0.15, 0.26);
+    const tailGeo = new THREE.BoxGeometry(0.03, 0.06, 0.24);
+    const tailMat = new THREE.MeshBasicMaterial({ color: '#ff4d4d' });
+    [
+      { axis: 'x', lane: 0.38, dir: 1, speed: 1.5, off: 0, mat: M.hero },
+      { axis: 'x', lane: 0.38, dir: 1, speed: 1.5, off: 0.45, mat: M.lime },
+      { axis: 'x', lane: -0.38, dir: -1, speed: 1.2, off: 0.2, mat: M.filler },
+      { axis: 'x', lane: -0.38, dir: -1, speed: 1.2, off: 0.72, mat: M.hero },
+      { axis: 'z', lane: 0.38, dir: -1, speed: 1.1, off: 0.1, mat: M.hero },
+      { axis: 'z', lane: -0.38, dir: 1, speed: 1.3, off: 0.6, mat: M.filler }
+    ].forEach(c => {
+      const car = new THREE.Group();
+      const body = new THREE.Mesh(carBody, c.mat);
+      body.position.y = 0.16;
+      body.castShadow = true;
+      const cab = new THREE.Mesh(carCab, M.dark);
+      cab.position.set(-0.04, 0.33, 0);
+      const tail = new THREE.Mesh(tailGeo, tailMat);
+      tail.position.set(-0.32, 0.18, 0);
+      car.add(body, cab, tail);
+      car.rotation.y = c.axis === 'x' ? (c.dir > 0 ? 0 : Math.PI) : (c.dir > 0 ? -Math.PI / 2 : Math.PI / 2);
+      city.add(car);
+      cars.push(Object.assign(c, { obj: car, len: c.axis === 'x' ? BW : BD }));
+    });
+    function placeCars(t) {
+      for (const c of cars) {
+        const u = ((t * c.speed / c.len + c.off) % 1 + 1) % 1;
+        const along = (c.dir > 0 ? u - 0.5 : 0.5 - u) * (c.len - 0.6);
+        // shrink in/out at the board edge instead of popping
+        const fade = Math.min(1, (0.5 - Math.abs(u - 0.5)) * c.len / 1.2);
+        if (c.axis === 'x') c.obj.position.set(along, 0.04, c.lane);
+        else c.obj.position.set(1.6 + c.lane, 0.04, along);
+        c.obj.scale.setScalar(Math.max(0.001, fade));
+      }
+    }
+    placeCars(0);
+
     const beaconGlow = new THREE.Sprite(packetMat);
     beaconGlow.scale.set(1.6, 1.6, 1.6);
     beacon.parent.add(beaconGlow);
@@ -551,6 +715,13 @@
       packetMat.needsUpdate = true;
       ringMat.color.set(pal.lime);
       beacon.material.color.set(pal.lime);
+      lampGlowMat.opacity = pal.additive ? 0.85 : 0;
+      bulbMat.color.set(pal.additive ? '#ffe2a8' : '#c9c5bb');
+      if (flare) {
+        flare.material.blending = pal.additive ? THREE.AdditiveBlending : THREE.NormalBlending;
+        flare.material.color.set(pal.additive ? '#ffb347' : '#ff8a1f');
+        flare.material.needsUpdate = true;
+      }
       hemi.color.set(pal.hemiSky);
       hemi.groundColor.set(pal.hemiGround);
       hemi.intensity = pal.hemiI;
@@ -580,7 +751,9 @@
       W = Math.max(1, r.width); H = Math.max(1, r.height);
       renderer.setSize(W, H, false);
       const aspect = W / H;
-      const needW = 33, needH = 22;
+      // phones crop the board edges a little so the landmarks read bigger (drag to see the rest)
+      const narrow = W < 600;
+      const needW = narrow ? 26 : 33, needH = narrow ? 18 : 22;
       const viewH = Math.max(needH, needW / aspect);
       camera.left = -viewH * aspect / 2;
       camera.right = viewH * aspect / 2;
@@ -739,6 +912,11 @@
         beaconGlow.material.opacity = 1;
         beacon.scale.setScalar(0.85 + pulse * 0.3);
         beaconGlow.scale.setScalar(1.1 + pulse * 1.1);
+        placeCars(t);
+        if (flare) {
+          const fl = 0.75 + Math.sin(t * 11) * 0.12 + Math.sin(t * 23.7) * 0.08;
+          flare.scale.set(0.75 * fl, 1.05 * fl, 1);
+        }
         const rp = (t * 0.6) % 1;
         ring.scale.setScalar(ringBase * (0.92 + rp * 0.2));
         ringMat.opacity = 0.9 * (1 - rp);
