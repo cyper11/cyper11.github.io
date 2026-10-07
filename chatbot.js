@@ -175,7 +175,10 @@
 <li>📱 <strong>GanapToday</strong> — Android AI companion app</li>
 <li>♟️ <strong>PowerCodex</strong> — 48 Laws of Power strategy web app</li>
 <li>🎬 <strong>C1P Studio</strong> — browser video editor</li>
-<li>📄 <strong>C1-Convert</strong> — privacy-first file converter</li></ul>`,
+<li>📄 <strong>C1-Convert</strong> — privacy-first file converter</li>
+<li>💸 <strong>SweldoPlanner</strong> — payday budget planner</li>
+<li>🗳️ <strong>Saan Tayo?</strong> — group voting for barkada plans</li>
+<li>🧭 <strong>Linya</strong> — browser diagram editor</li></ul>`,
         actions: [go('work', 'Browse field work →'), ask('Tell me about GanapToday', 'GanapToday'), ask('Tell me about PowerCodex', 'PowerCodex')]
       })
     },
