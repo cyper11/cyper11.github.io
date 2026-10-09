@@ -1,0 +1,94 @@
+/* ═══════════════════════════════════════════════════════════════════
+   FX LAYER — "SIGNAL CHECK"
+   Additive motion graphics. Nothing here restyles an existing element.
+   Same vocabulary as the rest of the site: flat colour, 1px lines,
+   hard edges, stepped timing, mono readouts. No glows, no blur.
+
+   Colour is signal-coded — the four status colours a field engineer
+   reads off every panel: OK/power · data link · warning · fault.
+   Each theme has its own set (neon on the dark screen, ink on the
+   light paper); fx.js lerps between them when the theme flips.
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root{
+  --fx-1:213,251,120;   /* OK / power */
+  --fx-2:46,230,255;    /* data link  */
+  --fx-3:255,170,40;    /* warning    */
+  --fx-4:255,46,99;     /* fault      */
+  --fx-acc:var(--fx-1);
+}
+[data-theme="light"]{
+  --fx-1:74,138,20;
+  --fx-2:10,126,164;
+  --fx-3:194,94,0;
+  --fx-4:209,25,79;
+}
+
+/* Section colour code (numbers follow the sidebar) */
+#work{--fx-acc:var(--fx-4)}
+#experience{--fx-acc:var(--fx-2)}
+#credentials{--fx-acc:var(--fx-3)}
+#stack{--fx-acc:var(--fx-1)}
+#lab{--fx-acc:var(--fx-4)}
+#activity{--fx-acc:var(--fx-2)}
+#learning{--fx-acc:var(--fx-3)}
+
+/* ─── Wire packets: a packet train rides each section wire while it
+       draws (same 1.2s curve + .15s delay as the wire), then a
+       colour-coded terminator latches at the far end. ──────────────── */
+.fx-wire{position:absolute;left:0;bottom:-18px;width:100%;height:1px;pointer-events:none;z-index:3;clip-path:inset(-6px 0 -6px 0)}
+.fx-wire i{position:absolute;display:block;background:rgb(var(--fx-acc))}
+.fx-pk{top:-1px;left:0;height:3px;width:22px;margin-left:-22px;opacity:0}
+.fx-pk.b{width:9px;margin-left:-38px}
+.fx-pk.c{width:3px;margin-left:-48px}
+.fx-wire.fx-go .fx-pk{animation:fx-pk-x 1.2s var(--mx-ease,cubic-bezier(.16,1,.3,1)) .15s both,fx-pk-o 1.2s steps(1,end) .15s both}
+.fx-wire.fx-go.fx-re .fx-pk{animation:fx-pk-x .8s cubic-bezier(.5,0,.2,1) both,fx-pk-o .8s steps(1,end) both}
+@keyframes fx-pk-x{from{left:0}to{left:100%}}
+@keyframes fx-pk-o{0%{opacity:0}2%{opacity:1}92%,100%{opacity:0}}
+.fx-end{right:0;top:-5px;width:2px;height:11px;opacity:0;transition:opacity 0s 1.05s}
+.fx-end.b{right:5px;top:-2px;width:5px;height:5px;transition-delay:1.2s}
+.fx-wire.fx-go .fx-end{opacity:1}
+
+/* ─── Portrait read-head: canvas stacked right over .mx-dots ───────── */
+.fx-scan{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+
+/* ─── Tape ruler: right-edge scroll gauge (desktop only) ───────────── */
+.fx-ruler{position:fixed;top:0;right:0;width:48px;height:100vh;z-index:40;pointer-events:none;opacity:0;transition:opacity .6s steps(3,end)}
+.fx-ruler.fx-on{opacity:1}
+@media (max-width:1179px),(hover:none){.fx-ruler{display:none}}
+
+/* ─── Probe lock + theme sweep canvas ──────────────────────────────── */
+.fx-fx{position:fixed;inset:0;width:100%;height:100%;z-index:58;pointer-events:none}
+/* only while the theme flips: lift the canvas above the circular reveal */
+.fx-fx.fx-vt{view-transition-name:fx-fx}
+::view-transition-group(fx-fx){z-index:100001;animation:none}
+::view-transition-old(fx-fx){display:none}
+::view-transition-new(fx-fx){animation:none;mix-blend-mode:normal}
+
+body.game-active .fx-ruler,body.game-active .fx-fx,
+body.fe-modal-open .fx-ruler,body.fe-modal-open .fx-fx{display:none!important}
+
+/* ─── Split-flap counters: a Solari board over the existing counters.
+       The original element keeps its text (other scripts read it) and
+       is only made transparent; the board sits on top. Custom tags so
+       no existing span/i/b rule can reach inside. ─────────────────── */
+.fx-flap-host{color:transparent!important;-webkit-text-fill-color:transparent}
+fx-board{position:absolute;left:0;top:0;display:inline-flex;align-items:center;white-space:pre;line-height:1;pointer-events:none;z-index:2}
+fx-c{display:inline-block;padding:0 .06em}
+fx-c.sp{width:.1em;padding:0}
+fx-flap{position:relative;display:inline-block;margin:0 1px;padding:.1em .045em .08em;text-align:center;
+  background:var(--panel);color:var(--text);box-shadow:inset 0 0 0 1px var(--line)}
+fx-flap::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;margin-top:-.5px;background:var(--bg);z-index:3}
+fx-s{display:inline}
+fx-t,fx-o,fx-n{position:absolute;inset:0;padding:inherit;background:inherit;color:inherit;box-shadow:inherit;text-align:center;transform-origin:50% 50%;opacity:0}
+fx-t{clip-path:inset(0 0 50% 0)}
+fx-o,fx-n{clip-path:inset(50% 0 0 0)}
+fx-flap.go fx-t{animation:fx-ft var(--fx-fd,70ms) linear both}
+fx-flap.go fx-o{animation:fx-fo var(--fx-fd,70ms) linear both}
+fx-flap.go fx-n{animation:fx-fb var(--fx-fd,70ms) linear both}
+@keyframes fx-ft{0%{opacity:1;transform:scaleY(1)}50%,100%{opacity:1;transform:scaleY(0)}}
+@keyframes fx-fo{0%,99%{opacity:1}100%{opacity:0}}
+@keyframes fx-fb{0%,50%{opacity:1;transform:scaleY(0)}100%{opacity:1;transform:scaleY(1)}}
+/* Field Work sits on the lime sheet: ink board, lime characters */
+#work fx-flap{background:#0b0c0a;color:#d5fb78;box-shadow:none}
+#work fx-flap::after{background:#d5fb78}
