@@ -107,7 +107,7 @@
     if (carousel && slides.length > 1) {
       const rail = make('div', 'mx-rail');
       rail.setAttribute('role', 'navigation');
-      rail.setAttribute('aria-label', 'Field work projects');
+      rail.setAttribute('aria-label', 'Selected projects');
       const btns = slides.map((s, i) => {
         const h = $('h3', s);
         const tmp = make('span', '', h ? h.innerHTML.replace(/<br\s*\/?>/gi, ' ') : '');

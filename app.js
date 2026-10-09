@@ -375,7 +375,7 @@ if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches && !('ontouchs
 document.querySelectorAll('[data-case]').forEach(btn=>{
   btn.addEventListener('click',e=>{
     e.preventDefault();
-    const map={mec:'case-dialog',triphil:'triphil-dialog',ganap:'ganap-dialog',codex:'codex-dialog',c1p:'c1p-dialog',c1convert:'c1convert-dialog',biofuel:'biofuel-dialog',sweldo:'sweldo-dialog',saantayo:'saantayo-dialog',linya:'linya-dialog',typing:'typing-dialog'};
+    const map={mec:'case-dialog',triphil:'triphil-dialog',ganap:'ganap-dialog',codex:'codex-dialog',c1p:'c1p-dialog',c1convert:'c1convert-dialog',biofuel:'biofuel-dialog',sweldo:'sweldo-dialog',saantayo:'saantayo-dialog',linya:'linya-dialog',bagomagdilim:'bagomagdilim-dialog',typing:'typing-dialog'};
     const id=map[btn.dataset.case]||'case-dialog';
     document.getElementById(id).showModal();
   });
@@ -885,7 +885,7 @@ document.querySelectorAll('.section').forEach(s=>sectionObs.observe(s));
     if(max>0)session.maxScroll=Math.max(session.maxScroll,scrollY/max);
   },{passive:true});
   new MutationObserver(()=>session.themeFlips++).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
-  const SECTION_NAMES={overview:'the intro',work:'field work',experience:'experience',credentials:'credentials',stack:'the toolkit',lab:'the lab',activity:'activity',learning:'currently learning',contact:'contact'};
+  const SECTION_NAMES={overview:'the intro',work:'projects',experience:'experience',credentials:'credentials',stack:'the toolkit',lab:'the lab',activity:'activity',learning:'currently learning',contact:'contact'};
   if('IntersectionObserver' in window){
     const since={};
     const dwellObs=new IntersectionObserver(entries=>{
