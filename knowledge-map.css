@@ -1,0 +1,115 @@
+/* ═══════════════════════════════════════════════════════════════════
+   KNOWLEDGE MAP (Currently Learning) — HUD for learning-graph-3d.js
+   Chamfered panels echo the hex geometry of the model. Every colour is
+   a --km-* variable so the stage follows the site's dark / light theme.
+   ═══════════════════════════════════════════════════════════════════ */
+
+#learn-graph.km{
+  --km-bg:#090a08;--km-panel:rgba(17,19,15,.82);--km-solid:#131511;--km-on:#1b210f;
+  --km-line:rgba(226,240,200,.12);--km-line-strong:rgba(226,240,200,.24);
+  --km-fg:#e7ebe0;--km-muted:#8b9283;--km-accent:#c8f04a;--km-accent-hot:rgba(200,240,74,.6);
+  --km-accent-dim:rgba(200,240,74,.14);--km-ink:#11150a;--km-n:#2a2e26;--km-shadow:#000;
+  --km-cut:9px;
+  background:var(--km-bg)}
+[data-theme="light"] #learn-graph.km{
+  --km-bg:#efede7;--km-panel:rgba(250,249,245,.88);--km-solid:#faf9f5;--km-on:#eef5dc;
+  --km-line:rgba(26,29,23,.12);--km-line-strong:rgba(26,29,23,.26);
+  --km-fg:#1a1d17;--km-muted:#5f6258;--km-accent:#4f9a10;--km-accent-hot:rgba(79,154,16,.6);
+  --km-accent-dim:rgba(79,154,16,.13);--km-ink:#fff;--km-n:#e2dfd6;--km-shadow:#efede7}
+
+#learn-graph .km-stage{background:var(--km-bg);outline:none}
+#learn-graph .km-stage::after{background:radial-gradient(95% 85% at 50% 50%,transparent 62%,var(--km-bg) 100%);z-index:3}
+#learn-graph .km-stage:focus-visible{box-shadow:inset 0 0 0 2px var(--km-accent)}
+#learn-graph .km-stage>canvas{touch-action:pan-y}
+
+.km-chamfer{clip-path:polygon(var(--km-cut) 0,100% 0,100% calc(100% - var(--km-cut)),calc(100% - var(--km-cut)) 100%,0 100%,0 var(--km-cut))}
+
+/* HUD corners */
+.km-hud{position:absolute;z-index:5;pointer-events:none}
+.km-hud>*{pointer-events:auto}
+.km-tl{top:20px;left:22px;display:grid;gap:6px;max-width:calc(100% - 44px)}
+.km-brand{margin:0;font:400 clamp(24px,3vw,38px)/.95 var(--mx-display,var(--mono));text-transform:uppercase;letter-spacing:.01em;color:var(--km-fg)}
+.km-brand span{color:var(--km-accent)}
+.km-sub{margin:0;font:500 10.5px/1.4 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--km-muted);font-variant-numeric:tabular-nums}
+.km-bl{left:16px;bottom:16px;display:flex;gap:8px;flex-wrap:wrap}
+.km-br{right:20px;bottom:22px;display:grid;gap:4px;font:400 11px/1.3 var(--mono);color:var(--km-muted);letter-spacing:.04em;text-align:right}
+.km-br b{color:var(--km-fg);font-weight:500}
+
+.km-btn{--km-cut:8px;font:600 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--km-fg);background:var(--km-line-strong);border:0;padding:1px;cursor:pointer;transition:background .2s,color .2s}
+.km-btn span{display:block;padding:10px 14px;background:var(--km-solid);clip-path:inherit;transition:background .2s}
+.km-btn:hover{background:var(--km-accent-hot)}
+.km-btn[aria-pressed="true"]{background:var(--km-accent);color:var(--km-accent)}
+.km-btn[aria-pressed="true"] span{background:var(--km-on)}
+.km-btn:focus-visible,.km-pill:focus-visible,.km-nav button:focus-visible{outline:2px solid var(--km-accent);outline-offset:3px}
+
+/* floating labels */
+.km-labels{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden}
+.km-pill{--km-cut:8px;position:absolute;left:0;top:0;pointer-events:auto;padding:1px;border:0;background:var(--km-line-strong);color:var(--km-fg);cursor:pointer;will-change:transform;transition:background .25s,opacity .25s}
+.km-pill-in{display:flex;align-items:center;gap:9px;padding:6px 13px 6px 6px;background:var(--km-solid);clip-path:inherit;font:500 13px/1 var(--mono);letter-spacing:.02em;white-space:nowrap;transition:background .25s}
+.km-pill .n{display:grid;place-items:center;width:23px;height:26px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--km-n);color:var(--km-fg);font:700 11px/1 var(--mono);transition:background .25s,color .25s}
+.km-pill svg{width:17px;height:17px;color:var(--km-accent);flex:none}
+.km-pill.core{cursor:pointer}
+.km-pill.core .km-pill-in{font-size:16px;padding:9px 16px 9px 12px;gap:11px}
+.km-pill.core svg{width:21px;height:21px}
+.km-pill:hover,.km-pill.hot{background:var(--km-accent-hot)}
+.km-pill.on{background:var(--km-accent)}
+.km-pill.on .km-pill-in{background:var(--km-on)}
+.km-pill.on .n{background:var(--km-accent);color:var(--km-ink)}
+.km-pill.behind,.km-leaf.behind{opacity:0!important;pointer-events:none}
+.km-leaf{position:absolute;left:0;top:0;font:400 12px/1 var(--mono);color:var(--km-muted);white-space:nowrap;pointer-events:none;will-change:transform;transition:opacity .3s,color .3s;text-shadow:0 1px 3px var(--km-shadow)}
+.km-leaf.hot{color:var(--km-fg)}
+.km-leaf.dim{opacity:.32}
+.km-labels.wait>*{opacity:0!important}
+
+/* selected-domain card */
+.km-card{--km-cut:12px;position:absolute;z-index:6;left:50%;bottom:16px;width:min(520px,calc(100% - 32px));transform:translate(-50%,0);padding:1px;background:var(--km-accent-hot);transition:opacity .3s,transform .3s}
+.km-card-in{display:grid;gap:12px;padding:14px 14px 14px 18px;background:var(--km-panel);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);clip-path:inherit}
+.km-card.off{opacity:0;transform:translate(-50%,14px);pointer-events:none}
+.km-row{display:flex;align-items:center;gap:12px}
+.km-meta{display:grid;gap:4px;min-width:0;flex:1}
+.km-k{font:500 10px/1.2 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--km-accent);font-variant-numeric:tabular-nums}
+.km-v{font:400 clamp(20px,2vw,26px)/1 var(--mx-display,var(--mono));text-transform:uppercase;color:var(--km-fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.km-nav{display:flex;gap:6px}
+.km-nav button{--km-cut:6px;width:34px;height:34px;border:0;background:var(--km-line-strong);padding:1px;color:var(--km-fg);font:600 16px/1 var(--mono);cursor:pointer;transition:background .2s,color .2s,transform .15s}
+.km-nav button span{display:grid;place-items:center;height:100%;background:var(--km-solid);clip-path:inherit}
+.km-nav button:hover{background:var(--km-accent-hot);color:var(--km-accent)}
+.km-nav button:active{transform:scale(.92)}
+.km-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
+.km-chips li{--km-cut:5px;font:400 12px/1 var(--mono);padding:7px 10px;background:var(--km-accent-dim);color:var(--km-fg)}
+
+/* loader */
+.km-loader{position:absolute;inset:0;z-index:9;display:grid;place-items:center;background:var(--km-bg);transition:opacity .6s}
+.km-loader.done{opacity:0;pointer-events:none}
+.km-box{display:grid;gap:12px;justify-items:center;font:500 11px/1.4 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--km-muted);text-align:center;padding-inline:16px}
+.km-bar{width:160px;height:2px;background:var(--km-line);overflow:hidden}
+.km-bar i{display:block;width:40%;height:100%;background:var(--km-accent);animation:km-scan 1.1s ease-in-out infinite}
+@keyframes km-scan{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+.km-loader.err .km-bar{display:none}
+
+/* tap ripple (hex) */
+.km-ripple{position:absolute;z-index:7;left:0;top:0;width:90px;height:90px;margin:-45px 0 0 -45px;pointer-events:none;animation:km-ripple .7s cubic-bezier(.15,.7,.3,1) forwards}
+.km-ripple svg{width:100%;height:100%;overflow:visible}
+.km-ripple polygon{fill:none;stroke:var(--km-accent);stroke-width:2}
+@keyframes km-ripple{from{transform:scale(.15) rotate(0deg);opacity:1}to{transform:scale(1.35) rotate(30deg);opacity:0}}
+
+/* panel strip under the stage follows the theme too */
+#learn-graph.km .cc-panel{background:var(--km-solid);border-top-color:var(--km-line)}
+#learn-graph.km .cc-panel h3{color:var(--km-fg)}
+#learn-graph.km .cc-panel .lg-links{grid-column:2}
+#learn-graph.km .lg-links li::before,#learn-graph.km .lg-links button:hover,#learn-graph.km .lg-links button:focus-visible{color:var(--km-accent)}
+#learn-graph.km .lg-links button{border-bottom-color:var(--km-accent-hot)}
+
+@media (max-width:640px){
+  .km-pill:not(.on):not(.hot):not(.core) .km-pill-in{padding:4px;gap:6px}
+  .km-pill:not(.on):not(.hot):not(.core) .t{display:none}
+  .km-pill.core .km-pill-in{font-size:14px;padding:7px 12px 7px 9px}
+  .km-leaf{display:none}
+  .km-leaf.show{display:block}
+  .km-card{bottom:66px}
+  .km-br{display:none}
+  .km-tl{top:16px;left:16px}
+}
+@media (prefers-reduced-motion:reduce){
+  .km-ripple{animation-duration:.01s}
+  .km-bar i{animation:none;width:100%}
+}
