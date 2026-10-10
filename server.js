@@ -24,6 +24,7 @@ const MIME_TYPES = {
   '.woff2': 'font/woff2',
   '.ttf': 'font/ttf',
   '.webp': 'image/webp',
+  '.glb': 'model/gltf-binary',
   '.mp4': 'video/mp4'
 };
 

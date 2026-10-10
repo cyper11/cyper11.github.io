@@ -187,3 +187,43 @@
 .learn-card.lg-active{border-color:var(--lime)!important;box-shadow:0 0 0 1px var(--lime),0 18px 40px -20px rgba(213,251,120,.35)!important}
 .learn-card[data-topic]{cursor:pointer}
 @media(max-width:540px){.lg-leaf{font-size:8.5px}}
+
+/* ═══ Career City — night city (GLB) in dark mode, daytime city in light mode ═══ */
+#career-city .cc-stage,[data-theme="light"] #career-city .cc-stage{height:clamp(440px,42vw,560px);background:radial-gradient(ellipse at 50% 55%,#10141a 0%,#07090b 70%);touch-action:pan-y}
+[data-theme="light"] #career-city .cc-stage{background:radial-gradient(ellipse at 50% 55%,#f7f6f2 0%,#efede7 70%)}
+#career-city .cc-stage::after{background:radial-gradient(95% 85% at 50% 50%,transparent 62%,#07090b 100%);opacity:.6}
+[data-theme="light"] #career-city .cc-stage::after{background:radial-gradient(95% 85% at 50% 50%,transparent 62%,#efede7 100%)}
+#career-city .cc-stage.engaged{cursor:grab}
+#career-city .cc-stage.hovering{cursor:pointer}
+#career-city .cc-hud-title{color:#e9efe3}
+#career-city .cc-hud-title i{background:#c6ff3d;box-shadow:0 0 10px rgba(198,255,61,.6)}
+#career-city .cc-hud-hint,#career-city .cc-map-note,#career-city .cc-loading{color:#8d978a;transition:opacity .4s}
+#career-city .cc-loading span{border-color:rgba(232,255,200,.12);border-top-color:#c6ff3d}
+#career-city .cc-label{background:rgba(16,19,21,.82);border-color:rgba(232,255,200,.12);color:#e9efe3;box-shadow:0 4px 18px rgba(0,0,0,.35)}
+#career-city .cc-label b{background:#2a2e30;color:#e9efe3}
+#career-city .cc-label::after{background:linear-gradient(rgba(232,255,200,.25),transparent)}
+#career-city .cc-label:hover,#career-city .cc-label.hover{border-color:rgba(198,255,61,.6);color:#c6ff3d}
+#career-city .cc-label.active{background:#c6ff3d;border-color:#c6ff3d;color:#0c1204;box-shadow:0 0 26px rgba(198,255,61,.35)}
+#career-city .cc-label.active b{background:#0c1204;color:#c6ff3d}
+#career-city .cc-label.active::after{background:linear-gradient(#c6ff3d,transparent)}
+#career-city .cc-controls button{background:rgba(16,19,21,.82);border-color:rgba(232,255,200,.12);color:#c2cbbd;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#career-city .cc-controls button:hover{border-color:rgba(198,255,61,.55);color:#c6ff3d}
+#career-city .cc-controls button[aria-pressed="true"]{background:#c6ff3d;border-color:#c6ff3d;color:#0c1204;box-shadow:0 0 22px rgba(198,255,61,.35)}
+@media(max-width:1100px){#career-city .cc-stage,[data-theme="light"] #career-city .cc-stage{height:440px}}
+@media(max-width:540px){#career-city .cc-stage,[data-theme="light"] #career-city .cc-stage{height:420px}}
+
+/* Light mode: daylight chips over the daytime city */
+[data-theme="light"] #career-city .cc-hud-title{color:#1d211a}
+[data-theme="light"] #career-city .cc-hud-title i{background:#4f9a10;box-shadow:0 0 8px rgba(79,154,16,.45)}
+[data-theme="light"] #career-city .cc-hud-hint,[data-theme="light"] #career-city .cc-map-note,[data-theme="light"] #career-city .cc-loading{color:#6b7065}
+[data-theme="light"] #career-city .cc-loading span{border-color:rgba(29,33,26,.12);border-top-color:#4f9a10}
+[data-theme="light"] #career-city .cc-label{background:rgba(255,255,255,.88);border-color:rgba(29,33,26,.14);color:#1d211a;box-shadow:0 4px 16px rgba(40,44,36,.14)}
+[data-theme="light"] #career-city .cc-label b{background:#e6e4dd;color:#1d211a}
+[data-theme="light"] #career-city .cc-label::after{background:linear-gradient(rgba(29,33,26,.3),transparent)}
+[data-theme="light"] #career-city .cc-label:hover,[data-theme="light"] #career-city .cc-label.hover{border-color:#4f9a10;color:#3d7a0c}
+[data-theme="light"] #career-city .cc-label.active{background:#4f9a10;border-color:#4f9a10;color:#fff;box-shadow:0 0 0 4px rgba(79,154,16,.14),0 6px 20px rgba(40,44,36,.18)}
+[data-theme="light"] #career-city .cc-label.active b{background:#fff;color:#3d7a0c}
+[data-theme="light"] #career-city .cc-label.active::after{background:linear-gradient(#4f9a10,transparent)}
+[data-theme="light"] #career-city .cc-controls button{background:rgba(255,255,255,.88);border-color:rgba(29,33,26,.14);color:#4a4f45}
+[data-theme="light"] #career-city .cc-controls button:hover{border-color:#4f9a10;color:#3d7a0c}
+[data-theme="light"] #career-city .cc-controls button[aria-pressed="true"]{background:#4f9a10;border-color:#4f9a10;color:#fff;box-shadow:0 4px 16px rgba(79,154,16,.3)}
