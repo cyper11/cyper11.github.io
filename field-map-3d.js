@@ -182,7 +182,8 @@
     const { OutputPass } = mods[6];
     const { RoomEnvironment } = mods[7];
 
-    const NEON = 0xc6ff3d;
+    const RD = document.documentElement.classList.contains('rd');   // redesign: safety-yellow signal accent
+    const NEON = RD ? 0xffd60a : 0xc6ff3d;
     const HOME_TARGET = new THREE.Vector3(0, 4.5, 0);
     const RING_R = [7.6, 5.9, 5.3, 5.6, 7.0, 6.4];
     const GLOW_SCALE = { neon: 0.38, neon_soft: 0.7, lamp: 0.45, head: 0.5, tail: 0.5, beacon: 0.55, flare: 0.5, win_lit: 0.8, water: 0.8 };
@@ -191,7 +192,7 @@
       dark: { bg: 0x07090b, aces: true, exposure: 0.95, sky: 0xa3b6d9, ground: 0x121417, hemi: 0.5, sun: 0xcad8ff, sunI: 1.6, warmI: 0.35,
         bloom: 0.55, threshold: 0.92, accent: NEON, accentBoost: 2.2, glow: {} },
       light: { bg: 0xefede7, aces: false, exposure: 1, sky: 0xffffff, ground: 0xb9b4a8, hemi: 1.15, sun: 0xfff3dc, sunI: 1.9, warmI: 0.45,
-        bloom: 0.16, threshold: 1, accent: 0x4f9a10, accentBoost: 1,
+        bloom: 0.16, threshold: 1, accent: RD ? 0xc29b00 : 0x4f9a10, accentBoost: 1,
         glow: { win_lit: 0.08, win_dim: 0.1, lamp: 0.08, head: 0.3, tail: 0.4, neon: 0.55, neon_soft: 0.45, beacon: 0.6, flare: 0.7, water: 0.35 } }
     };
     const isLight = () => document.documentElement.dataset.theme === 'light';
@@ -378,7 +379,10 @@
             m.envMapIntensity = m.metalness > 0.3 ? 0.2 : 0.12;
             if (GLOW_SCALE[m.name]) m.emissiveIntensity *= GLOW_SCALE[m.name];
             if (m.emissive && m.emissiveIntensity > 0) glowMats.push({ m, night: m.emissiveIntensity });
-            if (m.name === 'neon' || m.name === 'neon_soft') neonMats.push({ m, base: m.emissiveIntensity });
+            if (m.name === 'neon' || m.name === 'neon_soft') {
+              if (RD) { m.color.set(NEON); if (m.emissive) m.emissive.set(NEON); }
+              neonMats.push({ m, base: m.emissiveIntensity });
+            }
           }
         }
         if (/^Car_\d/.test(o.name)) {

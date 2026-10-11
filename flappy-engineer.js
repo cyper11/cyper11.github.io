@@ -39,20 +39,20 @@
 
   /* ─── Theme Colors (Technical Dark Interface) ─── */
   const COLORS = {
-    bg: '#111310',
-    panel: '#191c17',
-    panelDark: '#141712',
-    line: '#2c3028',
-    lineBright: '#3d4a30',
-    grid: 'rgba(44, 48, 40, 0.42)',
-    gridCross: 'rgba(160, 165, 152, 0.22)',
-    text: '#f0f1e9',
-    muted: '#a0a598',
-    lime: '#d5fb78',
-    limeGlow: 'rgba(213, 251, 120, 0.16)',
-    limeSoft: 'rgba(213, 251, 120, 0.07)',
-    amber: '#e2b86b',
-    danger: '#ff6b6b'
+    bg: __rdc('#111310'),
+    panel: __rdc('#191c17'),
+    panelDark: __rdc('#141712'),
+    line: __rdc('#2c3028'),
+    lineBright: __rdc('#3d4a30'),
+    grid: __rdc('rgba(44, 48, 40, 0.42)'),
+    gridCross: __rdc('rgba(160, 165, 152, 0.22)'),
+    text: __rdc('#f0f1e9'),
+    muted: __rdc('#a0a598'),
+    lime: __rdc('#d5fb78'),
+    limeGlow: __rdc('rgba(213, 251, 120, 0.16)'),
+    limeSoft: __rdc('rgba(213, 251, 120, 0.07)'),
+    amber: __rdc('#e2b86b'),
+    danger: __rdc('#ff6b6b')
   };
 
   /* ─── Game Constants ─── */
@@ -521,18 +521,18 @@
       const rackH = 110 + (idx % 3) * 38;
       const rackY = viewH - FLOOR_H - rackH;
 
-      ctx.fillStyle = 'rgba(22, 26, 20, 0.55)';
-      ctx.strokeStyle = 'rgba(44, 48, 40, 0.35)';
+      ctx.fillStyle = __rdc('rgba(22, 26, 20, 0.55)');
+      ctx.strokeStyle = __rdc('rgba(44, 48, 40, 0.35)');
       ctx.lineWidth = 1;
       ctx.fillRect(x, rackY, bayW, rackH);
       ctx.strokeRect(x + 0.5, rackY + 0.5, bayW - 1, rackH - 1);
 
       /* Subtle horizontal blade lines & tiny status LED */
       for (let sy = rackY + 14; sy < viewH - FLOOR_H - 10; sy += 18) {
-        ctx.fillStyle = 'rgba(44, 48, 40, 0.28)';
+        ctx.fillStyle = __rdc('rgba(44, 48, 40, 0.28)');
         ctx.fillRect(x + 8, sy, bayW - 16, 1);
       }
-      ctx.fillStyle = idx % 2 === 0 ? 'rgba(213, 251, 120, 0.2)' : 'rgba(226, 184, 107, 0.18)';
+      ctx.fillStyle = idx % 2 === 0 ? __rdc('rgba(213, 251, 120, 0.2)') : __rdc('rgba(226, 184, 107, 0.18)');
       ctx.fillRect(x + 10, rackY + 8, 4, 2);
     }
     ctx.restore();
@@ -586,7 +586,7 @@
     /* Diagonal truss struts in ceiling raceway */
     const strutStep = 24;
     const strutOff = (gridScroll * 0.5) % strutStep;
-    ctx.strokeStyle = 'rgba(61, 74, 48, 0.45)';
+    ctx.strokeStyle = __rdc('rgba(61, 74, 48, 0.45)');
     ctx.beginPath();
     for (let x = -strutOff - strutStep; x < viewW + strutStep; x += strutStep) {
       ctx.moveTo(x, 4);
@@ -600,7 +600,7 @@
     ctx.fillRect(0, floorY, viewW, FLOOR_H);
 
     /* Lime / muted top rail line */
-    ctx.fillStyle = 'rgba(213, 251, 120, 0.25)';
+    ctx.fillStyle = __rdc('rgba(213, 251, 120, 0.25)');
     ctx.fillRect(0, floorY, viewW, 1.5);
 
     /* Floor tile dividers & ruler ticks */
@@ -615,7 +615,7 @@
     ctx.stroke();
 
     /* Subtle lime alignment ticks along the floor edge */
-    ctx.fillStyle = 'rgba(213, 251, 120, 0.45)';
+    ctx.fillStyle = __rdc('rgba(213, 251, 120, 0.45)');
     for (let x = -tileOff; x < viewW + tileStep; x += tileStep) {
       ctx.fillRect(Math.floor(x), floorY + 2, 6, 2);
     }
@@ -664,7 +664,7 @@
       ctx.fillRect(x + 3, bodyY, w - 6, bodyH);
 
       /* Side rack rails */
-      ctx.fillStyle = '#1f241b';
+      ctx.fillStyle = __rdc('#1f241b');
       ctx.fillRect(x + 3, bodyY, 6, bodyH);
       ctx.fillRect(x + w - 9, bodyY, 6, bodyH);
 
@@ -677,9 +677,9 @@
         /* 1U / 2U Server Rack Bays & Blinking Activity LEDs */
         const slotStep = 16;
         for (let sy = bodyY + 8; sy < bodyY + bodyH - 10; sy += slotStep) {
-          ctx.fillStyle = '#1b2017';
+          ctx.fillStyle = __rdc('#1b2017');
           ctx.fillRect(x + 11, sy, w - 22, 11);
-          ctx.strokeStyle = 'rgba(61, 74, 48, 0.45)';
+          ctx.strokeStyle = __rdc('rgba(61, 74, 48, 0.45)');
           ctx.strokeRect(x + 11.5, sy + 0.5, w - 23, 10);
 
           /* Server LED indicator */
@@ -687,24 +687,24 @@
           ctx.fillStyle = ob.passed
             ? COLORS.lime
             : ledOn
-              ? 'rgba(213, 251, 120, 0.78)'
-              : 'rgba(226, 184, 107, 0.65)';
+              ? __rdc('rgba(213, 251, 120, 0.78)')
+              : __rdc('rgba(226, 184, 107, 0.65)');
           ctx.fillRect(x + 15, sy + 4, 4, 2.5);
 
           /* Vent slots */
-          ctx.fillStyle = 'rgba(160, 165, 152, 0.22)';
+          ctx.fillStyle = __rdc('rgba(160, 165, 152, 0.22)');
           ctx.fillRect(x + 24, sy + 4, w - 38, 2);
         }
       } else if (ob.type === 'CONDUIT') {
         /* Network Trunk Cable Bundles */
         const cables = [x + 16, x + 24, x + 32, x + 40, x + 48];
         for (let c = 0; c < cables.length; c++) {
-          ctx.fillStyle = c === 2 ? 'rgba(213, 251, 120, 0.32)' : 'rgba(61, 74, 48, 0.55)';
+          ctx.fillStyle = c === 2 ? __rdc('rgba(213, 251, 120, 0.32)') : __rdc('rgba(61, 74, 48, 0.55)');
           ctx.fillRect(cables[c], bodyY + 2, 2, bodyH - 4);
         }
         /* Cable tie clamps */
         for (let cy = bodyY + 22; cy < bodyY + bodyH - 14; cy += 28) {
-          ctx.fillStyle = '#252b20';
+          ctx.fillStyle = __rdc('#252b20');
           ctx.fillRect(x + 10, cy, w - 20, 6);
           ctx.fillStyle = COLORS.lime;
           ctx.fillRect(x + 13, cy + 2, 5, 2);
@@ -712,9 +712,9 @@
       } else {
         /* High-Voltage / Busway Barrier */
         for (let by = bodyY + 10; by < bodyY + bodyH - 12; by += 20) {
-          ctx.fillStyle = 'rgba(44, 48, 40, 0.6)';
+          ctx.fillStyle = __rdc('rgba(44, 48, 40, 0.6)');
           ctx.fillRect(x + 12, by, w - 24, 14);
-          ctx.fillStyle = 'rgba(213, 251, 120, 0.45)';
+          ctx.fillStyle = __rdc('rgba(213, 251, 120, 0.45)');
           ctx.fillRect(x + 15, by + 5, (w - 30) * 0.65, 3);
         }
       }
@@ -722,7 +722,7 @@
 
     /* Reinforced Terminal Collar framing the gap */
     const collarY = isTop ? y + h - collarH : y;
-    ctx.fillStyle = '#21271c';
+    ctx.fillStyle = __rdc('#21271c');
     ctx.fillRect(x, collarY, w, collarH);
 
     ctx.strokeStyle = ob.passed ? COLORS.lime : COLORS.lineBright;
@@ -757,8 +757,8 @@
     /* 1. Subtle Headlamp Light Cone Ahead of Engineer */
     if (!cachedConeGrad) {
       cachedConeGrad = ctx.createLinearGradient(12, -4, 98, -4);
-      cachedConeGrad.addColorStop(0, 'rgba(213, 251, 120, 0.14)');
-      cachedConeGrad.addColorStop(1, 'rgba(213, 251, 120, 0)');
+      cachedConeGrad.addColorStop(0, __rdc('rgba(213, 251, 120, 0.14)'));
+      cachedConeGrad.addColorStop(1, __rdc('rgba(213, 251, 120, 0)'));
     }
     ctx.fillStyle = cachedConeGrad;
     ctx.beginPath();
@@ -770,7 +770,7 @@
     ctx.fill();
 
     /* 2. Diagnostic Backpack / Micro-Thruster */
-    ctx.fillStyle = '#181c15';
+    ctx.fillStyle = __rdc('#181c15');
     ctx.strokeStyle = COLORS.lineBright;
     ctx.lineWidth = 1.2;
     ctx.fillRect(-19, -6, 9, 15);
@@ -797,7 +797,7 @@
     }
 
     /* 3. Engineer Torso / Field Utility Jacket */
-    ctx.fillStyle = '#22281d';
+    ctx.fillStyle = __rdc('#22281d');
     ctx.strokeStyle = COLORS.lineBright;
     ctx.lineWidth = 1.2;
     roundRect(ctx, -11, -7, 22, 18, 4);
@@ -805,7 +805,7 @@
     ctx.stroke();
 
     /* Utility Belt & Lime ID Badge on Chest */
-    ctx.fillStyle = '#141712';
+    ctx.fillStyle = __rdc('#141712');
     ctx.fillRect(-10, 5, 20, 3);
     ctx.fillStyle = COLORS.lime;
     ctx.fillRect(2, -2, 5, 4);
@@ -815,7 +815,7 @@
     ctx.save();
     ctx.translate(-3, 1);
     ctx.rotate(wingAngle);
-    ctx.fillStyle = '#2b3324';
+    ctx.fillStyle = __rdc('#2b3324');
     ctx.strokeStyle = COLORS.lime;
     ctx.lineWidth = 1;
     roundRect(ctx, -8, -3, 13, 6, 2.5);
@@ -824,12 +824,12 @@
     ctx.restore();
 
     /* 5. Engineer Head & Technical AR Visor */
-    ctx.fillStyle = '#d8dccf';
+    ctx.fillStyle = __rdc('#d8dccf');
     roundRect(ctx, -6, -14, 15, 10, 3);
     ctx.fill();
 
     /* Dark AR Goggles / Visor */
-    ctx.fillStyle = '#111310';
+    ctx.fillStyle = __rdc('#111310');
     ctx.fillRect(-1, -12, 11, 5.5);
     /* Glowing HUD Scanline inside Visor */
     ctx.fillStyle = COLORS.lime;
@@ -845,11 +845,11 @@
     /* Hard Hat Brim & Ridge */
     ctx.fillStyle = COLORS.lime;
     ctx.fillRect(-8, -14.5, 22, 2.6);
-    ctx.fillStyle = '#1c2510';
+    ctx.fillStyle = __rdc('#1c2510');
     ctx.fillRect(-3, -16.5, 9, 1.5);
 
     /* Front Headlamp Unit */
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = __rdc('#ffffff');
     ctx.fillRect(9, -17, 3, 2.5);
 
     ctx.restore();
@@ -885,7 +885,7 @@
 
     ctx.save();
     ctx.font = '400 10px "IBM Plex Mono", monospace';
-    ctx.fillStyle = 'rgba(160, 165, 152, 0.72)';
+    ctx.fillStyle = __rdc('rgba(160, 165, 152, 0.72)');
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
 
@@ -894,7 +894,7 @@
     ctx.fillText(telemetryStr, 14, yPos);
 
     ctx.textAlign = 'right';
-    ctx.fillStyle = state === 'PLAYING' ? COLORS.lime : 'rgba(160, 165, 152, 0.6)';
+    ctx.fillStyle = state === 'PLAYING' ? COLORS.lime : __rdc('rgba(160, 165, 152, 0.6)');
     ctx.fillText(`STATE // ${state}`, viewW - 14, yPos);
     ctx.restore();
   }

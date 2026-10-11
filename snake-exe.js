@@ -44,19 +44,19 @@
 
   /* ─── Theme Palette ─── */
   const COLORS = {
-    bg: '#111310',
-    arenaBg: '#131612',
-    panel: '#191c17',
-    line: '#2c3028',
-    lineBright: '#3d4a30',
-    grid: 'rgba(44, 48, 40, 0.42)',
-    text: '#f0f1e9',
-    muted: '#a0a598',
-    lime: '#d5fb78',
-    bodyFill: '#222b1b',
-    bodyStroke: '#78b833',
-    amber: '#e2b86b',
-    danger: '#ff6b6b'
+    bg: __rdc('#111310'),
+    arenaBg: __rdc('#131612'),
+    panel: __rdc('#191c17'),
+    line: __rdc('#2c3028'),
+    lineBright: __rdc('#3d4a30'),
+    grid: __rdc('rgba(44, 48, 40, 0.42)'),
+    text: __rdc('#f0f1e9'),
+    muted: __rdc('#a0a598'),
+    lime: __rdc('#d5fb78'),
+    bodyFill: __rdc('#222b1b'),
+    bodyStroke: __rdc('#78b833'),
+    amber: __rdc('#e2b86b'),
+    danger: __rdc('#ff6b6b')
   };
 
   /* ─── Speed & Grid Constants ─── */
@@ -511,7 +511,7 @@
     ctx.save();
 
     /* Subtle coordinate guide crosshairs around packet */
-    ctx.strokeStyle = 'rgba(213, 251, 120, 0.14)';
+    ctx.strokeStyle = __rdc('rgba(213, 251, 120, 0.14)');
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(cx - cellSize * 0.85, cy);
@@ -522,7 +522,7 @@
 
     /* Outer pulsing packet ring */
     const outerR = cellSize * (0.36 + pulse * 0.08);
-    ctx.strokeStyle = 'rgba(213, 251, 120, 0.48)';
+    ctx.strokeStyle = __rdc('rgba(213, 251, 120, 0.48)');
     ctx.lineWidth = 1.2;
     ctx.strokeRect(cx - outerR, cy - outerR, outerR * 2, outerR * 2);
 
@@ -541,7 +541,7 @@
 
     /* Draw internal data-bus line linking consecutive segments */
     if (snake.length > 1) {
-      ctx.strokeStyle = 'rgba(213, 251, 120, 0.38)';
+      ctx.strokeStyle = __rdc('rgba(213, 251, 120, 0.38)');
       ctx.lineWidth = Math.max(2, cellSize * 0.14);
       ctx.beginPath();
       for (let i = 0; i < snake.length; i++) {
@@ -568,7 +568,7 @@
         ctx.fillRect(x + pad, y + pad, w, h);
 
         /* Directional optical sensor dots on head */
-        ctx.fillStyle = '#111310';
+        ctx.fillStyle = __rdc('#111310');
         const eyeSize = Math.max(2, Math.floor(cellSize * 0.13));
         const cx = x + cellSize / 2;
         const cy = y + cellSize / 2;
@@ -591,7 +591,7 @@
         ctx.strokeRect(x + pad + 0.5, y + pad + 0.5, w - 1, h - 1);
 
         /* Subtle node center pin */
-        ctx.fillStyle = i % 3 === 0 ? COLORS.lime : 'rgba(160, 165, 152, 0.45)';
+        ctx.fillStyle = i % 3 === 0 ? COLORS.lime : __rdc('rgba(160, 165, 152, 0.45)');
         ctx.fillRect(x + cellSize / 2 - 1.5, y + cellSize / 2 - 1.5, 3, 3);
       }
     }
@@ -605,7 +605,7 @@
 
     ctx.save();
     ctx.font = '400 10px "IBM Plex Mono", monospace';
-    ctx.fillStyle = 'rgba(160, 165, 152, 0.7)';
+    ctx.fillStyle = __rdc('rgba(160, 165, 152, 0.7)');
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
 

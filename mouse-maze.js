@@ -136,17 +136,17 @@
 
   /* ─── Theme Colors ─── */
   const COLORS = {
-    bg: '#111310',
-    wallFill: '#121510',
-    corridorFill: '#191d16',
-    corridorGrid: 'rgba(213, 251, 120, 0.055)',
-    wallStroke: '#3a452e',
-    wallAccent: '#d5fb78',
-    text: '#f0f1e9',
-    muted: '#a0a598',
-    lime: '#d5fb78',
-    amber: '#e2b86b',
-    danger: '#ff6b6b'
+    bg: __rdc('#111310'),
+    wallFill: __rdc('#121510'),
+    corridorFill: __rdc('#191d16'),
+    corridorGrid: __rdc('rgba(213, 251, 120, 0.055)'),
+    wallStroke: __rdc('#3a452e'),
+    wallAccent: __rdc('#d5fb78'),
+    text: __rdc('#f0f1e9'),
+    muted: __rdc('#a0a598'),
+    lime: __rdc('#d5fb78'),
+    amber: __rdc('#e2b86b'),
+    danger: __rdc('#ff6b6b')
   };
 
   /* ─── 10-Level Progressive Difficulty Configuration ─── */
@@ -1310,7 +1310,7 @@
     ctx.fillRect(0, 0, viewW, viewH);
 
     /* Subtle technical diagonal hatch on non-walkable wall areas */
-    ctx.strokeStyle = 'rgba(44, 48, 40, 0.28)';
+    ctx.strokeStyle = __rdc('rgba(44, 48, 40, 0.28)');
     ctx.lineWidth = 1;
     ctx.beginPath();
     for (let x = -viewH; x < viewW + viewH; x += 26) {
@@ -1334,7 +1334,7 @@
     }
 
     /* Subtle telemetry labels inside selected corridor nodes */
-    ctx.fillStyle = 'rgba(160, 165, 152, 0.22)';
+    ctx.fillStyle = __rdc('rgba(160, 165, 152, 0.22)');
     ctx.font = '500 8.5px "IBM Plex Mono", monospace';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
@@ -1350,7 +1350,7 @@
     ctx.save();
     ctx.beginPath();
     ctx.arc(startPos.x, startPos.y, startPos.r + (probeEngaged ? 0 : startPulse * 3.5), 0, Math.PI * 2);
-    ctx.fillStyle = probeEngaged ? 'rgba(213, 251, 120, 0.12)' : 'rgba(213, 251, 120, 0.24)';
+    ctx.fillStyle = probeEngaged ? __rdc('rgba(213, 251, 120, 0.12)') : __rdc('rgba(213, 251, 120, 0.24)');
     ctx.fill();
     ctx.lineWidth = 1.5;
     ctx.strokeStyle = COLORS.lime;
@@ -1367,7 +1367,7 @@
     ctx.save();
     ctx.beginPath();
     ctx.arc(exitPos.x, exitPos.y, exitPos.r + startPulse * 3, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(213, 251, 120, 0.18)';
+    ctx.fillStyle = __rdc('rgba(213, 251, 120, 0.18)');
     ctx.fill();
     ctx.lineWidth = 1.8;
     ctx.strokeStyle = COLORS.lime;
@@ -1408,10 +1408,10 @@
     ctx.save();
     ctx.beginPath();
     ctx.arc(probe.x, probe.y, probe.r, 0, Math.PI * 2);
-    ctx.fillStyle = probeEngaged ? COLORS.lime : '#ffffff';
+    ctx.fillStyle = probeEngaged ? COLORS.lime : __rdc('#ffffff');
     ctx.fill();
     ctx.lineWidth = 1.8;
-    ctx.strokeStyle = '#111310';
+    ctx.strokeStyle = __rdc('#111310');
     ctx.stroke();
     ctx.restore();
 
@@ -1440,13 +1440,13 @@
     for (let i = 0; i < 9; i++) {
       const by = Math.random() * viewH;
       const bh = 3 + Math.random() * 14;
-      ctx.fillStyle = i % 2 === 0 ? 'rgba(255, 107, 107, 0.16)' : 'rgba(213, 251, 120, 0.12)';
+      ctx.fillStyle = i % 2 === 0 ? __rdc('rgba(255, 107, 107, 0.16)') : __rdc('rgba(213, 251, 120, 0.12)');
       ctx.fillRect(0, by, viewW, bh);
     }
 
     const rx = Math.min(viewW, viewH) * 0.26;
     const ry = rx * 0.48;
-    ctx.strokeStyle = 'rgba(255, 107, 107, 0.75)';
+    ctx.strokeStyle = __rdc('rgba(255, 107, 107, 0.75)');
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(cx - rx, cy);

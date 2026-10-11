@@ -12,6 +12,8 @@
 
   const canvas = document.getElementById('contour-canvas');
   if (!canvas) return;
+  // redesign: plain paper surface, no circuit board
+  if (document.documentElement.classList.contains('rd')) { canvas.style.display = 'none'; return; }
   const ctx = canvas.getContext('2d');
   if (!ctx) { canvas.style.display = 'none'; return; }
 

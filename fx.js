@@ -24,12 +24,15 @@
   /* Flip any of these to false to switch an effect off */
   const CFG = { ruler: true, wires: true, readHead: true, probe: true, themeSweep: true, flaps: true, blueprint: true };
 
+  /* Redesign (html.rd, "Field Kit"): one safety-yellow signal instead of four, JetBrains Mono, clear of the top bar */
+  const RD = document.documentElement.classList.contains('rd');
+
   const doc = document;
   const root = doc.documentElement;
   const body = doc.body;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
-  const MONO = '"IBM Plex Mono", ui-monospace, monospace';
+  const MONO = RD ? '"JetBrains Mono", ui-monospace, monospace' : '"IBM Plex Mono", ui-monospace, monospace';
 
   const $ = (s, r = doc) => r.querySelector(s);
   const $$ = (s, r = doc) => Array.from(r.querySelectorAll(s));
@@ -95,7 +98,12 @@
     dark:  [[213, 251, 120], [46, 230, 255], [255, 170, 40], [255, 46, 99]],
     light: [[74, 138, 20],   [10, 126, 164], [194, 94, 0],   [209, 25, 79]]
   };
-  const INK = { dark: [240, 241, 233], light: [26, 29, 23] };
+  if (RD) {
+    const Y = [255, 214, 10], YL = [156, 124, 0];
+    PAL.dark = [Y, Y, Y, Y];
+    PAL.light = [YL, YL, YL, YL];
+  }
+  const INK = RD ? { dark: [236, 235, 228], light: [11, 11, 12] } : { dark: [240, 241, 233], light: [26, 29, 23] };
   let cur = PAL[themeName()].map(c => c.slice());
   let ink = INK[themeName()].slice();
   let palFrom = null, palTo = null, inkFrom = null, inkTo = null, palT0 = 0;
@@ -155,7 +163,7 @@
     const ctx = cv.getContext('2d');
     if (!ctx) { cv.remove(); return; }
 
-    const RW = 48, SPINE = RW - 6, TOP = 30, BOT = 118;   // BOT keeps clear of the chat button
+    const RW = 48, SPINE = RW - 6, TOP = RD ? 88 : 30, BOT = 118;   // BOT keeps clear of the chat button
     const GLYPHS = 'ABCDEFGHJKLMNPRSTUVWXYZ0123456789/#';
     let H = 0, DPR = 1, docH = 0, thumb = -1, running = false, lastId = '', scrT0 = -1e9, booted = false;
     const marks = [];

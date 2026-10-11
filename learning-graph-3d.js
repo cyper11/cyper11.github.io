@@ -258,6 +258,17 @@
         }
       }
     };
+    /* Redesign (html.rd): the same constellation, re-inked in safety yellow */
+    if (document.documentElement.classList.contains('rd')) {
+      const Y = 0xffd60a, YL = 0xc29b00;
+      Object.assign(THEMES.dark, { bg: 0x0b0b0c, accent: Y, hot: 0xfff1a8,
+        mat: { accent: { c: Y, ec: Y }, rim: { c: Y, ec: Y }, accent_soft: { c: 0xffe45c, ec: 0xffe45c }, core: { c: Y, ec: Y },
+               link: { c: Y, ec: Y }, led_a: { c: Y, ec: Y }, led_b: { c: Y, ec: Y } } });
+      Object.assign(THEMES.light, { bg: 0xecebe4, accent: YL, hot: 0x5c4a00 });
+      Object.assign(THEMES.light.mat, { accent: { c: YL, ec: YL, e: 0.12 }, rim: { c: YL, ec: YL, e: 0.1 }, accent_soft: { c: 0xe0b400, ec: 0xe0b400, e: 0.1 },
+        core: { c: Y, ec: Y, e: 0.3 }, link: { c: YL, ec: YL, e: 0.12 }, link_dim: { c: 0xd8cf9e, e: 0 },
+        led_a: { c: YL, ec: YL, e: 0.4 }, led_b: { c: YL, ec: YL, e: 0.4 } });
+    }
     const isLight = () => document.documentElement.dataset.theme === 'light';
     let th = THEMES[isLight() ? 'light' : 'dark'];
 
@@ -460,7 +471,7 @@
 
     function snapshot(m, keyName) {
       m.userData.key = keyName;
-      m.userData.dark = { c: m.color.clone(), ei: m.emissiveIntensity, env: m.metalness > 0.3 ? 0.55 : 0.2 };
+      m.userData.dark = { c: m.color.clone(), em: m.emissive ? m.emissive.clone() : null, ei: m.emissiveIntensity, env: m.metalness > 0.3 ? 0.55 : 0.2 };
       themedMats.push(m);
     }
     function firstMesh(o) { let m = null; o.traverse(c => { if (!m && c.isMesh) m = c; }); return m; }
@@ -640,6 +651,7 @@
         const d = m.userData.dark;
         const o = th.mat[m.userData.key] || {};
         if (o.c !== undefined) m.color.set(o.c); else m.color.copy(d.c);
+        if (m.emissive && d.em) { if (o.ec !== undefined) m.emissive.set(o.ec); else m.emissive.copy(d.em); }
         m.userData.base = d.ei * (o.e ?? 1);
         m.emissiveIntensity = m.userData.base;
         m.envMapIntensity = d.env;

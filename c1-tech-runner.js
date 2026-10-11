@@ -817,7 +817,7 @@
       x,
       y,
       text,
-      color: color || '#d5fb78',
+      color: color || __rdc('#d5fb78'),
       life: 60,
       vy: -1.2
     });
@@ -833,7 +833,7 @@
         vx: Math.cos(angle) * spd,
         vy: Math.sin(angle) * spd,
         size: 2 + Math.random() * 3,
-        color: color || '#d5fb78',
+        color: color || __rdc('#d5fb78'),
         life: 25 + Math.floor(Math.random() * 20),
         alpha: 1
       });
@@ -886,13 +886,13 @@
         player.jumpBufferTimer = 0;
         player.canDoubleJump = true;
         Sound.jump();
-        addExplosion(player.x + player.w / 2, player.y + player.h, '#d5fb78', 6);
+        addExplosion(player.x + player.w / 2, player.y + player.h, __rdc('#d5fb78'), 6);
       } else if (player.canDoubleJump) {
         player.vy = player.doubleJumpForce;
         player.canDoubleJump = false;
         player.jumpBufferTimer = 0;
         Sound.doubleJump();
-        addExplosion(player.x + player.w / 2, player.y + player.h, '#00e5ff', 9);
+        addExplosion(player.x + player.w / 2, player.y + player.h, __rdc('#00e5ff'), 9);
       }
     }
 
@@ -926,7 +926,7 @@
           if (p.shakeTimer <= 0) {
             p.fallen = true;
             p.respawnTimer = 180;
-            addExplosion(p.x + p.w / 2, p.y + p.h / 2, '#c084fc', 8);
+            addExplosion(p.x + p.w / 2, p.y + p.h / 2, __rdc('#c084fc'), 8);
           }
         }
         if (p.fallen && p.respawnTimer > 0) {
@@ -989,7 +989,7 @@
             vx: (Math.random() - 0.5) * 1.5,
             vy: -4 - Math.random() * 4,
             size: 2,
-            color: '#00e5ff',
+            color: __rdc('#00e5ff'),
             life: 20,
             alpha: 0.8
           });
@@ -1051,30 +1051,30 @@
           score += 100;
           bitsCount += 1;
           Sound.bit();
-          addFloatingText(c.x, c.y, '+100', '#d5fb78');
-          addExplosion(c.x, c.y, '#d5fb78', 8);
+          addFloatingText(c.x, c.y, '+100', __rdc('#d5fb78'));
+          addExplosion(c.x, c.y, __rdc('#d5fb78'), 8);
         } else if (c.type === 'byte') {
           score += 500;
           bitsCount += 8;
           Sound.byte();
-          addFloatingText(c.x, c.y, '+500 (BYTE)', '#00e5ff');
-          addExplosion(c.x, c.y, '#00e5ff', 12);
+          addFloatingText(c.x, c.y, '+500 (BYTE)', __rdc('#00e5ff'));
+          addExplosion(c.x, c.y, __rdc('#00e5ff'), 12);
         } else if (c.type === 'packet') {
           score += 1000;
           bitsCount += 16;
           Sound.packet();
-          addFloatingText(c.x, c.y, '+1,000 (PACKET)', '#f59e0b');
-          addExplosion(c.x, c.y, '#f59e0b', 14);
+          addFloatingText(c.x, c.y, '+1,000 (PACKET)', __rdc('#f59e0b'));
+          addExplosion(c.x, c.y, __rdc('#f59e0b'), 14);
         } else if (c.type === 'fragment') {
           score += 2500;
           Sound.packet();
-          addFloatingText(c.x, c.y, '+2,500 (CODE FRAG)', '#c084fc');
-          addExplosion(c.x, c.y, '#c084fc', 16);
+          addFloatingText(c.x, c.y, '+2,500 (CODE FRAG)', __rdc('#c084fc'));
+          addExplosion(c.x, c.y, __rdc('#c084fc'), 16);
         } else if (c.type === 'token') {
           score += 5000;
           Sound.token();
-          addFloatingText(c.x, c.y, '+5,000 [DEBUG TOKEN]', '#ffd700');
-          addExplosion(c.x, c.y, '#ffd700', 20);
+          addFloatingText(c.x, c.y, '+5,000 [DEBUG TOKEN]', __rdc('#ffd700'));
+          addExplosion(c.x, c.y, __rdc('#ffd700'), 20);
 
           // Save token to state
           const lvlKey = String(currentLevel.id);
@@ -1090,7 +1090,7 @@
           bitsCount -= 100;
           lives = Math.min(lives + 1, 5);
           Sound.checkpoint();
-          addFloatingText(player.x, player.y - 20, '+1 EXTRA LIFE!', '#d5fb78');
+          addFloatingText(player.x, player.y - 20, '+1 EXTRA LIFE!', __rdc('#d5fb78'));
         }
 
         updateHUD();
@@ -1105,8 +1105,8 @@
         checkpointSaved = true;
         activeCheckpointPos = { x: cp.x, y: cp.y };
         Sound.checkpoint();
-        addFloatingText(cp.x, cp.y - 30, 'CHECKPOINT // STATE SAVED', '#d5fb78');
-        addExplosion(cp.x, cp.y, '#d5fb78', 18);
+        addFloatingText(cp.x, cp.y - 30, 'CHECKPOINT // STATE SAVED', __rdc('#d5fb78'));
+        addExplosion(cp.x, cp.y, __rdc('#d5fb78'), 18);
       }
     }
 
@@ -1118,8 +1118,8 @@
           if (!sw.active) {
             sw.active = true;
             Sound.switchFlip();
-            addFloatingText(sw.x, sw.y - 24, `${sw.label} ACTIVATED`, '#00e5ff');
-            addExplosion(sw.x, sw.y, '#00e5ff', 12);
+            addFloatingText(sw.x, sw.y - 24, `${sw.label} ACTIVATED`, __rdc('#00e5ff'));
+            addExplosion(sw.x, sw.y, __rdc('#00e5ff'), 12);
 
             // Toggle corresponding platforms/lasers
             currentLevel.platforms.forEach(p => {
@@ -1143,15 +1143,15 @@
             Sound.terminal();
             terminalMessage = tm.text;
             terminalMessageTimer = 220;
-            addFloatingText(tm.x, tm.y - 20, `[AUTH GRANTED: ${tm.label}]`, '#d5fb78');
-            addExplosion(tm.x, tm.y, '#d5fb78', 16);
+            addFloatingText(tm.x, tm.y - 20, `[AUTH GRANTED: ${tm.label}]`, __rdc('#d5fb78'));
+            addExplosion(tm.x, tm.y, __rdc('#d5fb78'), 16);
 
             // Level 9 bulkhead check
             if (currentLevel.requiredTerminals && currentLevel.terminalsHacked >= currentLevel.requiredTerminals) {
               currentLevel.platforms.forEach(p => {
                 if (p.style === 'bulkhead') p.active = false;
               });
-              addFloatingText(tm.x, tm.y - 45, 'BULKHEAD DOOR OPENED // SECTOR UNLOCKED', '#00e5ff');
+              addFloatingText(tm.x, tm.y - 45, 'BULKHEAD DOOR OPENED // SECTOR UNLOCKED', __rdc('#00e5ff'));
             }
           }
         }
@@ -1215,8 +1215,8 @@
           player.canDoubleJump = true;
           score += 400;
           Sound.stomp();
-          addFloatingText(en.x, en.y, '+400 (DEBUGGED)', '#d5fb78');
-          addExplosion(en.x + en.w / 2, en.y + en.h / 2, en.type === 'memleak' ? '#c084fc' : '#d5fb78', 16);
+          addFloatingText(en.x, en.y, '+400 (DEBUGGED)', __rdc('#d5fb78'));
+          addExplosion(en.x + en.w / 2, en.y + en.h / 2, en.type === 'memleak' ? __rdc('#c084fc') : __rdc('#d5fb78'), 16);
           updateHUD();
         } else {
           handlePlayerHit();
@@ -1262,7 +1262,7 @@
 
     Sound.hit();
     lives--;
-    addExplosion(player.x + player.w / 2, player.y + player.h / 2, '#ff4757', 24);
+    addExplosion(player.x + player.w / 2, player.y + player.h / 2, __rdc('#ff4757'), 24);
     updateHUD();
 
     if (lives <= 0) {
@@ -1283,7 +1283,7 @@
       player.vx = 0;
       player.vy = 0;
       player.invincibleTimer = 90;
-      addFloatingText(player.x, player.y - 20, 'RESTORED FROM CHECKPOINT', '#00e5ff');
+      addFloatingText(player.x, player.y - 20, 'RESTORED FROM CHECKPOINT', __rdc('#00e5ff'));
     }
   }
 
@@ -1378,7 +1378,7 @@
       // Lightweight backdrop when in menus to avoid heavy entity passes
       ctx.save();
       ctx.clearRect(0, 0, V_WIDTH, V_HEIGHT);
-      ctx.fillStyle = '#080a07';
+      ctx.fillStyle = __rdc('#080a07');
       ctx.fillRect(0, 0, V_WIDTH, V_HEIGHT);
       renderCircuitGrid(cameraX * 0.25);
       ctx.restore();
@@ -1389,7 +1389,7 @@
     ctx.clearRect(0, 0, V_WIDTH, V_HEIGHT);
 
     // Dark technical background
-    ctx.fillStyle = '#080a07';
+    ctx.fillStyle = __rdc('#080a07');
     ctx.fillRect(0, 0, V_WIDTH, V_HEIGHT);
 
     // Parallax background layer 1: Subtle circuit trace grid
@@ -1437,7 +1437,7 @@
 
   function renderCircuitGrid(offset) {
     ctx.save();
-    ctx.strokeStyle = 'rgba(38, 44, 34, 0.45)';
+    ctx.strokeStyle = __rdc('rgba(38, 44, 34, 0.45)');
     ctx.lineWidth = 1;
 
     const gridSize = 40;
@@ -1455,7 +1455,7 @@
     ctx.stroke();
 
     // Random blinking circuit nodes
-    ctx.fillStyle = 'rgba(213, 251, 120, 0.12)';
+    ctx.fillStyle = __rdc('rgba(213, 251, 120, 0.12)');
     for (let i = 0; i < 8; i++) {
       const nx = ((i * 137) - (offset * 0.5)) % V_WIDTH;
       const ny = (i * 73) % V_HEIGHT;
@@ -1476,19 +1476,19 @@
       const ry = V_HEIGHT - rHeight;
 
       // Dark rack body
-      ctx.fillStyle = '#0e110d';
+      ctx.fillStyle = __rdc('#0e110d');
       ctx.fillRect(rx, ry, rackWidth - 8, rHeight);
-      ctx.strokeStyle = '#1a1f17';
+      ctx.strokeStyle = __rdc('#1a1f17');
       ctx.strokeRect(rx, ry, rackWidth - 8, rHeight);
 
       // Server unit slots & blinking LEDs
       for (let s = ry + 12; s < V_HEIGHT - 20; s += 24) {
-        ctx.fillStyle = '#141812';
+        ctx.fillStyle = __rdc('#141812');
         ctx.fillRect(rx + 6, s, rackWidth - 20, 16);
 
         // Green / Cyan status LED
         const isBlinking = ((Date.now() / 350 + i + s) % 4) > 2;
-        ctx.fillStyle = isBlinking ? '#d5fb78' : '#00e5ff';
+        ctx.fillStyle = isBlinking ? __rdc('#d5fb78') : __rdc('#00e5ff');
         ctx.fillRect(rx + rackWidth - 22, s + 6, 4, 4);
       }
     }
@@ -1503,8 +1503,8 @@
 
     if (!cachedFanGrad) {
       cachedFanGrad = ctx.createLinearGradient(0, 0, 0, -180);
-      cachedFanGrad.addColorStop(0, 'rgba(0, 229, 255, 0.22)');
-      cachedFanGrad.addColorStop(1, 'rgba(0, 229, 255, 0.0)');
+      cachedFanGrad.addColorStop(0, __rdc('rgba(0, 229, 255, 0.22)'));
+      cachedFanGrad.addColorStop(1, __rdc('rgba(0, 229, 255, 0.0)'));
     }
 
     currentLevel.platforms.forEach(p => {
@@ -1517,7 +1517,7 @@
       ctx.fillRect(p.x, -180, p.w, 180);
 
       // Air streak lines
-      ctx.strokeStyle = 'rgba(0, 229, 255, 0.45)';
+      ctx.strokeStyle = __rdc('rgba(0, 229, 255, 0.45)');
       ctx.lineWidth = 1;
       const t = Date.now() * 0.008;
       for (let i = 0; i < 4; i++) {
@@ -1552,67 +1552,67 @@
 
       if (p.style === 'rack') {
         // High-density server platform with PCB edge
-        ctx.fillStyle = '#141812';
+        ctx.fillStyle = __rdc('#141812');
         ctx.fillRect(drawX, drawY, p.w, p.h);
-        ctx.strokeStyle = '#2c3526';
+        ctx.strokeStyle = __rdc('#2c3526');
         ctx.lineWidth = 1.5;
         ctx.strokeRect(drawX, drawY, p.w, p.h);
 
         // Top green bus track
-        ctx.fillStyle = '#2a3b1d';
+        ctx.fillStyle = __rdc('#2a3b1d');
         ctx.fillRect(drawX, drawY, p.w, 6);
-        ctx.fillStyle = '#d5fb78';
+        ctx.fillStyle = __rdc('#d5fb78');
         for (let bx = drawX + 8; bx < drawX + p.w - 8; bx += 24) {
           ctx.fillRect(bx, drawY + 1, 8, 3);
         }
       } else if (p.style === 'bus' || p.style === 'moving') {
         // Floating bus bridge
-        ctx.fillStyle = p.style === 'moving' ? '#172218' : '#191f16';
+        ctx.fillStyle = p.style === 'moving' ? __rdc('#172218') : __rdc('#191f16');
         ctx.fillRect(drawX, drawY, p.w, p.h);
-        ctx.strokeStyle = p.style === 'moving' ? '#00e5ff' : '#46563c';
+        ctx.strokeStyle = p.style === 'moving' ? __rdc('#00e5ff') : __rdc('#46563c');
         ctx.lineWidth = 1.5;
         ctx.strokeRect(drawX, drawY, p.w, p.h);
 
         // Glowing center trace
-        ctx.fillStyle = p.style === 'moving' ? '#00e5ff' : '#d5fb78';
+        ctx.fillStyle = p.style === 'moving' ? __rdc('#00e5ff') : __rdc('#d5fb78');
         ctx.fillRect(drawX + 6, drawY + p.h / 2 - 1.5, p.w - 12, 3);
       } else if (p.style === 'crumble') {
         // RAM stick platform
-        ctx.fillStyle = '#21172a';
+        ctx.fillStyle = __rdc('#21172a');
         ctx.fillRect(drawX, drawY, p.w, p.h);
-        ctx.strokeStyle = '#c084fc';
+        ctx.strokeStyle = __rdc('#c084fc');
         ctx.lineWidth = 1.5;
         ctx.strokeRect(drawX, drawY, p.w, p.h);
 
         // Golden memory contact pins
-        ctx.fillStyle = '#f59e0b';
+        ctx.fillStyle = __rdc('#f59e0b');
         for (let px = drawX + 4; px < drawX + p.w - 4; px += 10) {
           ctx.fillRect(px, drawY + p.h - 4, 5, 3);
         }
       } else if (p.style === 'blinking') {
         // Code syntax block
-        ctx.fillStyle = '#10252a';
+        ctx.fillStyle = __rdc('#10252a');
         ctx.fillRect(drawX, drawY, p.w, p.h);
-        ctx.strokeStyle = '#00e5ff';
+        ctx.strokeStyle = __rdc('#00e5ff');
         ctx.lineWidth = 1.5;
         ctx.strokeRect(drawX, drawY, p.w, p.h);
 
         // Code brackets decorative
-        ctx.fillStyle = '#00e5ff';
+        ctx.fillStyle = __rdc('#00e5ff');
         ctx.font = '9px monospace';
         ctx.fillText('{ ; }', drawX + p.w / 2 - 12, drawY + 14);
       } else if (p.style === 'switchable') {
         // Switchable data bridge
-        ctx.fillStyle = 'rgba(0, 229, 255, 0.2)';
+        ctx.fillStyle = __rdc('rgba(0, 229, 255, 0.2)');
         ctx.fillRect(drawX, drawY, p.w, p.h);
-        ctx.strokeStyle = '#00e5ff';
+        ctx.strokeStyle = __rdc('#00e5ff');
         ctx.lineWidth = 1.5;
         ctx.strokeRect(drawX, drawY, p.w, p.h);
       } else if (p.style === 'bulkhead') {
         // Giant sector gate
-        ctx.fillStyle = '#2a1a1a';
+        ctx.fillStyle = __rdc('#2a1a1a');
         ctx.fillRect(drawX, drawY, p.w, p.h);
-        ctx.strokeStyle = '#ff4757';
+        ctx.strokeStyle = __rdc('#ff4757');
         ctx.lineWidth = 2;
         ctx.strokeRect(drawX, drawY, p.w, p.h);
       } else if (p.style === 'laser') {
@@ -1620,11 +1620,11 @@
         const alpha = 0.65 + Math.sin(Date.now() * 0.02) * 0.35;
         ctx.fillStyle = `rgba(255, 71, 87, ${alpha})`;
         ctx.fillRect(drawX, drawY, p.w, p.h);
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = __rdc('#ffffff');
         ctx.fillRect(drawX + p.w / 2 - 1.5, drawY, 3, p.h);
 
         // Emitters at top & bottom
-        ctx.fillStyle = '#3a1e22';
+        ctx.fillStyle = __rdc('#3a1e22');
         ctx.fillRect(drawX - 4, drawY - 6, p.w + 8, 6);
         ctx.fillRect(drawX - 4, drawY + p.h, p.w + 8, 6);
       }
@@ -1642,19 +1642,19 @@
       currentLevel.switches.forEach(sw => {
         if (sw.x + 24 < viewLeft || sw.x - 24 > viewRight) return;
         ctx.save();
-        ctx.fillStyle = '#1c221a';
+        ctx.fillStyle = __rdc('#1c221a');
         ctx.fillRect(sw.x - 12, sw.y - 20, 24, 20);
-        ctx.strokeStyle = sw.active ? '#d5fb78' : '#ff4757';
+        ctx.strokeStyle = sw.active ? __rdc('#d5fb78') : __rdc('#ff4757');
         ctx.strokeRect(sw.x - 12, sw.y - 20, 24, 20);
 
         // Switch lever
-        ctx.fillStyle = sw.active ? '#d5fb78' : '#ff4757';
+        ctx.fillStyle = sw.active ? __rdc('#d5fb78') : __rdc('#ff4757');
         ctx.beginPath();
         ctx.arc(sw.x, sw.y - 10, 5, 0, Math.PI * 2);
         ctx.fill();
 
         // Label
-        ctx.fillStyle = '#a0a598';
+        ctx.fillStyle = __rdc('#a0a598');
         ctx.font = '8px monospace';
         ctx.textAlign = 'center';
         ctx.fillText(sw.active ? '[ON]' : '[OFF]', sw.x, sw.y - 24);
@@ -1668,23 +1668,23 @@
         if (tm.x + 30 < viewLeft || tm.x - 30 > viewRight) return;
         ctx.save();
         // Server console terminal body
-        ctx.fillStyle = '#141813';
+        ctx.fillStyle = __rdc('#141813');
         ctx.fillRect(tm.x - 14, tm.y - 34, 28, 34);
-        ctx.strokeStyle = tm.hacked ? '#d5fb78' : '#00e5ff';
+        ctx.strokeStyle = tm.hacked ? __rdc('#d5fb78') : __rdc('#00e5ff');
         ctx.lineWidth = 1.5;
         ctx.strokeRect(tm.x - 14, tm.y - 34, 28, 34);
 
         // Mini CRT Screen
-        ctx.fillStyle = tm.hacked ? '#213318' : '#0e242a';
+        ctx.fillStyle = tm.hacked ? __rdc('#213318') : __rdc('#0e242a');
         ctx.fillRect(tm.x - 10, tm.y - 30, 20, 16);
-        ctx.fillStyle = tm.hacked ? '#d5fb78' : '#00e5ff';
+        ctx.fillStyle = tm.hacked ? __rdc('#d5fb78') : __rdc('#00e5ff');
         ctx.fillRect(tm.x - 8, tm.y - 26, 16, 2);
         ctx.fillRect(tm.x - 8, tm.y - 21, 10, 2);
 
         // Prompt hint when nearby
         const dist = Math.hypot((player.x + player.w / 2) - tm.x, (player.y + player.h / 2) - tm.y);
         if (dist < 54 && !tm.hacked) {
-          ctx.fillStyle = '#00e5ff';
+          ctx.fillStyle = __rdc('#00e5ff');
           ctx.font = '9px monospace';
           ctx.textAlign = 'center';
           ctx.fillText('PRESS [E]', tm.x, tm.y - 42);
@@ -1703,20 +1703,20 @@
       const cp = currentLevel.checkpoint;
       if (cp.x + 20 >= viewLeft && cp.x - 20 <= viewRight) {
         ctx.save();
-        ctx.fillStyle = cp.reached ? '#d5fb78' : '#8e9684';
+        ctx.fillStyle = cp.reached ? __rdc('#d5fb78') : __rdc('#8e9684');
         ctx.fillRect(cp.x - 3, cp.y - 50, 6, 50);
 
         // Antenna beacon
         ctx.beginPath();
         ctx.arc(cp.x, cp.y - 54, 7, 0, Math.PI * 2);
-        ctx.fillStyle = cp.reached ? '#d5fb78' : '#262c22';
+        ctx.fillStyle = cp.reached ? __rdc('#d5fb78') : __rdc('#262c22');
         ctx.fill();
-        ctx.strokeStyle = cp.reached ? '#ffffff' : '#8e9684';
+        ctx.strokeStyle = cp.reached ? __rdc('#ffffff') : __rdc('#8e9684');
         ctx.stroke();
 
         if (cp.reached) {
           // Radiating signal pulse
-          ctx.strokeStyle = 'rgba(213, 251, 120, 0.4)';
+          ctx.strokeStyle = __rdc('rgba(213, 251, 120, 0.4)');
           ctx.beginPath();
           ctx.arc(cp.x, cp.y - 54, 14 + (Date.now() * 0.02 % 10), 0, Math.PI * 2);
           ctx.stroke();
@@ -1733,7 +1733,7 @@
         const pulse = Math.sin(Date.now() * 0.005) * 6;
 
         // Outer containment ring
-        ctx.strokeStyle = '#00e5ff';
+        ctx.strokeStyle = __rdc('#00e5ff');
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(g.x + 24, g.y + 24, 28 + pulse, 0, Math.PI * 2);
@@ -1741,10 +1741,10 @@
 
         // Pulsing Core
         const grad = ctx.createRadialGradient(g.x + 24, g.y + 24, 2, g.x + 24, g.y + 24, 24);
-        grad.addColorStop(0, '#ffffff');
-        grad.addColorStop(0.4, '#d5fb78');
-        grad.addColorStop(0.8, '#00e5ff');
-        grad.addColorStop(1, 'rgba(0, 229, 255, 0)');
+        grad.addColorStop(0, __rdc('#ffffff'));
+        grad.addColorStop(0.4, __rdc('#d5fb78'));
+        grad.addColorStop(0.8, __rdc('#00e5ff'));
+        grad.addColorStop(1, __rdc('rgba(0, 229, 255, 0)'));
 
         ctx.fillStyle = grad;
         ctx.beginPath();
@@ -1752,12 +1752,12 @@
         ctx.fill();
 
         // Core pedestal
-        ctx.fillStyle = '#191f16';
+        ctx.fillStyle = __rdc('#191f16');
         ctx.fillRect(g.x + 10, g.y + 48, 28, 20);
-        ctx.strokeStyle = '#2c3526';
+        ctx.strokeStyle = __rdc('#2c3526');
         ctx.strokeRect(g.x + 10, g.y + 48, 28, 20);
 
-        ctx.fillStyle = '#d5fb78';
+        ctx.fillStyle = __rdc('#d5fb78');
         ctx.font = '10px monospace';
         ctx.textAlign = 'center';
         ctx.fillText('SYSTEM CORE', g.x + 24, g.y - 12);
@@ -1778,7 +1778,7 @@
 
       if (c.type === 'bit') {
         // Lime diamond
-        ctx.fillStyle = '#d5fb78';
+        ctx.fillStyle = __rdc('#d5fb78');
         ctx.beginPath();
         ctx.moveTo(c.x, drawY - 7);
         ctx.lineTo(c.x + 6, drawY);
@@ -1788,23 +1788,23 @@
         ctx.fill();
       } else if (c.type === 'byte') {
         // Cyan cube
-        ctx.fillStyle = '#00e5ff';
+        ctx.fillStyle = __rdc('#00e5ff');
         ctx.fillRect(c.x - 7, drawY - 7, 14, 14);
-        ctx.strokeStyle = '#ffffff';
+        ctx.strokeStyle = __rdc('#ffffff');
         ctx.lineWidth = 1;
         ctx.strokeRect(c.x - 7, drawY - 7, 14, 14);
       } else if (c.type === 'packet') {
         // Yellow network packet
-        ctx.fillStyle = '#f59e0b';
+        ctx.fillStyle = __rdc('#f59e0b');
         ctx.fillRect(c.x - 9, drawY - 6, 18, 12);
-        ctx.strokeStyle = '#ffffff';
+        ctx.strokeStyle = __rdc('#ffffff');
         ctx.strokeRect(c.x - 9, drawY - 6, 18, 12);
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = __rdc('#ffffff');
         ctx.font = '8px monospace';
         ctx.fillText('UDP', c.x - 7, drawY + 3);
       } else if (c.type === 'fragment') {
         // Hexadecimal code fragment
-        ctx.fillStyle = '#c084fc';
+        ctx.fillStyle = __rdc('#c084fc');
         ctx.beginPath();
         for (let i = 0; i < 6; i++) {
           const a = (i * Math.PI) / 3;
@@ -1817,15 +1817,15 @@
         ctx.fill();
       } else if (c.type === 'token') {
         // Special Debug Token (Gold Coin)
-        ctx.fillStyle = '#ffd700';
+        ctx.fillStyle = __rdc('#ffd700');
         ctx.beginPath();
         ctx.arc(c.x, drawY, 11, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = '#ffae00';
+        ctx.strokeStyle = __rdc('#ffae00');
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        ctx.fillStyle = '#0a0c09';
+        ctx.fillStyle = __rdc('#0a0c09');
         ctx.font = 'bold 9px monospace';
         ctx.textAlign = 'center';
         ctx.fillText('C1', c.x, drawY + 3);
@@ -1845,13 +1845,13 @@
 
       if (en.type === 'bug') {
         // BUG-01: Green crawler with legs
-        ctx.fillStyle = '#1c2817';
+        ctx.fillStyle = __rdc('#1c2817');
         ctx.fillRect(en.x, en.y + 4, en.w, en.h - 4);
-        ctx.strokeStyle = '#d5fb78';
+        ctx.strokeStyle = __rdc('#d5fb78');
         ctx.strokeRect(en.x, en.y + 4, en.w, en.h - 4);
 
         // Antennae
-        ctx.strokeStyle = '#d5fb78';
+        ctx.strokeStyle = __rdc('#d5fb78');
         ctx.beginPath();
         ctx.moveTo(en.x + 4, en.y + 4);
         ctx.lineTo(en.x + 1, en.y - 3);
@@ -1860,41 +1860,41 @@
         ctx.stroke();
 
         // Eyes
-        ctx.fillStyle = '#ff4757';
+        ctx.fillStyle = __rdc('#ff4757');
         ctx.fillRect(en.vx > 0 ? en.x + en.w - 6 : en.x + 2, en.y + 7, 4, 3);
       } else if (en.type === 'packet') {
         // PACKET DROP: Red error packet
-        ctx.fillStyle = '#3a1318';
+        ctx.fillStyle = __rdc('#3a1318');
         ctx.fillRect(en.x, en.y, en.w, en.h);
-        ctx.strokeStyle = '#ff4757';
+        ctx.strokeStyle = __rdc('#ff4757');
         ctx.lineWidth = 1.5;
         ctx.strokeRect(en.x, en.y, en.w, en.h);
 
-        ctx.fillStyle = '#ff4757';
+        ctx.fillStyle = __rdc('#ff4757');
         ctx.font = 'bold 9px monospace';
         ctx.textAlign = 'center';
         ctx.fillText('ERR', en.x + en.w / 2, en.y + 16);
       } else if (en.type === 'memleak') {
         // MEM LEAK: Pulsing purple amorphous cluster
         const pulse = Math.sin(Date.now() * 0.008) * 3;
-        ctx.fillStyle = '#2d183d';
+        ctx.fillStyle = __rdc('#2d183d');
         ctx.fillRect(en.x - pulse / 2, en.y - pulse / 2, en.w + pulse, en.h + pulse);
-        ctx.strokeStyle = '#c084fc';
+        ctx.strokeStyle = __rdc('#c084fc');
         ctx.strokeRect(en.x - pulse / 2, en.y - pulse / 2, en.w + pulse, en.h + pulse);
 
-        ctx.fillStyle = '#c084fc';
+        ctx.fillStyle = __rdc('#c084fc');
         ctx.font = '8px monospace';
         ctx.textAlign = 'center';
         ctx.fillText('0xLEAK', en.x + en.w / 2, en.y + 15);
       } else if (en.type === 'drone') {
         // Sentry Drone with cyan scanner cone
-        ctx.fillStyle = '#1b2226';
+        ctx.fillStyle = __rdc('#1b2226');
         ctx.fillRect(en.x, en.y, en.w, en.h);
-        ctx.strokeStyle = '#00e5ff';
+        ctx.strokeStyle = __rdc('#00e5ff');
         ctx.strokeRect(en.x, en.y, en.w, en.h);
 
         // Scanner light cone downwards
-        ctx.fillStyle = 'rgba(0, 229, 255, 0.12)';
+        ctx.fillStyle = __rdc('rgba(0, 229, 255, 0.12)');
         ctx.beginPath();
         ctx.moveTo(en.x + en.w / 2, en.y + en.h);
         ctx.lineTo(en.x - 12, en.y + en.h + 45);
@@ -1904,12 +1904,12 @@
       } else if (en.type === 'null') {
         // NULL PROCESS: Glitch silhouette
         const glitchOffset = en.glitchTimer > 50 ? (Math.random() - 0.5) * 6 : 0;
-        ctx.fillStyle = 'rgba(10, 15, 20, 0.85)';
+        ctx.fillStyle = __rdc('rgba(10, 15, 20, 0.85)');
         ctx.fillRect(en.x + glitchOffset, en.y, en.w, en.h);
-        ctx.strokeStyle = '#00e5ff';
+        ctx.strokeStyle = __rdc('#00e5ff');
         ctx.strokeRect(en.x - glitchOffset, en.y, en.w, en.h);
 
-        ctx.fillStyle = '#00e5ff';
+        ctx.fillStyle = __rdc('#00e5ff');
         ctx.font = '8px monospace';
         ctx.textAlign = 'center';
         ctx.fillText('NULL', en.x + en.w / 2, en.y + 15);
@@ -1936,43 +1936,43 @@
     ctx.scale(dir, 1);
 
     // Dark hoodie/suit body
-    ctx.fillStyle = '#161a15';
+    ctx.fillStyle = __rdc('#161a15');
     ctx.fillRect(-10, -12, 20, 24);
 
     // Reflective safety stripes (lime green)
-    ctx.fillStyle = '#d5fb78';
+    ctx.fillStyle = __rdc('#d5fb78');
     ctx.fillRect(-10, 2, 20, 3);
 
     // Utility backpack with cyan diagnostic antenna
-    ctx.fillStyle = '#262f22';
+    ctx.fillStyle = __rdc('#262f22');
     ctx.fillRect(-15, -10, 6, 18);
-    ctx.strokeStyle = '#00e5ff';
+    ctx.strokeStyle = __rdc('#00e5ff');
     ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.moveTo(-12, -10);
     ctx.lineTo(-12, -20);
     ctx.stroke();
     // Blinking antenna dot
-    ctx.fillStyle = (Date.now() % 400 < 200) ? '#00e5ff' : '#d5fb78';
+    ctx.fillStyle = (Date.now() % 400 < 200) ? __rdc('#00e5ff') : __rdc('#d5fb78');
     ctx.fillRect(-14, -22, 4, 4);
 
     // Head / Helmet
-    ctx.fillStyle = '#20261e';
+    ctx.fillStyle = __rdc('#20261e');
     ctx.fillRect(-9, -23, 18, 13);
 
     // Cyan diagnostic visor (glowing)
-    ctx.fillStyle = '#00e5ff';
+    ctx.fillStyle = __rdc('#00e5ff');
     ctx.fillRect(1, -19, 8, 5);
 
     // Handheld multitester tool in front hand
-    ctx.fillStyle = '#323f2d';
+    ctx.fillStyle = __rdc('#323f2d');
     ctx.fillRect(7, -4, 8, 12);
-    ctx.fillStyle = '#d5fb78';
+    ctx.fillStyle = __rdc('#d5fb78');
     ctx.fillRect(9, -2, 4, 4);
 
     // Animated running legs
     const legOffset = Math.sin(player.runFrame) * 6;
-    ctx.fillStyle = '#0f130e';
+    ctx.fillStyle = __rdc('#0f130e');
     if (!player.grounded) {
       // Jump tuck legs
       ctx.fillRect(-8, 12, 7, 7);
@@ -2003,7 +2003,7 @@
     ctx.textAlign = 'center';
     for (let i = 0; i < floatingTexts.length; i++) {
       const ft = floatingTexts[i];
-      ctx.fillStyle = '#000000';
+      ctx.fillStyle = __rdc('#000000');
       ctx.fillText(ft.text, ft.x + 1, ft.y + 1); // Crisp shadow without expensive shadowBlur
       ctx.fillStyle = ft.color;
       ctx.fillText(ft.text, ft.x, ft.y);
@@ -2015,12 +2015,12 @@
     // Terminal alert banner when active
     if (terminalMessage) {
       ctx.save();
-      ctx.fillStyle = 'rgba(10, 14, 9, 0.92)';
+      ctx.fillStyle = __rdc('rgba(10, 14, 9, 0.92)');
       ctx.fillRect(140, 20, V_WIDTH - 280, 36);
-      ctx.strokeStyle = '#d5fb78';
+      ctx.strokeStyle = __rdc('#d5fb78');
       ctx.strokeRect(140, 20, V_WIDTH - 280, 36);
 
-      ctx.fillStyle = '#d5fb78';
+      ctx.fillStyle = __rdc('#d5fb78');
       ctx.font = '11px monospace';
       ctx.textAlign = 'center';
       ctx.fillText(`> ${terminalMessage}`, V_WIDTH / 2, 42);

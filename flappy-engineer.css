@@ -46,7 +46,7 @@
 .lab-card.lab-featured-card:hover {
   border-color: var(--lime);
   transform: none;
-  box-shadow: 0 12px 36px rgba(213, 251, 120, 0.06);
+  box-shadow: 0 12px 36px rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.06);
 }
 
 [data-theme="light"] .lab-card.lab-featured-card:hover {
@@ -172,8 +172,8 @@
 
 /* ═══════════════════════════════════════════════════════════════════
    LAB 05 // FLAPPY ENGINEER — FULL-SCREEN MODAL & TECHNICAL UI
-   Matches portfolio tokens: --bg:#111310, --panel:#191c17, --line:#2c3028,
-   --text:#f0f1e9, --muted:#a0a598, --lime:#d5fb78, --mono:'IBM Plex Mono'
+   Matches portfolio tokens: --bg:var(--rdn-111310, #111310), --panel:var(--rdn-191c17, #191c17), --line:var(--rdn-2c3028, #2c3028),
+   --text:var(--rdn-f0f1e9, #f0f1e9), --muted:var(--rdn-a0a598, #a0a598), --lime:var(--rdn-d5fb78, #d5fb78), --mono:'IBM Plex Mono'
    ═══════════════════════════════════════════════════════════════════ */
 
 .fe-overlay[hidden],
@@ -182,15 +182,15 @@
 }
 
 .fe-overlay {
-  --fe-bg: #111310;
-  --fe-panel: #191c17;
-  --fe-panel-elevated: #1e221b;
-  --fe-line: #2c3028;
-  --fe-line-bright: #3d4a30;
-  --fe-text: #f0f1e9;
-  --fe-muted: #a0a598;
-  --fe-lime: #d5fb78;
-  --fe-lime-dark: #1c2510;
+  --fe-bg: var(--rdn-111310, #111310);
+  --fe-panel: var(--rdn-191c17, #191c17);
+  --fe-panel-elevated: var(--rdn-1e221b, #1e221b);
+  --fe-line: var(--rdn-2c3028, #2c3028);
+  --fe-line-bright: var(--rdn-3d4a30, #3d4a30);
+  --fe-text: var(--rdn-f0f1e9, #f0f1e9);
+  --fe-muted: var(--rdn-a0a598, #a0a598);
+  --fe-lime: var(--rdn-d5fb78, #d5fb78);
+  --fe-lime-dark: var(--rdn-1c2510, #1c2510);
   --fe-amber: #e2b86b;
   --fe-danger: #ff6b6b;
   position: fixed;
@@ -224,8 +224,8 @@
   z-index: 1;
   background: repeating-linear-gradient(
     0deg,
-    rgba(213, 251, 120, 0.014) 0px,
-    rgba(213, 251, 120, 0.014) 1px,
+    rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.014) 0px,
+    rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.014) 1px,
     transparent 1px,
     transparent 3px
   );
@@ -283,8 +283,8 @@
   gap: 8px;
   padding: 4px 10px;
   border-radius: 30px;
-  background: #192210;
-  border: 1px solid #2a3c1a;
+  background: var(--rdn-192210, #192210);
+  border: 1px solid var(--rdn-2a3c1a, #2a3c1a);
   color: var(--fe-lime);
   font-size: 10px;
   letter-spacing: 0.1em;
@@ -364,7 +364,7 @@
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: #f0f1e9;
+  color: var(--rdn-f0f1e9, #f0f1e9);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -377,8 +377,8 @@
 .fe-exit-top-btn:hover {
   border-color: var(--fe-lime);
   color: var(--fe-lime);
-  background: rgba(213, 251, 120, 0.16);
-  box-shadow: 0 0 12px rgba(213, 251, 120, 0.25);
+  background: rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.16);
+  box-shadow: 0 0 12px rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.25);
   transform: translateY(-1px);
 }
 
@@ -640,8 +640,8 @@
   font-size: 10px;
   letter-spacing: 0.1em;
   color: var(--fe-lime);
-  background: #192210;
-  border: 1px solid #2a3c1a;
+  background: var(--rdn-192210, #192210);
+  border: 1px solid var(--rdn-2a3c1a, #2a3c1a);
   border-radius: 3px;
   padding: 3px 8px;
   align-self: flex-start;
@@ -695,7 +695,7 @@
 .fe-btn-primary:hover {
   background: var(--fe-lime);
   color: var(--fe-lime-dark);
-  box-shadow: 0 6px 20px rgba(213, 251, 120, 0.24);
+  box-shadow: 0 6px 20px rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.24);
 }
 
 /* ─── Footer Bar inside Shell ─── */
@@ -893,7 +893,7 @@
 .sn-dpad-btn:hover {
   border-color: var(--fe-lime);
   color: var(--fe-lime);
-  background: rgba(213, 251, 120, 0.08);
+  background: rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.08);
 }
 
 @media (max-width: 850px), (pointer: coarse) {
@@ -940,7 +940,7 @@
   right: 16px;
   width: 268px;
   background: rgba(20, 23, 18, 0.96);
-  border: 1px solid #3a4232;
+  border: 1px solid var(--rdn-3a4232, #3a4232);
   border-left: 3px solid var(--fe-lime);
   border-radius: 5px;
   padding: 11px 14px;
@@ -992,7 +992,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 5px 10px;
-  background: #1d2219;
+  background: var(--rdn-1d2219, #1d2219);
   border-bottom: 1px solid var(--fe-line);
   font-size: 9px;
   letter-spacing: 0.08em;
@@ -1128,7 +1128,7 @@
   left: 50%;
   transform: translateX(-50%);
   background: rgba(17, 19, 16, 0.88);
-  border: 1px solid rgba(213, 251, 120, 0.28);
+  border: 1px solid rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.28);
   border-radius: 4px;
   padding: 6px 14px;
   font-family: var(--mono);
@@ -1204,8 +1204,8 @@
 
 .mm-level-trans-card {
   width: min(100%, 380px);
-  background: #141712;
-  border: 1px solid rgba(213, 251, 120, 0.28);
+  background: var(--rdn-141712, #141712);
+  border: 1px solid rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.28);
   padding: 28px 24px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.72);
   animation: mm-toast-in 0.2s cubic-bezier(0.22, 1, 0.36, 1);
@@ -1267,7 +1267,7 @@
   position: absolute;
   inset: 0;
   z-index: 45;
-  background: #000000;
+  background: var(--rdn-000000, #000000);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -1297,7 +1297,7 @@
   position: absolute;
   inset: 0;
   z-index: 2;
-  background: #ffffff;
+  background: var(--rdn-ffffff, #ffffff);
   opacity: 0;
   pointer-events: none;
 }
@@ -1327,7 +1327,7 @@
 @keyframes mm-jumpscare-strobe {
   0% {
     opacity: 0.85;
-    background: #ffffff;
+    background: var(--rdn-ffffff, #ffffff);
   }
   35% {
     opacity: 0.38;

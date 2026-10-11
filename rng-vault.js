@@ -18,75 +18,36 @@
   const DEFAULT_TOKENS = 12480;
   const THEORETICAL_RTP = 0.95;
 
-  // 7 Tech / Lab Symbols with weights & payline multipliers
+  // ── "SUGAR SURGE" — scatter-pays tumble machine (6 × 5) ─────────────────
+  // Hand-drawn glossy candy / fruit symbols. 8+ of a kind ANYWHERE pays.
+  const SVG_GLOSS = '<ellipse cx="24" cy="20" rx="11" ry="6" fill="#fff" opacity=".55" transform="rotate(-25 24 20)"/>';
+  const g = (id, a, b) => `<defs><radialGradient id="rt-${id}" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></radialGradient></defs>`;
   const REEL_SYMBOLS = [
-    {
-      id: 'chip',
-      label: 'LOGIC CHIP',
-      weight: 34,
-      payouts: { 3: 1.2, 4: 2.5, 5: 6.0 },
-      color: '#38bdf8',
-      svg: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="15" x2="23" y2="15"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="15" x2="4" y2="15"/></svg>'
-    },
-    {
-      id: 'ram',
-      label: 'RAM STRIP',
-      weight: 26,
-      payouts: { 3: 1.5, 4: 3.5, 5: 9.0 },
-      color: '#a3e635',
-      svg: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#a3e635" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="1"/><line x1="6" y1="18" x2="6" y2="21"/><line x1="10" y1="18" x2="10" y2="21"/><line x1="14" y1="18" x2="14" y2="21"/><line x1="18" y1="18" x2="18" y2="21"/><rect x="5" y="9" width="3" height="4"/><rect x="10.5" y="9" width="3" height="4"/><rect x="16" y="9" width="3" height="4"/></svg>'
-    },
-    {
-      id: 'bios',
-      label: 'BIOS ROM',
-      weight: 18,
-      payouts: { 3: 2.0, 4: 5.0, 5: 14.0 },
-      color: '#fb923c',
-      svg: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#fb923c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/><rect x="2" y="2" width="20" height="20" rx="3"/></svg>'
-    },
-    {
-      id: 'cpu',
-      label: 'QUANTUM CORE',
-      weight: 11,
-      payouts: { 3: 3.0, 4: 8.0, 5: 22.0 },
-      color: '#c084fc',
-      svg: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#c084fc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="3" x2="12" y2="9"/><line x1="12" y1="15" x2="12" y2="21"/><line x1="3" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="21" y2="12"/></svg>'
-    },
-    {
-      id: 'fiber',
-      label: 'OPTIC LASER',
-      weight: 6,
-      payouts: { 3: 5.0, 4: 15.0, 5: 45.0 },
-      color: '#2dd4bf',
-      svg: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#2dd4bf" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>'
-    },
-    {
-      id: 'reactor',
-      label: 'FUSION CELL',
-      weight: 3,
-      payouts: { 3: 10.0, 4: 30.0, 5: 90.0 },
-      color: '#facc15',
-      svg: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#facc15" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12a14.5 14.5 0 0 0 20 0 14.5 14.5 0 0 0-20 0"/></svg>'
-    },
-    {
-      id: 'wild',
-      label: 'VAULT WILD',
-      weight: 2,
-      isWild: true,
-      payouts: { 3: 15.0, 4: 50.0, 5: 180.0 },
-      color: '#f43f5e',
-      svg: '<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#f43f5e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1.5"/></svg>'
-    }
+    { id: 'blue', label: 'BLUE DROP', weight: 20, pays: [0.25, 0.75, 2], color: '#3b82f6',
+      svg: `<svg viewBox="0 0 64 64">${g('blue', '#8fd0ff', '#1546c9')}<rect x="8" y="16" width="48" height="32" rx="16" fill="url(#rt-blue)" transform="rotate(-18 32 32)"/>${SVG_GLOSS}</svg>` },
+    { id: 'green', label: 'GREEN GEM', weight: 19, pays: [0.4, 0.9, 4], color: '#22c55e',
+      svg: `<svg viewBox="0 0 64 64">${g('green', '#a6ffb8', '#0d9440')}<polygon points="32,6 58,25 48,56 16,56 6,25" fill="url(#rt-green)" stroke="#0a6b2f" stroke-width="2" stroke-linejoin="round"/><polygon points="32,16 47,27 41,46 23,46 17,27" fill="#fff" opacity=".18"/>${SVG_GLOSS}</svg>` },
+    { id: 'purple', label: 'BERRY CUBE', weight: 17, pays: [0.5, 1, 5], color: '#d946ef',
+      svg: `<svg viewBox="0 0 64 64">${g('purple', '#ffb3fb', '#b0129f')}<path d="M14 10 Q32 4 50 10 Q60 32 50 54 Q32 60 14 54 Q4 32 14 10Z" fill="url(#rt-purple)"/>${SVG_GLOSS}</svg>` },
+    { id: 'apple', label: 'APPLE', weight: 15, pays: [0.8, 1.2, 8], color: '#ef4444',
+      svg: `<svg viewBox="0 0 64 64">${g('apple', '#ff8a80', '#c1121f')}<path d="M32 18 C20 10 6 16 8 34 C10 50 22 60 32 56 C42 60 54 50 56 34 C58 16 44 10 32 18Z" fill="url(#rt-apple)"/><path d="M32 18 C32 12 34 8 37 5" stroke="#5b3a1a" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M35 12 C42 4 52 6 54 10 C48 14 40 15 35 12Z" fill="#3fbf4f"/>${SVG_GLOSS}</svg>` },
+    { id: 'plum', label: 'PLUM', weight: 13, pays: [1, 1.5, 10], color: '#a855f7',
+      svg: `<svg viewBox="0 0 64 64">${g('plum', '#f0a6ff', '#6d1aa0')}<circle cx="32" cy="35" r="23" fill="url(#rt-plum)"/><path d="M32 13 C30 20 30 30 33 40" stroke="#4a1270" stroke-width="2" fill="none" opacity=".5"/><path d="M32 12 C36 4 46 4 50 8 C44 13 37 14 32 12Z" fill="#3fbf4f"/>${SVG_GLOSS}</svg>` },
+    { id: 'melon', label: 'MELON', weight: 11, pays: [1.5, 2, 12], color: '#16a34a',
+      svg: `<svg viewBox="0 0 64 64">${g('melon', '#8ef08a', '#11722a')}<ellipse cx="32" cy="33" rx="25" ry="20" fill="url(#rt-melon)" transform="rotate(-20 32 33)"/><path d="M14 22 C24 30 30 40 32 52 M24 15 C34 24 40 36 42 50 M36 13 C44 22 50 32 52 44" stroke="#0b5a20" stroke-width="3.2" fill="none" stroke-linecap="round" opacity=".7"/>${SVG_GLOSS}</svg>` },
+    { id: 'grape', label: 'GRAPES', weight: 9, pays: [2, 5, 15], color: '#6366f1',
+      svg: `<svg viewBox="0 0 64 64">${g('grape', '#b3b5ff', '#3216a8')}<g fill="url(#rt-grape)"><circle cx="22" cy="20" r="9"/><circle cx="40" cy="20" r="9"/><circle cx="31" cy="29" r="9"/><circle cx="16" cy="32" r="8"/><circle cx="46" cy="32" r="8"/><circle cx="24" cy="42" r="8"/><circle cx="40" cy="42" r="8"/><circle cx="32" cy="53" r="7"/></g><path d="M31 11 C31 6 34 3 38 2" stroke="#3fbf4f" stroke-width="3" fill="none" stroke-linecap="round"/></svg>` },
+    { id: 'heart', label: 'RED HEART', weight: 6, pays: [10, 25, 50], color: '#f43f5e',
+      svg: `<svg viewBox="0 0 64 64">${g('heart', '#ff9aa9', '#d00c32')}<path d="M32 56 C10 42 4 30 6 20 C8 10 20 6 28 12 C30 14 31 15 32 17 C33 15 34 14 36 12 C44 6 56 10 58 20 C60 30 54 42 32 56Z" fill="url(#rt-heart)" stroke="#9e0a26" stroke-width="2"/>${SVG_GLOSS}</svg>` }
   ];
-
-  // 5 Active Paylines across 5-reels x 3-rows
-  const PAYLINES = [
-    { name: 'MIDDLE ROW', lineClass: 'line-mid', coords: [[0, 1], [1, 1], [2, 1], [3, 1], [4, 1]] },
-    { name: 'TOP ROW', lineClass: 'line-top', coords: [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]] },
-    { name: 'BOTTOM ROW', lineClass: 'line-bot', coords: [[0, 2], [1, 2], [2, 2], [3, 2], [4, 2]] },
-    { name: 'V-SHAPE', lineClass: 'line-diag1', coords: [[0, 0], [1, 1], [2, 2], [3, 1], [4, 0]] },
-    { name: 'INVERTED-V', lineClass: 'line-diag2', coords: [[0, 2], [1, 1], [2, 0], [3, 1], [4, 2]] }
-  ];
+  // Scatter: 4+ anywhere unlocks free spins; also pays on its own
+  const SCATTER = { id: 'lolly', label: 'SCATTER', weight: 3.5, scatter: true, color: '#ff4fa3',
+    svg: `<svg viewBox="0 0 64 64"><rect x="30" y="34" width="5" height="28" rx="2" fill="#f5f5f5" stroke="#d6d6d6"/><circle cx="32" cy="26" r="21" fill="#fff" stroke="#ff4fa3" stroke-width="3"/><path d="M32 26 m0 -3 a3 3 0 1 1 -3 3 a6 6 0 1 1 6 6 a9 9 0 1 1 -9 -9 a12 12 0 1 1 12 12 a15 15 0 1 1 -15 -15" fill="none" stroke="#ff2d78" stroke-width="4" stroke-linecap="round"/><ellipse cx="22" cy="15" rx="7" ry="4" fill="#fff" opacity=".7" transform="rotate(-30 22 15)"/></svg>` };
+  // Multiplier orb: only drops during free spins
+  const ORB = { id: 'orb', label: 'MULTIPLIER', weight: 3, orb: true, color: '#fbbf24' };
+  const ORB_VALUES = [[2, 30], [3, 22], [4, 14], [5, 10], [8, 8], [10, 6], [15, 4], [20, 3], [25, 2], [50, 0.8], [100, 0.3]];
+  const SCATTER_PAYS = { 4: 3, 5: 5, 6: 100 };
+  const GRID_COLS = 6, GRID_ROWS = 5;
 
   // 12 Calibrated Wheel Sectors
   const WHEEL_SECTORS = [
@@ -395,312 +356,333 @@
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // MODE 01: 5-REEL MACHINE ENGINE
+  // MODE 01: SUGAR SURGE — 6×5 SCATTER-PAYS TUMBLE ENGINE
+  // 8+ matching symbols anywhere pay; winners pop, the rest tumble down and
+  // new symbols drop in until nothing more connects. 4+ scatters = 10 free
+  // spins, where multiplier orbs add up and multiply the sequence win.
   // ─────────────────────────────────────────────────────────────────────────
 
-  // Grid is 5 columns x 3 visible rows
-  let reelGridData = [
-    [REEL_SYMBOLS[0], REEL_SYMBOLS[1], REEL_SYMBOLS[2]],
-    [REEL_SYMBOLS[1], REEL_SYMBOLS[2], REEL_SYMBOLS[0]],
-    [REEL_SYMBOLS[2], REEL_SYMBOLS[0], REEL_SYMBOLS[1]],
-    [REEL_SYMBOLS[0], REEL_SYMBOLS[1], REEL_SYMBOLS[2]],
-    [REEL_SYMBOLS[1], REEL_SYMBOLS[2], REEL_SYMBOLS[0]]
-  ];
+  const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let tumbleGrid = [];          // [col][row] → { sym, uid, mult? }
+  let uidSeq = 0;
+  let freeSpins = 0;
+  let freeSpinTotal = 0;        // winnings collected across the whole free-spin round
+  const wait = ms => new Promise(r => setTimeout(r, reduceMotion ? Math.min(ms, 120) : ms));
 
-  function renderReelGrid() {
-    const gridEl = document.getElementById('rng-reels-grid');
-    if (!gridEl) return;
-    gridEl.innerHTML = '';
-
-    for (let c = 0; c < 5; c++) {
-      const colEl = document.createElement('div');
-      colEl.className = 'rng-reel-col';
-      colEl.id = `reel-col-${c}`;
-
-      const stripEl = document.createElement('div');
-      stripEl.className = 'rng-reel-strip';
-      stripEl.id = `reel-strip-${c}`;
-
-      for (let r = 0; r < 3; r++) {
-        const sym = reelGridData[c][r] || REEL_SYMBOLS[0];
-        stripEl.appendChild(createCellElement(sym, c, r));
-      }
-
-      colEl.appendChild(stripEl);
-      gridEl.appendChild(colEl);
-    }
+  function pickOrbValue() {
+    const total = ORB_VALUES.reduce((s, v) => s + v[1], 0);
+    let r = Math.random() * total;
+    for (const [v, w] of ORB_VALUES) { if (r < w) return v; r -= w; }
+    return 2;
   }
-
-  function createCellElement(symbol, col, row) {
-    const cell = document.createElement('div');
-    cell.className = 'rng-cell';
-    cell.id = `cell-${col}-${row}`;
-    cell.dataset.symbol = symbol.id;
-
-    const iconWrap = document.createElement('div');
-    iconWrap.className = 'rng-cell-icon';
-    iconWrap.innerHTML = symbol.svg;
-
-    const label = document.createElement('span');
-    label.className = 'rng-cell-label';
-    label.textContent = symbol.label;
-    label.style.color = symbol.color;
-
-    cell.appendChild(iconWrap);
-    cell.appendChild(label);
+  function makeCell() {
+    const pool = freeSpins > 0 ? [...REEL_SYMBOLS, SCATTER, ORB] : [...REEL_SYMBOLS, SCATTER];
+    const total = pool.reduce((s, x) => s + x.weight, 0);
+    let r = Math.random() * total, sym = pool[0];
+    for (const x of pool) { if (r < x.weight) { sym = x; break; } r -= x.weight; }
+    const cell = { sym, uid: ++uidSeq };
+    if (sym.orb) cell.mult = pickOrbValue();
     return cell;
   }
+  function freshGrid() {
+    tumbleGrid = Array.from({ length: GRID_COLS }, () => Array.from({ length: GRID_ROWS }, makeCell));
+  }
 
-  function spinReels() {
+  function orbSVG(v) {
+    return `<svg viewBox="0 0 64 64"><defs><radialGradient id="rt-orb" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#fff6b0"/><stop offset=".45" stop-color="#ffb02e"/><stop offset="1" stop-color="#e0157a"/></radialGradient></defs>` +
+      `<circle cx="32" cy="32" r="26" fill="url(#rt-orb)" stroke="#fff" stroke-width="3"/><text x="32" y="40" text-anchor="middle" font-family="Big Shoulders Display, Impact, sans-serif" font-weight="900" font-size="${v >= 100 ? 20 : 24}" fill="#3b0a2a">${v}x</text>${SVG_GLOSS}</svg>`;
+  }
+
+  function cellEl(cell) {
+    const el = document.createElement('div');
+    el.className = 'rt-cell' + (cell.sym.scatter ? ' is-scatter' : '') + (cell.sym.orb ? ' is-orb' : '');
+    el.dataset.uid = cell.uid;
+    el.dataset.symbol = cell.sym.id;
+    el.setAttribute('aria-label', cell.sym.orb ? `${cell.mult}x multiplier` : cell.sym.label.toLowerCase());
+    el.innerHTML = cell.sym.orb ? orbSVG(cell.mult) : cell.sym.svg;
+    return el;
+  }
+
+  // Render with FLIP: survivors slide from their old row, new cells fall in from above
+  function renderReelGrid(opts = {}) {
+    const gridEl = document.getElementById('rng-reels-grid');
+    if (!gridEl) return Promise.resolve();
+    if (!tumbleGrid.length) freshGrid();
+    gridEl.classList.add('rt-grid');
+    const prevRow = {};
+    gridEl.querySelectorAll('.rt-cell').forEach(el => { prevRow[el.dataset.uid] = +el.dataset.row; });
+    const sample = gridEl.querySelector('.rt-cell');
+    const cellH = (sample && sample.offsetHeight) || (gridEl.offsetHeight / GRID_ROWS) || 64;
+
+    gridEl.innerHTML = '';
+    const anims = [];
+    for (let c = 0; c < GRID_COLS; c++) {
+      const col = document.createElement('div');
+      col.className = 'rt-col';
+      col.dataset.c = c;
+      const fresh = tumbleGrid[c].filter(x => !(x.uid in prevRow)).length;
+      let k = 0;
+      tumbleGrid[c].forEach((cell, r) => {
+        const el = cellEl(cell);
+        el.dataset.row = r;
+        col.appendChild(el);
+        if (opts.instant || reduceMotion) return;
+        let from;
+        if (opts.dropAll) from = -(GRID_ROWS + 1) * cellH;
+        else if (cell.uid in prevRow) from = (prevRow[cell.uid] - r) * cellH;
+        else from = -(fresh - k++) * cellH - cellH * 0.4;
+        if (from !== 0) {
+          const a = el.animate([{ transform: `translateY(${from}px)` }, { transform: 'translateY(0)' }],
+            { duration: opts.dropAll ? 520 : 420, easing: 'cubic-bezier(.3,1.25,.5,1)', fill: 'backwards',
+              delay: opts.dropAll ? c * 70 + (GRID_ROWS - r) * 25 : 0 });
+          anims.push(a.finished.catch(() => {}));
+        }
+      });
+      gridEl.appendChild(col);
+    }
+    return Promise.all(anims);
+  }
+
+  function findWins() {
+    const counts = {};
+    tumbleGrid.flat().forEach(cell => {
+      if (!cell.sym.scatter && !cell.sym.orb) (counts[cell.sym.id] = counts[cell.sym.id] || []).push(cell);
+    });
+    const wins = [];
+    for (const sym of REEL_SYMBOLS) {
+      const cells = counts[sym.id] || [];
+      if (cells.length >= 8) {
+        const tier = cells.length >= 12 ? 2 : cells.length >= 10 ? 1 : 0;
+        wins.push({ sym, cells, mult: sym.pays[tier] });
+      }
+    }
+    return wins;
+  }
+
+  function setBanner(tagText, tier, msgText, payText, lit) {
+    const tag = document.getElementById('reels-tier-tag');
+    const msg = document.getElementById('reels-result-msg');
+    const pay = document.getElementById('reels-result-payout');
+    if (tag) { tag.className = `rng-tier-tag tier-${tier}`; tag.textContent = tagText; }
+    if (msg) msg.textContent = msgText;
+    if (pay) { pay.textContent = payText; pay.style.color = lit ? 'var(--lime)' : 'var(--muted)'; }
+  }
+
+  function flash(text, sub, host) {
+    const frame = document.querySelector(host || '.rng-reels-frame');
+    if (!frame) return;
+    const f = document.createElement('div');
+    f.className = 'rt-flash';
+    f.innerHTML = `<b>${text}</b>${sub ? `<small>${sub}</small>` : ''}`;
+    frame.appendChild(f);
+    setTimeout(() => f.remove(), reduceMotion ? 900 : 1700);
+  }
+
+  function updateFreeSpinHud() {
+    const btn = document.getElementById('reels-spin-btn');
+    const lbl = btn && btn.querySelector('span:last-child');
+    if (lbl) lbl.textContent = freeSpins > 0 ? `FREE SPIN · ${freeSpins} LEFT` : 'SPIN';
+    const frame = document.querySelector('.rng-reels-frame');
+    if (frame) frame.classList.toggle('rt-free', freeSpins > 0);
+  }
+
+  async function spinReels() {
     if (isSpinning) return;
-    if (state.tokens < currentBet) {
+    const isFree = freeSpins > 0;
+    if (!isFree && state.tokens < currentBet) {
       logTelemetry('[WARN]', 'Insufficient Lab Tokens! Click Recharge in footer to top up.', 'tag-rare');
       return;
     }
-
     isSpinning = true;
     toggleSpinButtons(true);
     Sound.spinWhoosh();
 
-    // Deduct bet
-    state.tokens -= currentBet;
-    state.totalBet += currentBet;
-    state.totalSpins++;
-    state.xp += 10;
+    if (isFree) {
+      freeSpins--;
+    } else {
+      state.tokens -= currentBet;
+      state.totalBet += currentBet;
+      state.totalSpins++;
+      state.xp += 10;
+    }
     updateHUD();
+    updateFreeSpinHud();
+    const anomalyMult = isFree ? 1 : consumeAnomalyMultiplier();
 
-    // Clear active highlights and paylines
-    document.querySelectorAll('.rng-cell.win-highlight').forEach((c) => c.classList.remove('win-highlight'));
-    document.querySelectorAll('.rng-payline-indicator').forEach((p) => p.classList.remove('active'));
+    // clear the board downward, then drop a fresh one
+    const gridEl = document.getElementById('rng-reels-grid');
+    if (gridEl && !reduceMotion) {
+      gridEl.querySelectorAll('.rt-cell').forEach(el => el.animate(
+        [{ transform: 'translateY(0)', opacity: 1 }, { transform: 'translateY(120%)', opacity: 0 }],
+        { duration: 240, delay: (+el.closest('.rt-col').dataset.c || 0) * 30, easing: 'cubic-bezier(.5,0,.75,0)', fill: 'forwards' }));
+      await wait(300);
+    }
+    if (gridEl) gridEl.innerHTML = '';
+    freshGrid();
+    await renderReelGrid({ dropAll: true });
+    Sound.reelStop(2);
 
-    // Anomaly multiplier
-    const anomalyMult = consumeAnomalyMultiplier();
-
-    // Determine target outcomes for each of the 5 reels x 3 rows
-    const targetOutcome = [];
-    for (let c = 0; c < 5; c++) {
-      targetOutcome[c] = [pickRandomReelSymbol(), pickRandomReelSymbol(), pickRandomReelSymbol()];
+    // ── tumble loop
+    let seqMult = 0, tumbles = 0;
+    for (;;) {
+      const wins = findWins();
+      if (!wins.length) break;
+      tumbles++;
+      const stepMult = wins.reduce((s, w) => s + w.mult, 0);
+      seqMult += stepMult;
+      wins.forEach(w => w.cells.forEach(cell => {
+        const el = gridEl.querySelector(`[data-uid="${cell.uid}"]`);
+        if (el) el.classList.add('rt-win');
+      }));
+      if (stepMult >= 5) Sound.winRare(); else Sound.winCommon();
+      setBanner(`TUMBLE ${tumbles}`, getTierFromMult(seqMult), wins.map(w => `${w.cells.length}× ${w.sym.label}`).join(' · '),
+        `+${formatNumber(Math.floor(currentBet * seqMult))} TOKENS`, true);
+      await wait(560);
+      const dead = new Set(wins.flatMap(w => w.cells.map(x => x.uid)));
+      gridEl.querySelectorAll('.rt-cell.rt-win').forEach(el => el.animate(
+        [{ transform: 'scale(1.15)', opacity: 1, filter: 'brightness(1.5)' }, { transform: 'scale(.2) rotate(25deg)', opacity: 0, filter: 'brightness(2)' }],
+        { duration: 260, easing: 'cubic-bezier(.5,0,.75,0)', fill: 'forwards' }));
+      await wait(270);
+      // gravity: survivors keep their order and sink, new cells fill from the top
+      for (let c = 0; c < GRID_COLS; c++) {
+        const keep = tumbleGrid[c].filter(x => !dead.has(x.uid));
+        const add = Array.from({ length: GRID_ROWS - keep.length }, makeCell);
+        tumbleGrid[c] = [...add, ...keep];
+      }
+      await renderReelGrid();
+      await wait(140);
     }
 
-    // Spin animation for each column with staggered stops
-    const stopTimes = [550, 850, 1150, 1450, 1750];
-
-    for (let c = 0; c < 5; c++) {
-      const colEl = document.getElementById(`reel-col-${c}`);
-      const stripEl = document.getElementById(`reel-strip-${c}`);
-      if (!colEl || !stripEl) continue;
-
-      colEl.classList.add('spinning');
-
-      // Populate dummy blur spinning symbols
-      stripEl.innerHTML = '';
-      for (let s = 0; s < 12; s++) {
-        const randSym = REEL_SYMBOLS[Math.floor(Math.random() * REEL_SYMBOLS.length)];
-        stripEl.appendChild(createCellElement(randSym, c, s));
+    // ── orbs (free spins only) multiply the sequence win
+    let orbSum = 0;
+    if (isFree && seqMult > 0) {
+      const orbs = tumbleGrid.flat().filter(x => x.sym.orb);
+      orbSum = orbs.reduce((s, o) => s + o.mult, 0);
+      if (orbSum > 0) {
+        gridEl.querySelectorAll('.rt-cell.is-orb').forEach(el => el.classList.add('rt-win'));
+        flash(`×${orbSum}`, 'multiplier orbs');
+        Sound.winLegendary();
+        await wait(1000);
       }
-
-      // Append final 3 target symbols at the bottom
-      for (let r = 0; r < 3; r++) {
-        stripEl.appendChild(createCellElement(targetOutcome[c][r], c, r));
-      }
-
-      // Animate translation
-      const cellHeight = colEl.offsetHeight / 3;
-      const totalShift = cellHeight * 12;
-      stripEl.style.transition = 'none';
-      stripEl.style.transform = 'translateY(0px)';
-
-      // Trigger scroll
-      setTimeout(() => {
-        stripEl.style.transition = `transform ${stopTimes[c]}ms cubic-bezier(0.2, 0.8, 0.25, 1)`;
-        stripEl.style.transform = `translateY(-${totalShift}px)`;
-      }, 20);
-
-      // Stop handling
-      setTimeout(() => {
-        colEl.classList.remove('spinning');
-        Sound.reelStop(c);
-
-        // Normalize strip to only show final 3 cells with landing bounce
-        stripEl.style.transition = 'none';
-        stripEl.style.transform = 'translateY(0px)';
-        stripEl.innerHTML = '';
-        for (let r = 0; r < 3; r++) {
-          stripEl.appendChild(createCellElement(targetOutcome[c][r], c, r));
-        }
-
-        // Settling bounce effect
-        stripEl.animate(
-          [
-            { transform: 'translateY(-10px)' },
-            { transform: 'translateY(4px)' },
-            { transform: 'translateY(0)' }
-          ],
-          { duration: 220, easing: 'ease-out' }
-        );
-
-        // Once last reel stops, evaluate payouts
-        if (c === 4) {
-          reelGridData = targetOutcome;
-          evaluateReelOutcome(anomalyMult);
-        }
-      }, stopTimes[c]);
-    }
-  }
-
-  function evaluateReelOutcome(anomalyMult) {
-    let totalMultiplier = 0;
-    const winningPaylines = [];
-    const winningCells = new Set();
-
-    // Check each of the 5 paylines
-    PAYLINES.forEach((payline, pIdx) => {
-      const lineSymbols = payline.coords.map(([c, r]) => reelGridData[c][r]);
-
-      // Check for matching symbols starting from reel 0 (left to right)
-      // Account for WILD
-      let matchSymbol = null;
-      let count = 0;
-
-      for (let i = 0; i < 5; i++) {
-        const sym = lineSymbols[i];
-        if (!matchSymbol) {
-          if (!sym.isWild) {
-            matchSymbol = sym;
-            count++;
-          } else {
-            count++;
-          }
-        } else {
-          if (sym.id === matchSymbol.id || sym.isWild) {
-            count++;
-          } else {
-            break;
-          }
-        }
-      }
-
-      // Fallback if all 5 were wild!
-      if (!matchSymbol) matchSymbol = REEL_SYMBOLS.find((s) => s.isWild);
-
-      // Payline qualifies if >= 3 match
-      if (count >= 3 && matchSymbol && matchSymbol.payouts[count]) {
-        const mult = matchSymbol.payouts[count];
-        totalMultiplier += mult;
-        winningPaylines.push({ payline, count, mult, symbol: matchSymbol });
-
-        for (let i = 0; i < count; i++) {
-          const [c, r] = payline.coords[i];
-          winningCells.add(`cell-${c}-${r}`);
-        }
-      }
-    });
-
-    // Apply anomaly multiplier if triggered
-    totalMultiplier *= anomalyMult;
-
-    const payoutTokens = Math.floor(currentBet * totalMultiplier);
-    state.tokens += payoutTokens;
-    state.totalWon += payoutTokens;
-
-    if (totalMultiplier > state.highestMult) {
-      state.highestMult = totalMultiplier;
     }
 
-    const tier = getTierFromMult(totalMultiplier);
+    const totalMult = seqMult * (orbSum || 1) * anomalyMult;
+    let payout = Math.floor(currentBet * totalMult);
+
+    // ── scatters
+    const scatters = tumbleGrid.flat().filter(x => x.sym.scatter).length;
+    let scatterPay = 0;
+    if (scatters >= 4) scatterPay = Math.floor(currentBet * (SCATTER_PAYS[Math.min(scatters, 6)] || 0));
+    payout += scatterPay;
+    if (!isFree && scatters >= 4) {
+      freeSpins += 10;
+      freeSpinTotal = 0;
+      gridEl.querySelectorAll('.rt-cell.is-scatter').forEach(el => el.classList.add('rt-win'));
+      flash('10 FREE SPINS', `${scatters} scatters · multiplier orbs unlocked`);
+      Sound.anomaly();
+      logTelemetry('[SCATTER]', `${scatters} scatters → 10 free spins unlocked.`, 'tag-rare');
+      await wait(1600);
+    } else if (isFree && scatters >= 3) {
+      freeSpins += 5;
+      flash('+5 FREE SPINS', 'retrigger');
+      await wait(1200);
+    }
+
+    state.tokens += payout;
+    state.totalWon += payout;
+    if (isFree) freeSpinTotal += payout;
+    const effMult = payout / currentBet;
+    if (effMult > state.highestMult) state.highestMult = effMult;
+    const tier = getTierFromMult(effMult);
     state.distribution[tier] = (state.distribution[tier] || 0) + 1;
 
-    // Highlights
-    winningCells.forEach((cellId) => {
-      const el = document.getElementById(cellId);
-      if (el) el.classList.add('win-highlight');
-    });
-
-    winningPaylines.forEach(({ payline }) => {
-      const lineEl = document.getElementById(payline.lineClass);
-      if (lineEl) lineEl.classList.add('active');
-    });
-
-    // Sounds & Streaks
-    if (totalMultiplier > 0) {
+    if (payout > 0) {
       state.streak++;
       if (state.streak > state.bestStreak) state.bestStreak = state.streak;
-      state.xp += Math.floor(totalMultiplier * 15);
-
-      if (totalMultiplier >= 15.0) Sound.winLegendary();
-      else if (totalMultiplier >= 3.0) Sound.winRare();
-      else Sound.winCommon();
-    } else {
+      state.xp += Math.floor(effMult * 15);
+      if (effMult >= 50) { flash('MEGA WIN', `${formatNumber(payout)} tokens`); Sound.winLegendary(); await wait(1200); }
+      else if (effMult >= 15) { flash('BIG WIN', `${formatNumber(payout)} tokens`); Sound.winLegendary(); await wait(1000); }
+    } else if (!isFree) {
       state.streak = 0;
     }
 
-    // Update Result Banner
-    const banner = document.getElementById('rng-reels-result');
-    const tag = document.getElementById('reels-tier-tag');
-    const msg = document.getElementById('reels-result-msg');
-    const pay = document.getElementById('reels-result-payout');
+    const parts = [];
+    if (tumbles) parts.push(`${tumbles} tumble${tumbles > 1 ? 's' : ''} · ${seqMult.toFixed(2)}x`);
+    if (orbSum) parts.push(`orbs ×${orbSum}`);
+    if (scatterPay) parts.push(`${scatters} scatters`);
+    if (anomalyMult > 1) parts.push('5X ANOMALY BOOST');
+    setBanner(payout > 0 ? tier.toUpperCase() : (isFree ? 'FREE SPIN' : 'NO WIN'), payout > 0 ? tier : 'common',
+      payout > 0 ? parts.join(' · ') : 'No cluster of 8+. Symbols redistributed.' + (anomalyMult > 1 ? ' (5x boost unused)' : ''),
+      `+${formatNumber(payout)} TOKENS`, payout > 0);
 
-    if (tag) {
-      tag.className = `rng-tier-tag tier-${tier}`;
-      tag.textContent = tier.toUpperCase();
-    }
-
-    if (msg) {
-      if (totalMultiplier > 0) {
-        const countTxt = winningPaylines.length === 1 ? '1 Payline' : `${winningPaylines.length} Paylines`;
-        msg.textContent = `${countTxt} matched! Multiplier: ${totalMultiplier.toFixed(1)}x${anomalyMult > 1 ? ' [5X ANOMALY BOOST!]' : ''}`;
-      } else {
-        msg.textContent = 'Zero resonance match. Entropy redistributed.';
-      }
-    }
-
-    if (pay) {
-      pay.textContent = `${payoutTokens >= 0 ? '+' : ''}${formatNumber(payoutTokens)} TOKENS`;
-      pay.style.color = totalMultiplier > 0 ? 'var(--lime)' : 'var(--muted)';
-    }
-
-    // Telemetry log
-    const logTag = totalMultiplier >= 5.0 ? 'tag-rare' : totalMultiplier > 0 ? 'tag-win' : '';
-    logTelemetry(
-      `[REELS]`,
-      `Bet: ${currentBet} · Win: ${formatNumber(payoutTokens)} (${totalMultiplier.toFixed(1)}x) · Streak: ${state.streak}`,
-      logTag
-    );
+    logTelemetry('[TUMBLE]', `${isFree ? 'Free spin' : 'Bet: ' + currentBet} · Win: ${formatNumber(payout)} (${effMult.toFixed(2)}x) · Tumbles: ${tumbles}`,
+      effMult >= 5 ? 'tag-rare' : payout > 0 ? 'tag-win' : '');
 
     updateHUD();
     saveState();
-    checkTriggerAnomaly();
+    if (!isFree) checkTriggerAnomaly();
 
-    setTimeout(() => {
-      isSpinning = false;
-      toggleSpinButtons(false);
-    }, 400);
+    if (isFree && freeSpins === 0) {
+      await wait(500);
+      flash('FREE SPINS DONE', `${formatNumber(freeSpinTotal)} tokens collected`);
+      logTelemetry('[SCATTER]', `Free spins finished · ${formatNumber(freeSpinTotal)} tokens.`, 'tag-win');
+      await wait(1500);
+    }
+    updateFreeSpinHud();
+
+    await wait(250);
+    isSpinning = false;
+    toggleSpinButtons(false);
+    // free spins play themselves while the overlay is open on this tab
+    const ov = document.getElementById('rng-overlay');
+    if (freeSpins > 0 && activeMode === 'reels' && ov && ov.classList.contains('open')) {
+      setTimeout(() => { if (!isSpinning && freeSpins > 0 && activeMode === 'reels') spinReels(); }, reduceMotion ? 300 : 900);
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // MODE 02: QUANTUM DICE ENGINE
+  // MODE 02: CANDY DICE — real 3D cubes thrown onto a felt tray
   // ─────────────────────────────────────────────────────────────────────────
 
-  let currentDiceValues = [1, 2, 3];
+  let currentDiceValues = [1, 2, 3, 4, 5];
+  const DIE_COLORS = [
+    ['#ff8cc0', '#e8337f', '#fff'], ['#7ff0c8', '#16a874', '#063b29'], ['#ffe27a', '#f0a90c', '#4a2a00'],
+    ['#8fd0ff', '#2f7fe0', '#fff'], ['#d4a6ff', '#8a3fe0', '#fff']
+  ];
+  // which face sits where on the cube, and the cube rotation that brings each value to the front
+  const FACE_ROT = { 1: [0, 0], 2: [0, -90], 3: [-90, 0], 4: [90, 0], 5: [0, 90], 6: [0, 180] };
+  const PIPS = { 1: [5], 2: [1, 9], 3: [1, 5, 9], 4: [1, 3, 7, 9], 5: [1, 3, 5, 7, 9], 6: [1, 3, 4, 6, 7, 9] };
+  const diceRot = [];   // cumulative [x, y] per die so every throw keeps turning forward
+
+  function faceHTML(n) {
+    let pips = '';
+    for (let p = 1; p <= 9; p++) pips += `<i class="${PIPS[n].includes(p) ? 'on' : ''}"></i>`;
+    return `<div class="cd-face f${n}">${pips}</div>`;
+  }
 
   function renderDiceStage() {
     const stage = document.getElementById('rng-dice-stage');
     if (!stage) return;
     stage.innerHTML = '';
-
+    stage.classList.add('cd-tray');
+    stage.dataset.count = diceCount;
     for (let i = 0; i < diceCount; i++) {
+      const v = currentDiceValues[i] || 1;
+      const [a, b, pip] = DIE_COLORS[i % DIE_COLORS.length];
       const die = document.createElement('div');
-      die.className = 'rng-die';
+      die.className = 'cd-die';
       die.id = `die-${i}`;
-      die.dataset.val = currentDiceValues[i] || 1;
-
-      // 9 pips in 3x3 grid
-      for (let p = 1; p <= 9; p++) {
-        const pip = document.createElement('span');
-        pip.className = `rng-pip p-${p}`;
-        die.appendChild(pip);
-      }
-
+      die.dataset.val = v;
+      die.style.setProperty('--d-a', a);
+      die.style.setProperty('--d-b', b);
+      die.style.setProperty('--d-pip', pip);
+      const cube = document.createElement('div');
+      cube.className = 'cd-cube';
+      cube.innerHTML = [1, 2, 3, 4, 5, 6].map(faceHTML).join('');
+      if (!diceRot[i]) diceRot[i] = FACE_ROT[v].slice();
+      cube.style.transform = `rotateX(${diceRot[i][0]}deg) rotateY(${diceRot[i][1]}deg)`;
+      die.appendChild(cube);
+      die.appendChild(Object.assign(document.createElement('span'), { className: 'cd-shadow' }));
       stage.appendChild(die);
     }
   }
@@ -711,136 +693,105 @@
       logTelemetry('[WARN]', 'Insufficient Lab Tokens! Click Recharge in footer to top up.', 'tag-rare');
       return;
     }
-
     isSpinning = true;
     toggleSpinButtons(true);
     Sound.diceRoll();
 
-    // Deduct bet
     state.tokens -= currentBet;
     state.totalBet += currentBet;
     state.totalSpins++;
     state.xp += 10;
     updateHUD();
-
     const anomalyMult = consumeAnomalyMultiplier();
-    const diceEls = [];
 
-    for (let i = 0; i < diceCount; i++) {
+    const stage = document.getElementById('rng-dice-stage');
+    if (stage) stage.querySelectorAll('.cd-die').forEach(d => d.classList.remove('cd-win'));
+    const targetValues = Array.from({ length: diceCount }, () => Math.floor(Math.random() * 6) + 1);
+    let longest = 0;
+
+    targetValues.forEach((v, i) => {
       const die = document.getElementById(`die-${i}`);
-      if (die) {
-        die.classList.add('rolling');
-        diceEls.push(die);
+      const cube = die && die.querySelector('.cd-cube');
+      if (!cube) return;
+      const prev = diceRot[i] || [0, 0];
+      const [fx, fy] = FACE_ROT[v];
+      // always add 2–3 whole turns on each axis, then land on the target face
+      const rx = (Math.floor(prev[0] / 360) + 2 + (Math.random() * 2 | 0)) * 360 + fx;
+      const ry = (Math.floor(prev[1] / 360) + 2 + (Math.random() * 2 | 0)) * 360 + fy;
+      diceRot[i] = [rx, ry];
+      const dur = reduceMotion ? 1 : 950 + i * 160;
+      longest = Math.max(longest, dur);
+      cube.animate(
+        [{ transform: `rotateX(${prev[0]}deg) rotateY(${prev[1]}deg)` }, { transform: `rotateX(${rx}deg) rotateY(${ry}deg)` }],
+        { duration: dur, easing: 'cubic-bezier(.2,.75,.25,1)', fill: 'forwards' });
+      cube.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+      if (!reduceMotion) {
+        const drift = (Math.random() * 2 - 1) * 26;
+        die.animate([
+          { transform: `translate(${-drift}px, -150px) scale(1.15)` },
+          { transform: `translate(${drift * 0.3}px, 0) scale(1)`, offset: 0.55 },
+          { transform: `translate(${drift * 0.15}px, -26px) scale(1.04)`, offset: 0.72 },
+          { transform: 'translate(0, 0) scale(1)', offset: 0.88 },
+          { transform: 'translate(0, -6px)', offset: 0.94 },
+          { transform: 'translate(0, 0)' }
+        ], { duration: dur, easing: 'cubic-bezier(.33,0,.4,1)' });
+        setTimeout(() => Sound.tick(), dur * 0.55);
+        setTimeout(() => Sound.tick(), dur * 0.88);
       }
-    }
-
-    // Random roll cycle
-    const targetValues = [];
-    for (let i = 0; i < diceCount; i++) {
-      targetValues.push(Math.floor(Math.random() * 6) + 1);
-    }
-
-    // Settle dice sequentially
-    diceEls.forEach((die, idx) => {
-      setTimeout(() => {
-        die.classList.remove('rolling');
-        die.dataset.val = targetValues[idx];
-        Sound.tick();
-
-        if (idx === diceCount - 1) {
-          currentDiceValues = targetValues;
-          evaluateDiceOutcome(anomalyMult);
-        }
-      }, 600 + idx * 200);
+      die.dataset.val = v;
     });
+
+    setTimeout(() => {
+      currentDiceValues = targetValues;
+      evaluateDiceOutcome(anomalyMult);
+    }, longest + 60);
   }
 
   function evaluateDiceOutcome(anomalyMult) {
-    const vals = [...currentDiceValues];
+    const vals = currentDiceValues.slice(0, diceCount);
     const counts = {};
     vals.forEach((v) => { counts[v] = (counts[v] || 0) + 1; });
     const countArr = Object.values(counts).sort((a, b) => b - a);
+    const topFace = +Object.keys(counts).sort((a, b) => counts[b] - counts[a] || b - a)[0];
 
     let mult = 0;
     let desc = '';
+    let winFaces = [];          // which dice light up
 
     if (diceCount === 3) {
-      // 3 Dice Evaluation
+      const sorted = [...vals].sort((a, b) => a - b).join('');
       if (countArr[0] === 3) {
-        if (vals[0] === 6) {
-          mult = 30.0;
-          desc = 'TRIPLE 6s! MAXIMUM QUANTUM TRIAD';
-        } else {
-          mult = 12.0;
-          desc = `TRIPLE ${vals[0]}s! QUANTUM TRIAD`;
-        }
+        mult = vals[0] === 6 ? 30.0 : 12.0;
+        desc = vals[0] === 6 ? 'TRIPLE 6s' : `TRIPLE ${vals[0]}s`;
+        winFaces = [vals[0]];
       } else if (countArr[0] === 2) {
-        mult = 2.0;
-        desc = 'MATCH! DUAL HARMONIC PAIR';
+        mult = 2.0; desc = `PAIR OF ${topFace}s`; winFaces = [topFace];
+      } else if (['123', '234', '345', '456'].includes(sorted)) {
+        mult = 6.0; desc = 'STRAIGHT'; winFaces = vals;
       } else {
-        // Check straight
-        const sorted = [...vals].sort();
-        if (
-          (sorted[0] === 1 && sorted[1] === 2 && sorted[2] === 3) ||
-          (sorted[0] === 2 && sorted[1] === 3 && sorted[2] === 4) ||
-          (sorted[0] === 3 && sorted[1] === 4 && sorted[2] === 5) ||
-          (sorted[0] === 4 && sorted[1] === 5 && sorted[2] === 6)
-        ) {
-          mult = 6.0;
-          desc = 'STRAIGHT! SEQUENTIAL FLUX';
-        } else {
-          const sum = vals.reduce((a, b) => a + b, 0);
-          if (sum >= 15) {
-            mult = 1.2;
-            desc = `HIGH SUM ENERGY (${sum})`;
-          } else {
-            mult = 0;
-            desc = `NO HARMONIC COMBO (SUM ${sum})`;
-          }
-        }
+        const sum = vals.reduce((a, b) => a + b, 0);
+        if (sum >= 15) { mult = 1.2; desc = `HIGH ROLL · ${sum}`; winFaces = vals; }
+        else { mult = 0; desc = `NO COMBO · SUM ${sum}`; }
       }
     } else {
-      // 5 Dice Evaluation
-      if (countArr[0] === 5) {
-        mult = 50.0;
-        desc = `PENTAGON 5-OF-A-KIND! PERFECT ROLL`;
-      } else if (countArr[0] === 4) {
-        mult = 15.0;
-        desc = 'FOUR OF A KIND! QUAD MATRIX';
-      } else if (countArr[0] === 3 && countArr[1] === 2) {
-        mult = 10.0;
-        desc = 'FULL HOUSE RESONANCE';
-      } else if (countArr[0] === 3) {
-        mult = 4.0;
-        desc = 'THREE OF A KIND';
-      } else if (countArr[0] === 2 && countArr[1] === 2) {
-        mult = 2.5;
-        desc = 'TWO PAIR STABILIZED';
-      } else if (countArr[0] === 2) {
-        mult = 1.2;
-        desc = 'SINGLE PAIR';
-      } else {
-        const sorted = [...vals].sort().join('');
-        if (sorted === '12345' || sorted === '23456') {
-          mult = 12.0;
-          desc = 'LARGE STRAIGHT (5-SEQUENCE)';
-        } else {
-          mult = 0;
-          desc = 'HIGH DISORDER BUST';
-        }
+      const sorted = [...vals].sort((a, b) => a - b).join('');
+      if (countArr[0] === 5) { mult = 50.0; desc = 'FIVE OF A KIND'; winFaces = [vals[0]]; }
+      else if (countArr[0] === 4) { mult = 15.0; desc = 'FOUR OF A KIND'; winFaces = [topFace]; }
+      else if (countArr[0] === 3 && countArr[1] === 2) { mult = 10.0; desc = 'FULL HOUSE'; winFaces = vals; }
+      else if (countArr[0] === 3) { mult = 4.0; desc = 'THREE OF A KIND'; winFaces = [topFace]; }
+      else if (countArr[0] === 2 && countArr[1] === 2) {
+        mult = 2.5; desc = 'TWO PAIR'; winFaces = Object.keys(counts).filter(k => counts[k] === 2).map(Number);
       }
+      else if (countArr[0] === 2) { mult = 1.2; desc = `PAIR OF ${topFace}s`; winFaces = [topFace]; }
+      else if (sorted === '12345' || sorted === '23456') { mult = 12.0; desc = 'LARGE STRAIGHT'; winFaces = vals; }
+      else { mult = 0; desc = 'NO COMBO'; }
     }
 
     mult *= anomalyMult;
-
     const payoutTokens = Math.floor(currentBet * mult);
     state.tokens += payoutTokens;
     state.totalWon += payoutTokens;
-
-    if (mult > state.highestMult) {
-      state.highestMult = mult;
-    }
-
+    if (mult > state.highestMult) state.highestMult = mult;
     const tier = getTierFromMult(mult);
     state.distribution[tier] = (state.distribution[tier] || 0) + 1;
 
@@ -848,96 +799,102 @@
       state.streak++;
       if (state.streak > state.bestStreak) state.bestStreak = state.streak;
       state.xp += Math.floor(mult * 15);
-      if (mult >= 10.0) Sound.winLegendary();
-      else if (mult >= 3.0) Sound.winRare();
-      else Sound.winCommon();
+      if (mult >= 10.0) Sound.winLegendary(); else if (mult >= 3.0) Sound.winRare(); else Sound.winCommon();
+      vals.forEach((v, i) => { if (winFaces.includes(v)) { const d = document.getElementById(`die-${i}`); if (d) d.classList.add('cd-win'); } });
+      if (mult >= 4) flash(desc, `${mult.toFixed(1)}x · +${formatNumber(payoutTokens)} tokens`, '#rng-dice-stage');
     } else {
       state.streak = 0;
     }
 
-    // Update Result Banner
     const tag = document.getElementById('dice-tier-tag');
     const msg = document.getElementById('dice-result-msg');
     const pay = document.getElementById('dice-result-payout');
-
-    if (tag) {
-      tag.className = `rng-tier-tag tier-${tier}`;
-      tag.textContent = tier.toUpperCase();
-    }
-    if (msg) msg.textContent = `${desc}${anomalyMult > 1 ? ' [5X BOOST!]' : ''} (${mult.toFixed(1)}x)`;
+    if (tag) { tag.className = `rng-tier-tag tier-${tier}`; tag.textContent = mult > 0 ? tier.toUpperCase() : 'NO WIN'; }
+    if (msg) msg.textContent = `${desc}${anomalyMult > 1 ? ' · 5X BOOST' : ''} · ${mult.toFixed(1)}x`;
     if (pay) {
-      pay.textContent = `${payoutTokens >= 0 ? '+' : ''}${formatNumber(payoutTokens)} TOKENS`;
+      pay.textContent = `+${formatNumber(payoutTokens)} TOKENS`;
       pay.style.color = mult > 0 ? 'var(--lime)' : 'var(--muted)';
     }
-
-    logTelemetry(
-      `[DICE]`,
-      `[${vals.join('-')}] · ${desc} · Payout: +${formatNumber(payoutTokens)} (${mult.toFixed(1)}x)`,
-      mult >= 5.0 ? 'tag-rare' : mult > 0 ? 'tag-win' : ''
-    );
+    logTelemetry('[DICE]', `[${vals.join('-')}] · ${desc} · +${formatNumber(payoutTokens)} (${mult.toFixed(1)}x)`,
+      mult >= 5.0 ? 'tag-rare' : mult > 0 ? 'tag-win' : '');
 
     updateHUD();
     saveState();
     checkTriggerAnomaly();
-
-    setTimeout(() => {
-      isSpinning = false;
-      toggleSpinButtons(false);
-    }, 300);
+    setTimeout(() => { isSpinning = false; toggleSpinButtons(false); }, 300);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // MODE 03: CALIBRATED RNG WHEEL
+  // MODE 03: PRIZE WHEEL — candy slices, gold rim, chasing bulbs
   // ─────────────────────────────────────────────────────────────────────────
+
+  const WHEEL_FILLS = ['#ff4f9a', '#ffd23f', '#3ee0a4', '#4fb3ff', '#b06bff', '#ff8a3d'];
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const svgEl = (tag, attrs) => { const n = document.createElementNS(SVGNS, tag); for (const k in attrs) n.setAttribute(k, attrs[k]); return n; };
 
   function buildWheelSVG() {
     const svg = document.getElementById('rng-wheel-svg');
     if (!svg) return;
     svg.innerHTML = '';
+    svg.setAttribute('viewBox', '0 0 300 300');
+    const C = 150, R = 140, n = WHEEL_SECTORS.length, slice = (Math.PI * 2) / n;
 
-    const center = 150;
-    const radius = 146;
-    const totalSlices = WHEEL_SECTORS.length;
-    const sliceAngle = (Math.PI * 2) / totalSlices;
+    const defs = svgEl('defs', {});
+    defs.innerHTML = `<radialGradient id="wl-gold" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#fff3b0"/><stop offset=".55" stop-color="#f6b723"/><stop offset="1" stop-color="#b8740a"/></radialGradient>
+      <radialGradient id="wl-shine" cx="50%" cy="50%" r="50%"><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></radialGradient>`;
+    svg.appendChild(defs);
 
+    let colorIdx = 0;
     WHEEL_SECTORS.forEach((sec, idx) => {
-      const startAngle = idx * sliceAngle - Math.PI / 2;
-      const endAngle = startAngle + sliceAngle;
+      const a0 = idx * slice - Math.PI / 2, a1 = a0 + slice;
+      const x1 = C + R * Math.cos(a0), y1 = C + R * Math.sin(a0);
+      const x2 = C + R * Math.cos(a1), y2 = C + R * Math.sin(a1);
+      const bust = sec.mult === 0, gold = sec.tier === 'legendary';
+      const fill = bust ? '#2a2233' : gold ? 'url(#wl-gold)' : WHEEL_FILLS[colorIdx++ % WHEEL_FILLS.length];
+      svg.appendChild(svgEl('path', { d: `M${C} ${C} L${x1} ${y1} A${R} ${R} 0 0 1 ${x2} ${y2}Z`, fill, stroke: '#fff', 'stroke-width': 2, class: 'wl-slice', id: `wl-s-${idx}` }));
 
-      const x1 = center + radius * Math.cos(startAngle);
-      const y1 = center + radius * Math.sin(startAngle);
-      const x2 = center + radius * Math.cos(endAngle);
-      const y2 = center + radius * Math.sin(endAngle);
-
-      const pathData = `M ${center} ${center} L ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2} Z`;
-
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path.setAttribute('d', pathData);
-      path.setAttribute('fill', sec.color);
-      path.setAttribute('stroke', '#283222');
-      path.setAttribute('stroke-width', '1.5');
-      svg.appendChild(path);
-
-      // Label text
-      const midAngle = startAngle + sliceAngle / 2;
-      const textRadius = radius * 0.72;
-      const tx = center + textRadius * Math.cos(midAngle);
-      const ty = center + textRadius * Math.sin(midAngle);
-      const deg = (midAngle * 180) / Math.PI + 90;
-
-      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      text.setAttribute('x', tx);
-      text.setAttribute('y', ty);
-      text.setAttribute('fill', sec.textColor);
-      text.setAttribute('font-family', 'IBM Plex Mono, monospace');
-      text.setAttribute('font-size', '10.5');
-      text.setAttribute('font-weight', '700');
-      text.setAttribute('text-anchor', 'middle');
-      text.setAttribute('dominant-baseline', 'central');
-      text.setAttribute('transform', `rotate(${deg}, ${tx}, ${ty})`);
-      text.textContent = sec.label;
-      svg.appendChild(text);
+      const mid = a0 + slice / 2, tr = R * 0.66;
+      const tx = C + tr * Math.cos(mid), ty = C + tr * Math.sin(mid);
+      const deg = (mid * 180) / Math.PI;      // read outward along the radius
+      const t = svgEl('text', {
+        x: tx, y: ty, 'text-anchor': 'middle', 'dominant-baseline': 'central',
+        transform: `rotate(${deg} ${tx} ${ty})`, class: 'wl-label',
+        fill: bust ? '#ff6b86' : '#2b0a1f', 'font-size': bust ? 15 : sec.label.length > 4 ? 19 : 23
+      });
+      t.textContent = bust ? (sec.label.includes('BREACH') ? 'BREACH' : 'BUST') : sec.label.replace('.0x', 'x');
+      svg.appendChild(t);
     });
+    svg.appendChild(svgEl('circle', { cx: C, cy: C, r: R, fill: 'url(#wl-shine)', 'pointer-events': 'none' }));
+
+    // static rim with chasing bulbs (does not rotate with the disc)
+    const assembly = svg.closest('.rng-wheel-assembly');
+    if (assembly && !assembly.querySelector('.wl-rim')) {
+      const rim = svgEl('svg', { viewBox: '0 0 300 300', class: 'wl-rim', 'aria-hidden': 'true' });
+      rim.appendChild(svgEl('circle', { cx: 150, cy: 150, r: 146, fill: 'none', stroke: 'url(#wl-gold)', 'stroke-width': 10 }));
+      for (let i = 0; i < 24; i++) {
+        const a = (i / 24) * Math.PI * 2;
+        rim.appendChild(svgEl('circle', { cx: 150 + 146 * Math.cos(a), cy: 150 + 146 * Math.sin(a), r: 3.6, class: `wl-bulb ${i % 2 ? 'b' : 'a'}` }));
+      }
+      assembly.appendChild(rim);
+      const hub = assembly.querySelector('.rng-wheel-hub');
+      if (hub) {
+        hub.textContent = 'SPIN';
+        hub.setAttribute('role', 'button');
+        hub.setAttribute('tabindex', '0');
+        hub.setAttribute('aria-label', 'Spin the wheel');
+        hub.addEventListener('click', () => spinWheel());
+        hub.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); spinWheel(); } });
+      }
+    }
+  }
+
+  function readRotation(el) {
+    const m = getComputedStyle(el).transform;
+    if (!m || m === 'none') return 0;
+    const v = m.match(/matrix\(([^)]+)\)/);
+    if (!v) return 0;
+    const [a, b] = v[1].split(',').map(Number);
+    return (Math.atan2(b, a) * 180) / Math.PI;
   }
 
   function spinWheel() {
@@ -946,71 +903,70 @@
       logTelemetry('[WARN]', 'Insufficient Lab Tokens! Click Recharge in footer to top up.', 'tag-rare');
       return;
     }
-
+    const disc = document.getElementById('rng-wheel-disc');
+    if (!disc) return;
     isSpinning = true;
     toggleSpinButtons(true);
     Sound.spinWhoosh();
 
-    // Deduct bet
     state.tokens -= currentBet;
     state.totalBet += currentBet;
     state.totalSpins++;
     state.xp += 10;
     updateHUD();
-
     const anomalyMult = consumeAnomalyMultiplier();
-    const disc = document.getElementById('rng-wheel-disc');
     const pointer = document.getElementById('rng-wheel-pointer');
-    if (!disc) return;
+    const assembly = disc.closest('.rng-wheel-assembly');
+    document.querySelectorAll('.wl-slice.wl-hit').forEach(s => s.classList.remove('wl-hit'));
+    if (assembly) assembly.classList.add('wl-spinning');
 
-    // Pick target sector
     const targetIdx = Math.floor(Math.random() * WHEEL_SECTORS.length);
     const sliceDeg = 360 / WHEEL_SECTORS.length;
-
-    // Target stop: Pointer is at top (0 deg). Segment center aligned with top pointer.
-    const targetOffset = targetIdx * sliceDeg + sliceDeg / 2;
+    // land somewhere inside the slice, not dead centre, so it feels physical
+    const jitter = (Math.random() - 0.5) * sliceDeg * 0.7;
+    const targetOffset = targetIdx * sliceDeg + sliceDeg / 2 + jitter;
     const fullSpins = 360 * (5 + Math.floor(Math.random() * 3));
-    const targetRotation = wheelAngle + fullSpins + (360 - (targetOffset % 360));
+    const base = wheelAngle - (wheelAngle % 360);
+    const targetRotation = base + fullSpins + (360 - targetOffset);
+    const DUR = reduceMotion ? 300 : 5200;
 
-    disc.style.transition = 'transform 3.8s cubic-bezier(0.12, 0.9, 0.22, 1)';
+    disc.style.transition = `transform ${DUR}ms cubic-bezier(0.12, 0.8, 0.12, 1)`;
     disc.style.transform = `rotate(${targetRotation}deg)`;
 
-    // Audio ticks during deceleration
-    let tickCount = 0;
-    const totalTicks = 24;
-    const tickInterval = setInterval(() => {
-      tickCount++;
-      Sound.tick();
-      if (pointer) {
-        pointer.style.transform = 'translateX(-50%) rotate(-12deg)';
-        setTimeout(() => {
-          if (pointer) pointer.style.transform = 'translateX(-50%) rotate(0deg)';
-        }, 50);
+    // tick + flap the pointer every time a slice boundary passes under it
+    let lastSlice = null, running = true;
+    const watch = () => {
+      if (!running) return;
+      const ang = ((readRotation(disc) % 360) + 360) % 360;
+      const s = Math.floor(((360 - ang) % 360) / sliceDeg);
+      if (lastSlice !== null && s !== lastSlice) {
+        Sound.tick();
+        if (pointer && !reduceMotion) pointer.animate(
+          [{ transform: 'translateX(-50%) rotate(0)' }, { transform: 'translateX(-50%) rotate(-22deg)' }, { transform: 'translateX(-50%) rotate(0)' }],
+          { duration: 120, easing: 'ease-out' });
       }
-      if (tickCount >= totalTicks) {
-        clearInterval(tickInterval);
-      }
-    }, 150);
+      lastSlice = s;
+      requestAnimationFrame(watch);
+    };
+    requestAnimationFrame(watch);
 
     setTimeout(() => {
-      clearInterval(tickInterval);
-      wheelAngle = targetRotation % 360;
+      running = false;
+      wheelAngle = targetRotation;
+      if (assembly) assembly.classList.remove('wl-spinning');
+      const hit = document.getElementById(`wl-s-${targetIdx}`);
+      if (hit) hit.classList.add('wl-hit');
       evaluateWheelOutcome(targetIdx, anomalyMult);
-    }, 3900);
+    }, DUR + 80);
   }
 
   function evaluateWheelOutcome(targetIdx, anomalyMult) {
     const sec = WHEEL_SECTORS[targetIdx];
     const mult = sec.mult * anomalyMult;
     const payoutTokens = Math.floor(currentBet * mult);
-
     state.tokens += payoutTokens;
     state.totalWon += payoutTokens;
-
-    if (mult > state.highestMult) {
-      state.highestMult = mult;
-    }
-
+    if (mult > state.highestMult) state.highestMult = mult;
     const tier = getTierFromMult(mult);
     state.distribution[tier] = (state.distribution[tier] || 0) + 1;
 
@@ -1018,9 +974,8 @@
       state.streak++;
       if (state.streak > state.bestStreak) state.bestStreak = state.streak;
       state.xp += Math.floor(mult * 15);
-      if (mult >= 10.0) Sound.winLegendary();
-      else if (mult >= 3.0) Sound.winRare();
-      else Sound.winCommon();
+      if (mult >= 10.0) Sound.winLegendary(); else if (mult >= 3.0) Sound.winRare(); else Sound.winCommon();
+      if (mult >= 5) flash(`${sec.label.replace('.0x', 'x')}!`, `+${formatNumber(payoutTokens)} tokens`, '.rng-wheel-assembly');
     } else {
       state.streak = 0;
     }
@@ -1028,31 +983,21 @@
     const tag = document.getElementById('wheel-tier-tag');
     const msg = document.getElementById('wheel-result-msg');
     const pay = document.getElementById('wheel-result-payout');
-
-    if (tag) {
-      tag.className = `rng-tier-tag tier-${tier}`;
-      tag.textContent = tier.toUpperCase();
-    }
-    if (msg) msg.textContent = `Wheel locked sector: ${sec.label}${anomalyMult > 1 ? ' [5X BOOST!]' : ''} (${mult.toFixed(1)}x)`;
+    if (tag) { tag.className = `rng-tier-tag tier-${tier}`; tag.textContent = mult > 0 ? tier.toUpperCase() : 'NO WIN'; }
+    if (msg) msg.textContent = mult > 0
+      ? `Landed on ${sec.label.replace('.0x', 'x')}${anomalyMult > 1 ? ' · 5X BOOST' : ''} · ${mult.toFixed(1)}x`
+      : `Landed on ${sec.label.includes('BREACH') ? 'BREACH' : 'BUST'} · no payout`;
     if (pay) {
-      pay.textContent = `${payoutTokens >= 0 ? '+' : ''}${formatNumber(payoutTokens)} TOKENS`;
+      pay.textContent = `+${formatNumber(payoutTokens)} TOKENS`;
       pay.style.color = mult > 0 ? 'var(--lime)' : 'var(--muted)';
     }
-
-    logTelemetry(
-      `[WHEEL]`,
-      `Sector: ${sec.label} · Payout: +${formatNumber(payoutTokens)} (${mult.toFixed(1)}x) · Multiplier: ${mult.toFixed(1)}x`,
-      mult >= 5.0 ? 'tag-rare' : mult > 0 ? 'tag-win' : ''
-    );
+    logTelemetry('[WHEEL]', `Sector: ${sec.label} · +${formatNumber(payoutTokens)} (${mult.toFixed(1)}x)`,
+      mult >= 5.0 ? 'tag-rare' : mult > 0 ? 'tag-win' : '');
 
     updateHUD();
     saveState();
     checkTriggerAnomaly();
-
-    setTimeout(() => {
-      isSpinning = false;
-      toggleSpinButtons(false);
-    }, 200);
+    setTimeout(() => { isSpinning = false; toggleSpinButtons(false); }, 200);
   }
 
   // ─────────────────────────────────────────────────────────────────────────

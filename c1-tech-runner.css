@@ -4,14 +4,14 @@
    ═══════════════════════════════════════════════════════════════════ */
 
 :root {
-  --tr-bg: #0a0c09;
-  --tr-panel: #131612;
-  --tr-panel-sub: #1a1e18;
-  --tr-line: #262c22;
-  --tr-line-light: #384232;
-  --tr-text: #f0f3eb;
-  --tr-muted: #8e9684;
-  --tr-lime: #d5fb78;
+  --tr-bg: var(--rdn-0a0c09, #0a0c09);
+  --tr-panel: var(--rdn-131612, #131612);
+  --tr-panel-sub: var(--rdn-1a1e18, #1a1e18);
+  --tr-line: var(--rdn-262c22, #262c22);
+  --tr-line-light: var(--rdn-384232, #384232);
+  --tr-text: var(--rdn-f0f3eb, #f0f3eb);
+  --tr-muted: var(--rdn-8e9684, #8e9684);
+  --tr-lime: var(--rdn-d5fb78, #d5fb78);
   --tr-cyan: #00e5ff;
   --tr-amber: #f59e0b;
   --tr-red: #ff4757;
@@ -89,7 +89,7 @@
 
 .tr-audio-btn:hover,
 .tr-level-select-btn:hover {
-  background: rgba(213, 251, 120, 0.1);
+  background: rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.1);
   border-color: var(--tr-lime);
   color: var(--tr-lime);
 }
@@ -105,7 +105,7 @@
   width: 100%;
   height: 100%;
   min-height: 480px;
-  background: #080a07;
+  background: var(--rdn-080a07, #080a07);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -119,7 +119,7 @@
   object-fit: contain;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  background: #080a07;
+  background: var(--rdn-080a07, #080a07);
 }
 
 /* ─── Screens & Overlays inside Stage ─── */
@@ -228,7 +228,7 @@
 .tr-boot-fill {
   height: 100%;
   width: 87%;
-  background: linear-gradient(90deg, #2a401c, var(--tr-lime));
+  background: linear-gradient(90deg, var(--rdn-2a401c, #2a401c), var(--tr-lime));
   transition: width 0.4s ease;
 }
 
@@ -315,7 +315,7 @@
 
 .tr-level-card:hover:not(.locked) {
   border-color: var(--tr-lime);
-  background: rgba(213, 251, 120, 0.06);
+  background: rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.06);
   transform: translateY(-2px);
 }
 
@@ -326,7 +326,7 @@
 }
 
 .tr-level-card.completed {
-  border-color: rgba(213, 251, 120, 0.35);
+  border-color: rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.35);
 }
 
 .tr-lvl-info {
@@ -374,8 +374,8 @@
 }
 
 .tr-lvl-status.st-done {
-  background: rgba(213, 251, 120, 0.12);
-  border: 1px solid rgba(213, 251, 120, 0.35);
+  background: rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.12);
+  border: 1px solid rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.35);
   color: var(--tr-lime);
 }
 
@@ -434,7 +434,7 @@
   height: 58px;
   border-radius: 8px;
   background: rgba(19, 22, 18, 0.78);
-  border: 1.5px solid rgba(213, 251, 120, 0.3);
+  border: 1.5px solid rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.3);
   color: var(--tr-lime);
   font-family: var(--tr-mono);
   font-size: 18px;
@@ -454,7 +454,7 @@
 .tr-touch-btn:active,
 .tr-touch-btn.active {
   transform: scale(0.92);
-  background: rgba(213, 251, 120, 0.25);
+  background: rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.25);
   border-color: var(--tr-lime);
   color: #fff;
 }
@@ -464,7 +464,7 @@
   height: 60px;
   font-size: 13px;
   letter-spacing: 0.06em;
-  background: rgba(213, 251, 120, 0.15);
+  background: rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.15);
   border-color: var(--tr-lime);
 }
 
@@ -499,7 +499,7 @@
 .tr-rotate-box {
   background: var(--tr-panel);
   border: 1px solid var(--tr-lime);
-  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.9), 0 0 24px rgba(213, 251, 120, 0.15);
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.9), 0 0 24px rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.15);
   border-radius: 6px;
   padding: 22px 20px;
   max-width: 380px;
@@ -515,8 +515,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: rgba(213, 251, 120, 0.1);
-  border: 1px solid rgba(213, 251, 120, 0.35);
+  background: rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.1);
+  border: 1px solid rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.35);
   color: var(--tr-lime);
   animation: tr-rotate-wiggle 2s ease-in-out infinite;
 }
@@ -579,7 +579,7 @@
 
 .tr-rotate-btn:hover,
 .tr-rotate-btn.active {
-  background: rgba(213, 251, 120, 0.12);
+  background: rgba(var(--rdn-lime-rgb, 213, 251, 120), 0.12);
   border-color: var(--tr-lime);
   color: var(--tr-lime);
 }
