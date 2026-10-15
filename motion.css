@@ -146,6 +146,24 @@ html.mx-booting{overflow:hidden}
 .mx-col{display:flex;flex-direction:column;transform:translateY(0);transition:transform 1.6s var(--mx-ease) var(--d,0s)}
 .mx-col span{height:1em;line-height:1}
 
+/* ─── Reel (film/final.mp4, encoded as reel.mp4) ────────────────── */
+.mx-reel{margin:40px 0 0}
+.mx-reel-frame{position:relative;aspect-ratio:16/9;overflow:hidden;cursor:pointer;
+  background:#0b0b0c url(reel-poster.jpg) center/cover no-repeat;
+  clip-path:polygon(0 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%)}
+.mx-reel-frame::before{content:'';position:absolute;inset:0;z-index:2;border:1px solid var(--line);pointer-events:none}
+.mx-reel-video{display:block;width:100%;height:100%;object-fit:cover;background:transparent}
+.mx-reel-prog{position:absolute;left:0;right:0;bottom:0;height:3px;z-index:3;background:rgba(236,235,228,.12)}
+.mx-reel-prog i{display:block;height:100%;background:var(--lime);transform-origin:0 50%;transform:scaleX(0);transition:transform .3s linear}
+.mx-reel-bar{display:flex;align-items:center;gap:16px;margin-top:14px}
+.mx-reel-cap{font:500 11px var(--mono,ui-monospace,monospace);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.mx-reel-cap b{color:var(--text);font-weight:600}
+.mx-reel-toggle{margin-left:auto;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--line);background:transparent;color:var(--text);
+  font:600 11px var(--mono,ui-monospace,monospace);letter-spacing:.14em;text-transform:uppercase;cursor:pointer;transition:border-color .2s,color .2s}
+.mx-reel-toggle:hover,.mx-reel-toggle:focus-visible{border-color:var(--lime);color:var(--lime)}
+.mx-reel-toggle .mx-i-pause,.mx-reel.is-playing .mx-reel-toggle .mx-i-play{display:none}
+.mx-reel.is-playing .mx-reel-toggle .mx-i-pause{display:block}
+
 /* ─── Responsive ────────────────────────────────────────────────── */
 @media (max-width:850px){
   /* phone: portrait on top, name overlapping its lower edge, then CTAs + intro */
@@ -167,6 +185,9 @@ html.mx-booting{overflow:hidden}
   .mx-stats{grid-template-columns:1fr 1fr}
   .mx-stat:nth-child(3){border-left:0}
   .mx-stat:nth-child(n+3){border-top:1px solid var(--line)}
+  .mx-reel{margin-top:28px}
+  .mx-reel-cap{display:none}
+  .mx-reel .mx-tag{order:0}
   .mx-manifesto{height:170vh}
   .mx-man-stick{padding-bottom:58px}
   .mx-tape-a{transform:translateY(-16px) rotate(-5deg)}

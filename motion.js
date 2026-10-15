@@ -506,3 +506,37 @@
     }, { threshold: 0.4 }).observe(el);
   });
 })();
+
+/* ─── Reel: loads when near, plays while on screen, never autoplays under reduced motion ─── */
+(function () {
+  'use strict';
+  const box = document.querySelector('.mx-reel');
+  if (!box) return;
+  const v = box.querySelector('video');
+  const btn = box.querySelector('.mx-reel-toggle');
+  const label = btn.querySelector('span');
+  const prog = box.querySelector('.mx-reel-prog i');
+  let wanted = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let visible = false;
+
+  const load = () => { if (!v.getAttribute('src')) { v.src = v.dataset.src; v.preload = 'auto'; } };
+  const play = () => { load(); const p = v.play(); if (p && p.catch) p.catch(() => {}); };
+  const sync = () => { if (wanted && visible) play(); else if (!v.paused) v.pause(); };
+  const paint = () => {
+    const on = !v.paused;
+    box.classList.toggle('is-playing', on);
+    btn.setAttribute('aria-pressed', String(on));
+    label.textContent = on ? 'Pause' : 'Play';
+  };
+  const toggle = () => { wanted = v.paused; if (wanted) play(); else v.pause(); };
+
+  v.addEventListener('play', paint);
+  v.addEventListener('pause', paint);
+  v.addEventListener('timeupdate', () => { if (v.duration) prog.style.transform = `scaleX(${v.currentTime / v.duration})`; });
+  btn.addEventListener('click', toggle);
+  box.querySelector('.mx-reel-frame').addEventListener('click', toggle);
+
+  new IntersectionObserver(([e], o) => { if (e.isIntersecting) { load(); o.disconnect(); } }, { rootMargin: '600px 0px' }).observe(box);
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; sync(); }, { threshold: 0.35 }).observe(box);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) v.pause(); else sync(); });
+})();
